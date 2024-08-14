@@ -56,13 +56,11 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error logging out:', error);
-      throw error;
     } finally {
       setUser(null);
       localStorage.removeItem('cachedUser');
-      router.push('/login');
     }
-  }, [router]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, checkAuthStatus }}>
