@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
 // Get current competitor
 router.get('/current', async (req, res) => {
   const userId = req.headers['x-user-id'];
+  console.log('Current User ID: ' + userId);
 
   if (!userId) {
     return res.status(404).json({ error: 'Error: User ID not provided' });
