@@ -17,22 +17,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Read all competitors (with optional filtering)
-router.get('/', async (req, res) => {
-  try {
-    let query = 'SELECT * FROM competitor';
-    const filterQuery = parseFilterQuery(req.query);
-    if (filterQuery) {
-      query += ` WHERE ${filterQuery}`;
-    }
-    const { rows } = await pool.query(query);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Get current competitor
 router.get('/current', async (req, res) => {
   const userId = req.headers['x-user-id'];
@@ -71,7 +55,21 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
+// Read all competitors (with optional filtering)
+router.get('/', async (req, res) => {
+  try {
+    let query = 'SELECT * FROM competitor';
+    const filterQuery = parseFilterQuery(req.query);
+    if (filterQuery) {
+      query += ` WHERE ${filterQuery}`;
+    }
+    const { rows } = await pool.query(query);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Update a competitor
 router.put('/:id', async (req, res) => {
