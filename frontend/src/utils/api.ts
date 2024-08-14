@@ -1,30 +1,25 @@
 import { useAuth } from '../context/auth';
-import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const useAuthenticatedFetch = () => {
-  const { user, checkAuthStatus, loading, logout } = useAuth();
+  const { user, checkAuthStatus, logout } = useAuth();
   const router = useRouter();
 
-  const fetchWithAuth = useMemo(() => async (endpoint, options = {}) => {
-    if (!user && !loading) {
+  const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
+    if (!user) {
       await checkAuthStatus();
     }
 
-    const currentUser = user || JSON.parse(localStorage.getItem('cachedUser'));
-    if (!currentUser) {
-      router.push('/login');
-      throw new Error('User not authenticated');
+    const headers = new Headers(options.headers);
+    headers.set('Content-Type', 'application/json');
+    if (user?.token) {
+      headers.set('Authorization', `Bearer ${user.token}`);
     }
 
-    const headers = {
-      ...options.headers,
-      'Content-Type': 'application/json',
-      'X-User-Id': currentUser.sys_id,
-    };
-
     try {
-      const response = await fetch(`${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
       });
@@ -44,7 +39,7 @@ const useAuthenticatedFetch = () => {
       console.error('Fetch error:', error);
       throw error;
     }
-  }, [user, checkAuthStatus, logout, router, loading]);
+  };
 
   return fetchWithAuth;
 };
