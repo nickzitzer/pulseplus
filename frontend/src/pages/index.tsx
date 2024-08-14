@@ -116,9 +116,9 @@ const PulsePlusHome: React.FC = () => {
             </div>
           </Link>
           <div className="flex items-center space-x-4">
-            <PulsePlusGameDropdown onGameSelect={handleGameSelect} />
+            {user ? (<span><PulsePlusGameDropdown onGameSelect={handleGameSelect} />
             <PulsePlusNotifications />
-            <PulsePlusHomeAvatar />
+            <PulsePlusHomeAvatar /></span>) : (<></>)}
           </div>
         </div>
       </header>
