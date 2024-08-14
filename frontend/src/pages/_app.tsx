@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import { AuthProvider } from '../context/auth';
+import { AuthProvider, useAuth } from '../context/auth';
 import { useAuthCheck } from '../hooks/useAuthCheck';
 import Layout from '@/components/Layout'; // Updated import statement
 import '@/styles/globals.css';
@@ -20,11 +20,16 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { isAuthorized, loading } = useAuthCheck();
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // You can add a loading state here if needed
-  if (!isAuthorized || loading) {
-    return null; // or return a loading spinner
+  if (loading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
+  if (!user && !publicRoutes.includes(router.pathname)) {
+    router.push('/login');
+    return null;
   }
 
   return <>{children}</>;
