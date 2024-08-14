@@ -25,7 +25,7 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
 
   const fetchGames = useCallback(async () => {
     try {
-      const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_BASE_URL}/games`);
+      const response = await fetchWithAuth(`/api/games`);
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }

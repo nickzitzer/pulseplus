@@ -21,7 +21,7 @@ const PulsePlusNotifications: React.FC = () => {
 
     const fetchNotifications = async () => {
       try {
-        const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_BASE_URL}/notifiers`);
+        const response = await fetchWithAuth(`/api/notifiers`);
         if (!response.ok) {
           throw new Error('Failed to fetch notifications');
         }
