@@ -60,7 +60,7 @@ const PulsePlusHome: React.FC = () => {
           if (cachedCompetitorId) {
             setCompetitorId(cachedCompetitorId);
           } else {
-            const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_BASE_URL}/competitors/current`);
+            const response = await fetchWithAuth(`/api/competitors/current`);
             if (!response.ok) {
               throw new Error('Failed to fetch competitor ID');
             }
