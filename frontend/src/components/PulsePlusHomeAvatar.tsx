@@ -42,20 +42,27 @@ const PulsePlusHomeAvatar: React.FC = () => {
     const fetchUserProfile = async () => {
       if (user && user.sys_id) {
         try {
-          const response = await fetchWithAuth(`/api/competitors/current`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch user profile');
+          const cachedProfile = localStorage.getItem('cachedProfile');
+          if (cachedProfile) {
+            setProfile(JSON.parse(cachedProfile));
+            setNewAboutMe(JSON.parse(cachedProfile).about_me || '');
+          } else {
+            const response = await fetchWithAuth(`/api/competitors/current`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch user profile');
+            }
+            const data = await response.json();
+            setProfile(data);
+            setNewAboutMe(data.about_me || '');
+            localStorage.setItem('cachedProfile', JSON.stringify(data));
           }
-          const data = await response.json();
-          setProfile(data);
-          setNewAboutMe(data.about_me || '');
         } catch (error) {
           console.error('Error fetching user profile:', error);
           setError('Failed to fetch user profile. Please try again.');
         }
       }
     };
-
+  
     fetchUserProfile();
   }, [user, fetchWithAuth]);
 

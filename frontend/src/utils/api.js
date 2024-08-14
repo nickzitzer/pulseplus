@@ -7,8 +7,7 @@ const useAuthenticatedFetch = () => {
   const router = useRouter();
 
   const fetchWithAuth = useMemo(() => async (endpoint, options = {}) => {
-    if (!user || loading) {
-      await new Promise(resolve => setTimeout(resolve, 100)); // Add a small delay
+    if (!user && !loading) {
       await checkAuthStatus();
     }
 
@@ -45,7 +44,7 @@ const useAuthenticatedFetch = () => {
       console.error('Fetch error:', error);
       throw error;
     }
-  }, [user, checkAuthStatus, logout, router]);
+  }, [user, checkAuthStatus, logout, router, loading]);
 
   return fetchWithAuth;
 };

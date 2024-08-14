@@ -21,6 +21,7 @@ import PulsePlusMyLeagueStats from '@/components/PulsePlusMyLeagueStats';
 import PulsePlusLeaderboard from '@/components/PulsePlusLeaderboard';
 import PulsePlusNotifications from '@/components/PulsePlusNotifications';
 import PulsePlusAchievements from '@/components/PulsePlusAchievements';
+import { useAuth } from '@/context/auth';
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: <Home className="w-5 h-5" /> },
@@ -41,6 +42,7 @@ const PulsePlusHome: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [competitorId, setCompetitorId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const fetchWithAuth = useAuthenticatedFetch();
 
@@ -52,22 +54,29 @@ const PulsePlusHome: React.FC = () => {
 
   useEffect(() => {
     const fetchCompetitorId = async () => {
-      try {
-        // Assume we have an endpoint to get the current user's competitor ID
-        const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_BASE_URL}/competitors/current`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch competitor ID');
+      if (user && user.sys_id) {
+        try {
+          const cachedCompetitorId = localStorage.getItem('cachedCompetitorId');
+          if (cachedCompetitorId) {
+            setCompetitorId(cachedCompetitorId);
+          } else {
+            const response = await fetchWithAuth(`${process.env.NEXT_PUBLIC_API_BASE_URL}/competitors/current`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch competitor ID');
+            }
+            const data = await response.json();
+            setCompetitorId(data.sys_id);
+            localStorage.setItem('cachedCompetitorId', data.sys_id);
+          }
+        } catch (error) {
+          console.error('Error fetching competitor ID:', error);
+          setError('Failed to load user data. Please try again later.');
         }
-        const data = await response.json();
-        setCompetitorId(data.sys_id);
-      } catch (error) {
-        console.error('Error fetching competitor ID:', error);
-        setError('Failed to load user data. Please try again later.');
       }
     };
-
+  
     fetchCompetitorId();
-  }, [fetchWithAuth]);
+  }, [user, fetchWithAuth]);
 
   
 
