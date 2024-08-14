@@ -1,0 +1,48 @@
+.actionsColumn {
+    box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1);
+    border-left: 1px solid #e5e7eb;
+    min-width: 72px; /* Adjust this value as needed */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .actionsHeader {
+    border-bottom: none;
+  }
+
+  .hideScrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  
+  .hideScrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .hideScrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .hideScrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 3px;
+  }
+  
+  .hideScrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebarContainer {
+    height: calc(100vh - 64px - 50px - 10px); /* Adjust 64px (header height) and 50px (footer height) as needed */
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebarScroll {
+    flex-grow: 1;
+    overflow-y: auto;
+  }

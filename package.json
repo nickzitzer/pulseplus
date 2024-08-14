@@ -1,0 +1,13 @@
+{
+  "name": "elevate",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd elevate-app && npm run dev",
+    "start:backend": "cd elevate-backend && npm start",
+    "install": "concurrently \"cd elevate-app && npm install\" \"cd elevate-backend && npm install\""
+  },
+  "devDependencies": {
+    "concurrently": "^6.2.0"
+  }
+}
