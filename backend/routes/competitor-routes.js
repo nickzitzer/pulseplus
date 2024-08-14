@@ -38,7 +38,7 @@ router.get('/current', async (req, res) => {
   const userId = req.headers['x-user-id'];
 
   if (!userId) {
-    return res.status(401).json({ error: 'Unauthorized: User ID not provided' });
+    return res.status(404).json({ error: 'Error: User ID not provided' });
   }
 
   try {
