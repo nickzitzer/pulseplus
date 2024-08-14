@@ -1,22 +1,22 @@
 {
     "builds": [
       {
-        "src": "elevate-frontend/next.config.js",
+        "src": "frontend/next.config.js",
         "use": "@vercel/next"
       },
       {
-        "src": "elevate-backend/server.js",
+        "src": "backend/server.js",
         "use": "@vercel/node"
       }
     ],
     "routes": [
       {
         "src": "/api/(.*)",
-        "dest": "/elevate-backend/server.js"
+        "dest": "/backend/server.js"
       },
       {
         "src": "/(.*)",
-        "dest": "/elevate-frontend/$1"
+        "dest": "/frontend/$1"
       }
     ]
   }
