@@ -1,7 +1,7 @@
 {
     "builds": [
       {
-        "src": "elevate-frontend/next.config.mjs",
+        "src": "elevate-frontend/next.config.js",
         "use": "@vercel/next"
       },
       {
