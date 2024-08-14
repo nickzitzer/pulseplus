@@ -52,7 +52,7 @@ const PulsePlusHome: React.FC = () => {
     }
   }, [game]);
 
-  useEffect(() => {
+  /*seEffect(() => {
     const fetchCompetitorId = async () => {
       if (user && user.sys_id) {
         try {
@@ -76,7 +76,7 @@ const PulsePlusHome: React.FC = () => {
     };
   
     fetchCompetitorId();
-  }, [user, fetchWithAuth]);
+  }, [user, fetchWithAuth]);*/
 
   
 
