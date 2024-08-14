@@ -1,8 +1,6 @@
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 const useAuthenticatedFetch = () => {
   const { user, checkAuthStatus, logout } = useAuth();
   const router = useRouter();
@@ -19,7 +17,7 @@ const useAuthenticatedFetch = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${endpoint}`, {
         ...options,
         headers,
       });
