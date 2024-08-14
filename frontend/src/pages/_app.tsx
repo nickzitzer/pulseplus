@@ -20,10 +20,10 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const isAuthorized = useAuthCheck();
+  const { isAuthorized, loading } = useAuthCheck();
 
   // You can add a loading state here if needed
-  if (!isAuthorized) {
+  if (!isAuthorized || loading) {
     return null; // or return a loading spinner
   }
 

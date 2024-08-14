@@ -3,11 +3,11 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 const useAuthenticatedFetch = () => {
-  const { user, checkAuthStatus, logout } = useAuth();
+  const { user, checkAuthStatus, loading, logout } = useAuth();
   const router = useRouter();
 
   const fetchWithAuth = useMemo(() => async (endpoint, options = {}) => {
-    if (!user) {
+    if (!user || loading) {
       await checkAuthStatus();
     }
 
