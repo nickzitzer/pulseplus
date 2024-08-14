@@ -8,6 +8,7 @@ const useAuthenticatedFetch = () => {
 
   const fetchWithAuth = useMemo(() => async (endpoint, options = {}) => {
     if (!user || loading) {
+      await new Promise(resolve => setTimeout(resolve, 100)); // Add a small delay
       await checkAuthStatus();
     }
 
@@ -23,22 +24,27 @@ const useAuthenticatedFetch = () => {
       'X-User-Id': currentUser.sys_id,
     };
 
-    const response = await fetch(`${endpoint}`, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(`${endpoint}`, {
+        ...options,
+        headers,
+      });
 
-    if (response.status === 401) {
-      await logout();
-      router.push('/login');
-      throw new Error('Session expired. Please log in again.');
+      if (response.status === 401) {
+        await logout();
+        router.push('/login');
+        throw new Error('Session expired. Please log in again.');
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Fetch error:', error);
+      throw error;
     }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response;
   }, [user, checkAuthStatus, logout, router]);
 
   return fetchWithAuth;
