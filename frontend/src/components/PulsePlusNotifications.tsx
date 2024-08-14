@@ -80,7 +80,7 @@ const PulsePlusNotifications: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full bg-teal-600 hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="p-2 rounded-full bg-sky-400 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         <Bell className="h-6 w-6" />
         {unreadCount > 0 && (

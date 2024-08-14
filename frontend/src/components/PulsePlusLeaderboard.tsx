@@ -55,7 +55,7 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-      <div className="p-4 bg-teal-600 text-white">
+      <div className="p-4 bg-sky-400 text-white">
         <h2 className="text-2xl font-bold text-center">Leaderboard</h2>
       </div>
       <div className="p-4">

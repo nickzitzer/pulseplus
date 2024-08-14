@@ -105,7 +105,7 @@ const PulsePlusSurvey: React.FC = () => {
                     <button
                       key={rating}
                       className={`w-10 h-10 rounded-full ${
-                        answers[currentQuestion.sys_id] === rating ? 'bg-teal-600 text-white' : 'bg-gray-200'
+                        answers[currentQuestion.sys_id] === rating ? 'bg-sky-400 text-white' : 'bg-gray-200'
                       }`}
                       onClick={() => handleAnswer(rating)}
                     >
@@ -120,7 +120,7 @@ const PulsePlusSurvey: React.FC = () => {
                     <button
                       key={option}
                       className={`w-full p-2 text-left rounded ${
-                        answers[currentQuestion.sys_id] === option ? 'bg-teal-600 text-white' : 'bg-gray-200'
+                        answers[currentQuestion.sys_id] === option ? 'bg-sky-400 text-white' : 'bg-gray-200'
                       }`}
                       onClick={() => handleAnswer(option)}
                     >
@@ -143,13 +143,13 @@ const PulsePlusSurvey: React.FC = () => {
             <button
               onClick={prevQuestion}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center text-teal-600 disabled:text-gray-400"
+              className="flex items-center text-sky-400 disabled:text-gray-400"
             >
               <ChevronLeft className="w-4 h-4 mr-1" /> Previous
             </button>
             <button
               onClick={nextQuestion}
-              className="flex items-center text-teal-600"
+              className="flex items-center text-sky-400"
             >
               {currentQuestionIndex === questions.length - 1 ? 'Submit' : 'Next'} <ChevronRight className="w-4 h-4 ml-1" />
             </button>
@@ -158,7 +158,7 @@ const PulsePlusSurvey: React.FC = () => {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-teal-600 text-white py-2 px-4 rounded-full shadow-lg hover:bg-teal-700 transition-colors"
+          className="bg-sky-400 text-white py-2 px-4 rounded-full shadow-lg hover:bg-sky-700 transition-colors"
         >
           Feedback
         </button>

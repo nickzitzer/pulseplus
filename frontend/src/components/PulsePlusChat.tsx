@@ -117,7 +117,7 @@ const PulsePlusChat: React.FC = () => {
     <div className="fixed bottom-20 right-4 flex flex-col items-end" style={{ zIndex: 99999 }}>
       {isOpen && (
         <div className="bg-white shadow-lg rounded-lg w-80 h-96 flex flex-col mb-4">
-          <div className="bg-teal-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+          <div className="bg-sky-400 text-white p-4 rounded-t-lg flex justify-between items-center">
             <h3 className="font-bold">{activeGroup ? groups.find(g => g.sys_id === activeGroup)?.name : 'Chat'}</h3>
             {activeGroup && (
               <button onClick={() => setActiveGroup(null)} className="text-white">
@@ -148,7 +148,7 @@ const PulsePlusChat: React.FC = () => {
               <div className="flex-grow overflow-y-auto p-4">
                 {messages.map(message => (
                   <div key={message.sys_id} className={`mb-2 ${message.sender === 'You' ? 'text-right' : 'text-left'}`}>
-                    <div className={`inline-block p-2 rounded-lg ${message.sender === 'You' ? 'bg-teal-100' : 'bg-gray-200'}`}>
+                    <div className={`inline-block p-2 rounded-lg ${message.sender === 'You' ? 'bg-sky-100' : 'bg-gray-200'}`}>
                       <p className="font-bold">{message.sender}</p>
                       <p>{message.content}</p>
                       <p className="text-xs text-gray-500">{new Date(message.timestamp).toLocaleTimeString()}</p>
@@ -166,7 +166,7 @@ const PulsePlusChat: React.FC = () => {
                     className="flex-grow border rounded-l-lg p-2"
                     placeholder="Type a message..."
                   />
-                  <button onClick={handleSendMessage} className="bg-teal-600 text-white p-2 rounded-r-lg">
+                  <button onClick={handleSendMessage} className="bg-sky-400 text-white p-2 rounded-r-lg">
                     <Send size={20} />
                   </button>
                 </div>
@@ -177,7 +177,7 @@ const PulsePlusChat: React.FC = () => {
       )}
       <button
         onClick={toggleChat}
-        className="bg-teal-600 hover:bg-teal-800 text-white p-4 rounded-full shadow-lg flex-shrink-0"
+        className="bg-sky-400 hover:bg-sky-800 text-white p-4 rounded-full shadow-lg flex-shrink-0"
       >
         <MessagesSquareIcon size={24} />
       </button>

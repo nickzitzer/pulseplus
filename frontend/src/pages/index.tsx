@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import useAuthenticatedFetch from '../utils/api';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Home, Target, Trophy, Compass, BarChart2, Medal, Star, Activity, LucideLayoutDashboard } from 'lucide-react';
+import { Home, Target, Trophy, Compass, BarChart2, Medal, Star, Activity, LucideLayoutDashboard, HeartPulse } from 'lucide-react';
 
 import PulsePlusTitle from '@/components/PulsePlusTitle';
 import PulsePlusLeagueStandings from '@/components/PulsePlusLeagueStandings';
@@ -98,10 +98,13 @@ const PulsePlusHome: React.FC = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <header className="bg-teal-600 text-white p-4" style={{zIndex: 99999, position: 'sticky'}}>
+      <header className="bg-sky-400 text-white p-4" style={{zIndex: 99999, position: 'sticky'}}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/">
-            <p className="text-2xl font-bold">PulsePlus</p>
+          <Link  href="/">
+            <div className="flex justify-between">
+              <HeartPulse size={48} stroke="rgb(38, 34, 97)" fill="#ff7564"></HeartPulse>
+              <p className="text-2xl font-bold" style={{ lineHeight: '48px', marginLeft: '12px' }}>PulsePlus</p>
+            </div>
           </Link>
           <div className="flex items-center space-x-4">
             <PulsePlusGameDropdown onGameSelect={handleGameSelect} />
@@ -120,7 +123,7 @@ const PulsePlusHome: React.FC = () => {
                   <button
                     onClick={() => handleTabChange(tab.id)}
                     className={`w-full flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                      activeTab === tab.id ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-teal-100'
+                      activeTab === tab.id ? 'bg-sky-400 text-white' : 'text-gray-600 hover:bg-sky-100'
                     }`}
                   >
                     {tab.icon}
@@ -129,7 +132,7 @@ const PulsePlusHome: React.FC = () => {
                 </li>
               ))}
               <li>
-                <Link href="/admin" className={`w-full flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-gray-600 hover:bg-teal-100`}>
+                <Link href="/admin" className={`w-full flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-gray-600 hover:bg-sky-100`}>
                   <LucideLayoutDashboard className="w-5 h-5" />
                   <span>Admin Dashboard</span>
                 </Link>

@@ -31,7 +31,7 @@ function TermsOfService() {
         </div>
         <div className="mt-8">
           <Link href="/login">
-            <p className="text-teal-600 hover:text-teal-800">Back to Login</p>
+            <p className="text-sky-400 hover:text-sky-800">Back to Login</p>
           </Link>
         </div>
       </div>

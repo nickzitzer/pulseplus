@@ -106,7 +106,7 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        <div className="relative h-48 bg-gradient-to-r from-blue-500 to-teal-500">
+        <div className="relative h-48 bg-gradient-to-r from-blue-500 to-sky-500">
           <button
             onClick={onClose}
             className="absolute top-2 right-2 text-white hover:text-gray-200"
@@ -142,8 +142,8 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
                   key={tab.id}
                   className={`flex-1 py-2 px-4 flex items-center justify-center ${
                     activeTab === tab.id
-                      ? 'border-b-2 border-teal-500 text-teal-500'
-                      : 'text-gray-500 hover:text-teal-500'
+                      ? 'border-b-2 border-sky-500 text-sky-500'
+                      : 'text-gray-500 hover:text-sky-500'
                   }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
