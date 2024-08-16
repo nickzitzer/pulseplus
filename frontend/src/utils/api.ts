@@ -28,6 +28,17 @@ const useAuthenticatedApi = () => {
     }
   );
 
+  const authFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem('token'); // Or however you're storing the token
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+    };
+
+    const response = await fetch(url, { ...options, headers });
+    // ... handle response
+  };
+
   return api;
 };
 

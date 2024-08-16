@@ -19,12 +19,9 @@ router.post('/', async (req, res) => {
 
 // Get current competitor
 router.get('/current', async (req, res) => {
-  const userId = req.headers['x-user-id'];
+  // The user object is now attached to the request by Passport
+  const userId = req.user.sys_id;
   console.log('Current User ID: ' + userId);
-
-  if (!userId) {
-    return res.status(404).json({ error: 'Error: User ID not provided' });
-  }
 
   try {
     const { rows } = await pool.query('SELECT * FROM competitor WHERE user_id = $1', [userId]);
