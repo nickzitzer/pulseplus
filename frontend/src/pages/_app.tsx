@@ -12,7 +12,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading) {
-      if (!user && router.pathname !== '/login') {
+      if (!user && router.pathname !== '/login' && router.pathname !== '/terms-of-service') {
         router.push('/login');
       } else {
         setIsReady(true);
