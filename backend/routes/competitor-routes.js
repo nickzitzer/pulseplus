@@ -23,7 +23,7 @@ router.get('/current', async (req, res) => {
   console.log('Full user object:', req.user); // Log the entire user object
 
   if (!req.user) {
-    return res.status(401).json({ error: 'User not authenticated' });
+    return res.status(400).json({ error: 'No user object on request' });
   }
 
   // Assuming sys_id is the correct property, but let's check to make sure

@@ -53,6 +53,15 @@ app.use(limiter);
 app.use(passport.initialize());
 require('./config/passport')(passport);
 
+// Authenticate all routes except /api/auth
+const authenticateJwt = (req, res, next) => {
+  if (req.path.startsWith('/api/auth')) {
+    return next();
+  }
+  passport.authenticate('jwt', { session: false })(req, res, next);
+};
+app.use(authenticateJwt);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
