@@ -49,6 +49,34 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Partial update of a Notification Status
+router.patch('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateFields = req.body;
+    
+    const setClause = Object.keys(updateFields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(', ');
+    
+    const values = Object.values(updateFields);
+    values.push(id);
+
+    const query = `UPDATE notification_status SET ${setClause} WHERE sys_id = $${values.length} RETURNING *`;
+    
+    const { rows } = await pool.query(query, values);
+    
+    if (rows.length === 0) {
+      res.status(404).json({ error: 'Notification Status not found' });
+    } else {
+      res.json(rows[0]);
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Delete a notification status
 router.delete('/:id', async (req, res) => {
   try {

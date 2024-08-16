@@ -97,6 +97,45 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Partial update of a user
+router.patch('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateFields = req.body;
+    
+    const setClause = Object.keys(updateFields)
+      .map((key, index) => `${key} = $${index + 1}`)
+      .join(', ');
+    
+    const values = Object.values(updateFields);
+
+    // If a new password is provided, hash it
+    if (updateFields.password) {
+      const saltRounds = 10;
+      const password_hash = await bcrypt.hash(updateFields.password, saltRounds);
+      updateFields.password_hash = password_hash;
+      delete updateFields.password;
+    }
+
+    values.push(id);
+
+    const query = `UPDATE sys_user SET ${setClause} WHERE sys_id = $${values.length} RETURNING *`;
+    
+    const { rows } = await pool.query(query, values);
+    
+    if (rows.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      // Remove password_hash from the response
+      const { password_hash, ...userWithoutPassword } = rows[0];
+      res.json(userWithoutPassword);
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Delete a user
 router.delete('/:id', async (req, res) => {
   try {
