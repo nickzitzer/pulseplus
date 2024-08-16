@@ -19,7 +19,12 @@ router.post('/', async (req, res) => {
 
 // Get current competitor
 router.get('/current', async (req, res) => {
+  console.log('Full request object:', req); // Log the entire request object
   console.log('Full user object:', req.user); // Log the entire user object
+
+  if (!req.user) {
+    return res.status(401).json({ error: 'User not authenticated' });
+  }
 
   // Assuming sys_id is the correct property, but let's check to make sure
   const userId = req.user.sys_id || req.user.id; // Fallback to 'id' if 'sys_id' doesn't exist
@@ -38,8 +43,8 @@ router.get('/current', async (req, res) => {
     const competitorData = rows[0];
     res.json(competitorData);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error in /competitor/current:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 });
 

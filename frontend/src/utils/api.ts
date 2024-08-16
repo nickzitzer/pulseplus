@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 
@@ -6,7 +6,7 @@ const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
-const useAuthenticatedFetch = () => {
+const useAuthenticatedApi = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -28,17 +28,7 @@ const useAuthenticatedFetch = () => {
     }
   );
 
-  const authenticatedFetch = async (url: string, options: AxiosRequestConfig = {}) => {
-    try {
-      const response = await api(url, options);
-      return response.data;
-    } catch (error) {
-      console.error('API call error:', error);
-      throw error;
-    }
-  };
-
-  return authenticatedFetch;
+  return api;
 };
 
-export default useAuthenticatedFetch;
+export default useAuthenticatedApi;
