@@ -19,9 +19,15 @@ router.post('/', async (req, res) => {
 
 // Get current competitor
 router.get('/current', async (req, res) => {
-  // The user object is now attached to the request by Passport
-  const userId = req.user.sys_id;
-  console.log('Current User ID: ' + userId);
+  console.log('Full user object:', req.user); // Log the entire user object
+
+  // Assuming sys_id is the correct property, but let's check to make sure
+  const userId = req.user.sys_id || req.user.id; // Fallback to 'id' if 'sys_id' doesn't exist
+  console.log('Current User ID:', userId);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID not found in the authenticated user object' });
+  }
 
   try {
     const { rows } = await pool.query('SELECT * FROM competitor WHERE user_id = $1', [userId]);

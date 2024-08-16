@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 
@@ -6,7 +6,7 @@ const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
-const useAuthenticatedApi = () => {
+const useAuthenticatedFetch = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -28,18 +28,17 @@ const useAuthenticatedApi = () => {
     }
   );
 
-  const authFetch = async (url: string, options: RequestInit = {}) => {
-    const token = localStorage.getItem('token'); // Or however you're storing the token
-    const headers = {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-    };
-
-    const response = await fetch(url, { ...options, headers });
-    // ... handle response
+  const authenticatedFetch = async (url: string, options: AxiosRequestConfig = {}) => {
+    try {
+      const response = await api(url, options);
+      return response.data;
+    } catch (error) {
+      console.error('API call error:', error);
+      throw error;
+    }
   };
 
-  return api;
+  return authenticatedFetch;
 };
 
-export default useAuthenticatedApi;
+export default useAuthenticatedFetch;
