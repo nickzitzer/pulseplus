@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Target } from "lucide-react";
 import PulsePlusProgressBar from "./PulsePlusProgressBar";
 import useAuthenticatedFetch from "../utils/api";
+import Image from 'next/image';
 
 interface PulsePlusGoalsProps {
   gameId: string | undefined;
@@ -29,10 +30,10 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
     const fetchGoals = async (gameId: string) => {
       try {
         const response = await fetchWithAuth(`/goals?game=${gameId}`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error("Failed to fetch goals");
         }
-        const data = await response.json();
+        const data = response.data;
         setGoals(data);
         // Open the first category by default
         if (data.length > 0) {
@@ -89,10 +90,12 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
                   <div key={goal.sys_id} className="bg-gray-100 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
                       {goal.image ? (
-                        <img
+                        <Image
                           src={goal.image}
                           alt={goal.name}
-                          className="w-8 h-8 mr-2 rounded-full object-cover"
+                          width={32}
+                          height={32}
+                          className="mr-2 rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";

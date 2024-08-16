@@ -32,10 +32,10 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
     const fetchLeaderboardData = async () => {
       try {
         const response = await fetchWithAuth(`/leaderboard-members?game=${gameId}&timeFrame=${timeFrame}&department=${department}`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to fetch leaderboard data');
         }
-        const data = await response.json();
+        const data = response.data;
         setCompetitors(data.competitors);
         setDepartments(data.departments);
       } catch (error) {

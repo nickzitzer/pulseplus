@@ -43,18 +43,16 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
       try {
         setLoading(true);
         const response = await fetchWithAuth(`/competitors/${competitorId}`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to fetch competitor data');
         }
-        const data = await response.json();
-        
+        const data = response.data;
         // Fetch league data
         const leagueResponse = await fetchWithAuth(`/level-instance-members?competitor=${competitorId}&game=${gameId}`);
-        if (!leagueResponse.ok) {
+        if (leagueResponse.status !== 200) {
           throw new Error('Failed to fetch league data');
         }
-        const leagueData = await leagueResponse.json();
-        
+        const leagueData = leagueResponse.data;
         // Combine and format the data
         const formattedData: CompetitorData = {
           sys_id: data.sys_id,
@@ -113,9 +111,11 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
           >
             <X className="w-6 h-6" />
           </button>
-          <img
+          <Image
             src={competitorData.avatar}
             alt={competitorData.name}
+            width={128}
+            height={128}
             className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-32 h-32 rounded-full border-4 border-white"
           />
         </div>

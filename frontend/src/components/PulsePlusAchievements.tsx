@@ -28,10 +28,10 @@ const PulsePlusAchievements: React.FC<PulsePlusAchievementsProps> = ({ gameId, c
     const fetchAchievements = async () => {
       try {
         const response = await fetchWithAuth(`/achievements?game=${gameId}&competitor=${competitorId}`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to fetch achievements');
         }
-        const data = await response.json();
+        const data = response.data;
         setAchievements(data);
       } catch (error) {
         console.error('Error fetching achievements:', error);

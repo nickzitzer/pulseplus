@@ -31,10 +31,10 @@ const PulsePlusChat: React.FC = () => {
     const fetchChatGroups = async () => {
       try {
         const response = await fetchWithAuth(`/chat-groups`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to fetch chat groups');
         }
-        const data = await response.json();
+        const data = response.data;
         setGroups(data);
       } catch (error) {
         console.error('Error fetching chat groups:', error);
@@ -51,10 +51,10 @@ const PulsePlusChat: React.FC = () => {
     const fetchMessages = async (groupId: string) => {
       try {
         const response = await fetchWithAuth(`/messages?group=${groupId}`);
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to fetch messages');
         }
-        const data = await response.json();
+        const data = response.data;
         setMessages(data);
       } catch (error) {
         console.error('Error fetching messages:', error);
@@ -85,17 +85,17 @@ const PulsePlusChat: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
+          data: {
             group: activeGroup,
             content: newMessage,
-          }),
+          },
         });
 
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error('Failed to send message');
         }
 
-        const sentMessage = await response.json();
+        const sentMessage = response.data;
         setMessages([...messages, sentMessage]);
         setNewMessage('');
       } catch (error) {
