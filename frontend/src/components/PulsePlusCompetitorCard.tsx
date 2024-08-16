@@ -42,14 +42,14 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
     const fetchCompetitorData = async () => {
       try {
         setLoading(true);
-        const response = await fetchWithAuth(`/api/competitors/${competitorId}`);
+        const response = await fetchWithAuth(`/competitors/${competitorId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch competitor data');
         }
         const data = await response.json();
         
         // Fetch league data
-        const leagueResponse = await fetchWithAuth(`/api/level-instance-members?competitor=${competitorId}&game=${gameId}`);
+        const leagueResponse = await fetchWithAuth(`/level-instance-members?competitor=${competitorId}&game=${gameId}`);
         if (!leagueResponse.ok) {
           throw new Error('Failed to fetch league data');
         }

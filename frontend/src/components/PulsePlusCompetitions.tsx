@@ -31,11 +31,8 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
   useEffect(() => {
     const fetchCompetitions = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/api/competitions?game=${gameId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch competitions');
-        }
-        const data = await response.json();
+        const response = await fetchWithAuth(`/competitions?game=${gameId}`);
+        const data = response.data;
         setCompetitions(data);
       } catch (error) {
         console.error('Error fetching competitions:', error);

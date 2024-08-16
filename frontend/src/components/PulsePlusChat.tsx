@@ -30,7 +30,7 @@ const PulsePlusChat: React.FC = () => {
   useEffect(() => {
     const fetchChatGroups = async () => {
       try {
-        const response = await fetchWithAuth(`/api/chat-groups`);
+        const response = await fetchWithAuth(`/chat-groups`);
         if (!response.ok) {
           throw new Error('Failed to fetch chat groups');
         }
@@ -50,7 +50,7 @@ const PulsePlusChat: React.FC = () => {
   useEffect(() => {
     const fetchMessages = async (groupId: string) => {
       try {
-        const response = await fetchWithAuth(`/api/messages?group=${groupId}`);
+        const response = await fetchWithAuth(`/messages?group=${groupId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch messages');
         }
@@ -80,7 +80,7 @@ const PulsePlusChat: React.FC = () => {
   const handleSendMessage = async () => {
     if (newMessage.trim() && activeGroup) {
       try {
-        const response = await fetchWithAuth(`/api/messages`, {
+        const response = await fetchWithAuth(`/messages`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

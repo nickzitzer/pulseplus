@@ -1,45 +1,34 @@
+import axios, { AxiosInstance } from 'axios';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 
-const useAuthenticatedFetch = () => {
-  const { user, checkAuthStatus, logout } = useAuth();
+const api: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+});
+
+const useAuthenticatedApi = () => {
+  const { user, logout } = useAuth();
   const router = useRouter();
 
-  const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
-    if (!user) {
-      await checkAuthStatus();
-    }
-
-    const headers = new Headers(options.headers);
-    headers.set('Content-Type', 'application/json');
+  api.interceptors.request.use((config) => {
     if (user?.token) {
-      headers.set('Authorization', `Bearer ${user.token}`);
+      config.headers['Authorization'] = `Bearer ${user.token}`;
     }
+    return config;
+  });
 
-    try {
-      const response = await fetch(`${endpoint}`, {
-        ...options,
-        headers,
-      });
-
-      if (response.status === 401) {
+  api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response?.status === 401) {
         await logout();
         router.push('/login');
-        throw new Error('Session expired. Please log in again.');
       }
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return response;
-    } catch (error) {
-      console.error('Fetch error:', error);
-      throw error;
+      return Promise.reject(error);
     }
-  };
+  );
 
-  return fetchWithAuth;
+  return api;
 };
 
-export default useAuthenticatedFetch;
+export default useAuthenticatedApi;

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import useAuthenticatedFetch from '../utils/api';
 
 interface TimerProps {
-  deadlineTimestamp?: number; // Unix timestamp
-  eventId?: string; // ID to fetch deadline from API
+  deadline: Date | string; // Date object or ISO date string
   color?: string;
 }
 
@@ -14,38 +12,15 @@ interface TimeLeft {
   seconds: number;
 }
 
-const PulsePlusTimer: React.FC<TimerProps> = ({ deadlineTimestamp, eventId, color = 'rgba(31, 30, 34, .8)' }) => {
+const PulsePlusTimer: React.FC<TimerProps> = ({ deadline, color = 'rgba(31, 30, 34, .8)' }) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
-  const [deadline, setDeadline] = useState<number | null>(deadlineTimestamp || null);
-
-  const fetchWithAuth = useAuthenticatedFetch();
-
-  useEffect(() => {
-    const fetchDeadline = async (id: string) => {
-      try {
-        const response = await fetchWithAuth(`/api/events/${id}/deadline`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch deadline');
-        }
-        const data = await response.json();
-        setDeadline(data.deadline);
-      } catch (error) {
-        console.error('Error fetching deadline:', error);
-      }
-    };
-
-    if (eventId && !deadlineTimestamp) {
-      fetchDeadline(eventId);
-    }
-  }, [eventId, deadlineTimestamp, fetchWithAuth]);
 
   useEffect(() => {
     const calculateTimeLeft = (): TimeLeft | null => {
-      if (!deadline) return null;
-  
-      const difference = deadline - Date.now();
+      const targetDate = deadline instanceof Date ? deadline : new Date(deadline);
+      const difference = targetDate.getTime() - Date.now();
       if (difference <= 0) return null;
-  
+
       return {
         days: Math.floor(difference / (1000 * 60 * 60 * 24)),
         hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
@@ -54,16 +29,12 @@ const PulsePlusTimer: React.FC<TimerProps> = ({ deadlineTimestamp, eventId, colo
       };
     };
 
-    if (deadline) {
-      const timer = setInterval(() => {
-        setTimeLeft(calculateTimeLeft());
-      }, 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
 
-      return () => clearInterval(timer);
-    }
+    return () => clearInterval(timer);
   }, [deadline]);
-
-  
 
   if (!timeLeft) {
     return null; // or return a message that the event has ended

@@ -15,7 +15,9 @@ export const DataModelFields = {
     sys_updated_on: 'Date',
     sys_created_by: 'string',
     sys_updated_by: 'string',
-    department_id: 'string'
+    department_id: 'string',
+    role: 'string',
+    token: 'token'
   },
   Game: {
     sys_id: 'string',
@@ -383,6 +385,9 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
       case 'any':
         emptyObject[key] = null;
         break;
+      case 'token':
+        emptyObject[key] = '';
+        break;
       default:
         emptyObject[key] = null;
     }
@@ -390,3 +395,5 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
 
   return emptyObject as { [K in DataModelField<T>]: any };
 }
+
+export type UserRole = 'ADMIN' | 'USER' | 'MANAGER' | string;

@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const authMiddleware = require('./authMiddleware');
-const session = require('express-session');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const passport = require('passport');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandlers');
+const logger = require('./utils/logger');
 
-// Import existing routes
+// Import routes
 const authRoutes = require('./routes/auth-routes');
 const gameRoutes = require('./routes/game-routes');
 const competitionRoutes = require('./routes/competition-routes');
@@ -38,25 +40,21 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use(limiter);
 
 app.use(passport.initialize());
-app.use(passport.session());
+require('./config/passport')(passport);
 
-// Public Routes
+// Routes
 app.use('/api/auth', authRoutes);
-
-app.use(authMiddleware);
-
-// Existing Routes
 app.use('/api/games', gameRoutes);
 app.use('/api/competitions', competitionRoutes);
 app.use('/api/competitors', competitorRoutes);
@@ -72,8 +70,6 @@ app.use('/api/level-instances', levelInstanceRoutes);
 app.use('/api/level-instance-members', levelInstanceMemberRoutes);
 app.use('/api/leaderboard-members', leaderboardMemberRoutes);
 app.use('/api/m2m', m2mRoutes);
-
-// New Routes
 app.use('/api/departments', departmentRoutes);
 app.use('/api/chat-groups', chatGroupRoutes);
 app.use('/api/chat-messages', chatMessageRoutes);
@@ -84,14 +80,12 @@ app.use('/api/survey-responses', surveyResponseRoutes);
 app.use('/api/notification-statuses', notificationStatusRoutes);
 app.use('/api/users', userRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  logger.info(`Server running on port ${port}`);
 });
 
 module.exports = app;

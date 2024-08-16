@@ -1,9 +1,41 @@
--- Enable UUID generation
+-- Drop existing tables
+DROP TABLE IF EXISTS goal_instance CASCADE;
+DROP TABLE IF EXISTS achievement_competitor CASCADE;
+DROP TABLE IF EXISTS kpi_instance CASCADE;
+DROP TABLE IF EXISTS leaderboard_member CASCADE;
+DROP TABLE IF EXISTS level_instance_member CASCADE;
+DROP TABLE IF EXISTS badge_competitor CASCADE;
+DROP TABLE IF EXISTS goal CASCADE;
+DROP TABLE IF EXISTS team_competition CASCADE;
+DROP TABLE IF EXISTS team CASCADE;
+DROP TABLE IF EXISTS notifier CASCADE;
+DROP TABLE IF EXISTS point_system CASCADE;
+DROP TABLE IF EXISTS game CASCADE;
+DROP TABLE IF EXISTS level CASCADE;
+DROP TABLE IF EXISTS achievement CASCADE;
+DROP TABLE IF EXISTS competitor CASCADE;
+DROP TABLE IF EXISTS key_performance_indicator CASCADE;
+DROP TABLE IF EXISTS level_instance CASCADE;
+DROP TABLE IF EXISTS badge CASCADE;
+DROP TABLE IF EXISTS kpi_instance_rollup CASCADE;
+DROP TABLE IF EXISTS competition CASCADE;
+DROP TABLE IF EXISTS sys_db_object CASCADE;
+DROP TABLE IF EXISTS sys_user_group CASCADE;
+DROP TABLE IF EXISTS department CASCADE;
+DROP TABLE IF EXISTS chat_group CASCADE;
+DROP TABLE IF EXISTS chat_message CASCADE;
+DROP TABLE IF EXISTS chat_group_member CASCADE;
+DROP TABLE IF EXISTS survey CASCADE;
+DROP TABLE IF EXISTS survey_question CASCADE;
+DROP TABLE IF EXISTS survey_response CASCADE;
+DROP TABLE IF EXISTS notification_status CASCADE;
+DROP TABLE IF EXISTS sys_user CASCADE;
+
+-- Enable UUID generation if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- ServiceNow Global Tables
-
+-- Create tables
 CREATE TABLE sys_user (
     sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_name VARCHAR(40) NOT NULL UNIQUE,
@@ -20,7 +52,8 @@ CREATE TABLE sys_user (
     sys_updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     sys_created_by VARCHAR(40),
     sys_updated_by VARCHAR(40),
-    department_id UUID
+    department_id UUID,
+    role VARCHAR(40)
 );
 
 CREATE TABLE sys_user_group (
@@ -48,8 +81,6 @@ CREATE TABLE sys_db_object (
     sys_created_by VARCHAR(40),
     sys_updated_by VARCHAR(40)
 );
-
--- PulsePlus Custom Tables
 
 CREATE TABLE competition (
     sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -353,8 +384,6 @@ CREATE TABLE goal_instance (
     sys_updated_by VARCHAR(40)
 );
 
--- New tables based on our recent discussion
-
 CREATE TABLE department (
     sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
@@ -414,88 +443,48 @@ CREATE TABLE notification_status (
     read_at TIMESTAMP
 );
 
--- Foreign Key Constraints
+-- Add foreign key constraints
+ALTER TABLE sys_user ADD CONSTRAINT fk_sys_user_department FOREIGN KEY (department_id) REFERENCES department(sys_id);
+ALTER TABLE competition ADD CONSTRAINT fk_competition_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE competition ADD CONSTRAINT fk_competition_first_place_badge FOREIGN KEY (first_place_badge) REFERENCES badge(sys_id);
+ALTER TABLE competition ADD CONSTRAINT fk_competition_second_place_badge FOREIGN KEY (second_place_badge) REFERENCES badge(sys_id);
+ALTER TABLE competition ADD CONSTRAINT fk_competition_third_place_badge FOREIGN KEY (third_place_badge) REFERENCES badge(sys_id);
+ALTER TABLE competition ADD CONSTRAINT fk_competition_competitor_group FOREIGN KEY (competitor_group) REFERENCES sys_user_group(sys_id);
+ALTER TABLE kpi_instance_rollup ADD CONSTRAINT fk_kpi_instance_rollup_competitor FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
+ALTER TABLE kpi_instance_rollup ADD CONSTRAINT fk_kpi_instance_rollup_kpi FOREIGN KEY (kpi) REFERENCES key_performance_indicator(sys_id);
+ALTER TABLE badge ADD CONSTRAINT fk_badge_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE level_instance ADD CONSTRAINT fk_level_instance_level FOREIGN KEY (level) REFERENCES level(sys_id);
+ALTER TABLE key_performance_indicator ADD CONSTRAINT fk_key_performance_indicator_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE key_performance_indicator ADD CONSTRAINT fk_key_performance_indicator_achievement FOREIGN KEY (achievement) REFERENCES achievement(sys_id);
+ALTER TABLE key_performance_indicator ADD CONSTRAINT fk_key_performance_indicator_table_name FOREIGN KEY (table_name) REFERENCES sys_db_object(name);
+ALTER TABLE competitor ADD CONSTRAINT fk_competitor_user_id FOREIGN KEY (user_id) REFERENCES sys_user(sys_id);
+ALTER TABLE achievement ADD CONSTRAINT fk_achievement_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE achievement ADD CONSTRAINT fk_achievement_trigger_table FOREIGN KEY (trigger_table) REFERENCES sys_db_object(name);
+ALTER TABLE level ADD CONSTRAINT fk_level_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE level ADD CONSTRAINT fk_level_competition FOREIGN KEY (competition) REFERENCES competition(sys_id);
+ALTER TABLE game ADD CONSTRAINT fk_game_gamemaster FOREIGN KEY (gamemaster) REFERENCES sys_user(sys_id);
+ALTER TABLE game ADD CONSTRAINT fk_game_point_system FOREIGN KEY (point_system) REFERENCES point_system(sys_id);
+ALTER TABLE game ADD CONSTRAINT fk_game_competitor_group FOREIGN KEY (competitor_group) REFERENCES sys_user_group(sys_id);
+ALTER TABLE notifier ADD CONSTRAINT fk_notifier_receiver FOREIGN KEY (receiver) REFERENCES sys_user(sys_id);
+ALTER TABLE notifier ADD CONSTRAINT fk_notifier_sender FOREIGN KEY (sender) REFERENCES sys_user(sys_id);
+ALTER TABLE team_competition ADD CONSTRAINT fk_team_competition_team_id FOREIGN KEY (team_id) REFERENCES team(sys_id);
+ALTER TABLE team_competition ADD CONSTRAINT fk_team_competition_competition_id FOREIGN KEY (competition_id) REFERENCES competition(sys_id);
+ALTER TABLE goal ADD CONSTRAINT fk_goal_game FOREIGN KEY (game) REFERENCES game(sys_id);
+ALTER TABLE goal ADD CONSTRAINT fk_goal_achievement FOREIGN KEY (achievement) REFERENCES achievement(sys_id);
+ALTER TABLE badge_competitor ADD CONSTRAINT fk_badge_competitor_badge_id FOREIGN KEY (badge_id) REFERENCES badge(sys_id);
+ALTER TABLE badge_competitor ADD CONSTRAINT fk_badge_competitor_competitor_id FOREIGN KEY (competitor_id) REFERENCES competitor(sys_id);
+ALTER TABLE level_instance_member ADD CONSTRAINT fk_level_instance_member_level_instance FOREIGN KEY (level_instance) REFERENCES level_instance(sys_id);
+ALTER TABLE level_instance_member ADD CONSTRAINT fk_level_instance_member_competitor FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
+ALTER TABLE leaderboard_member ADD CONSTRAINT fk_leaderboard_member_competition FOREIGN KEY (competition) REFERENCES competition(sys_id);
+ALTER TABLE leaderboard_member ADD CONSTRAINT fk_leaderboard_member_competitor FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
+ALTER TABLE kpi_instance ADD CONSTRAINT fk_kpi_instance_kpi FOREIGN KEY (kpi) REFERENCES key_performance_indicator(sys_id);
+ALTER TABLE kpi_instance ADD CONSTRAINT fk_kpi_instance_competitor FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
+ALTER TABLE achievement_competitor ADD CONSTRAINT fk_achievement_competitor_achievement_id FOREIGN KEY (achievement_id) REFERENCES achievement(sys_id);
+ALTER TABLE achievement_competitor ADD CONSTRAINT fk_achievement_competitor_competitor_id FOREIGN KEY (competitor_id) REFERENCES competitor(sys_id);
+ALTER TABLE goal_instance ADD CONSTRAINT fk_goal_instance_goal FOREIGN KEY (goal) REFERENCES goal(sys_id);
+ALTER TABLE goal_instance ADD CONSTRAINT fk_goal_instance_competitor FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
 
-ALTER TABLE sys_user 
-    ADD FOREIGN KEY (department_id) REFERENCES department(sys_id);
-
-ALTER TABLE competition 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id),
-    ADD FOREIGN KEY (first_place_badge) REFERENCES badge(sys_id),
-    ADD FOREIGN KEY (second_place_badge) REFERENCES badge(sys_id),
-    ADD FOREIGN KEY (third_place_badge) REFERENCES badge(sys_id),
-    ADD FOREIGN KEY (competitor_group) REFERENCES sys_user_group(sys_id);
-
-ALTER TABLE kpi_instance_rollup 
-    ADD FOREIGN KEY (competitor) REFERENCES competitor(sys_id),
-    ADD FOREIGN KEY (kpi) REFERENCES key_performance_indicator(sys_id);
-
-ALTER TABLE badge 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id);
-
-ALTER TABLE level_instance 
-    ADD FOREIGN KEY (level) REFERENCES level(sys_id);
-
--- Continuing Foreign Key Constraints
-
-ALTER TABLE key_performance_indicator 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id),
-    ADD FOREIGN KEY (achievement) REFERENCES achievement(sys_id),
-    ADD FOREIGN KEY (table_name) REFERENCES sys_db_object(name);
-
-ALTER TABLE competitor 
-    ADD FOREIGN KEY (user_id) REFERENCES sys_user(sys_id);
-
-ALTER TABLE achievement 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id),
-    ADD FOREIGN KEY (trigger_table) REFERENCES sys_db_object(name);
-
-ALTER TABLE level 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id),
-    ADD FOREIGN KEY (competition) REFERENCES competition(sys_id);
-
-ALTER TABLE game 
-    ADD FOREIGN KEY (gamemaster) REFERENCES sys_user(sys_id),
-    ADD FOREIGN KEY (point_system) REFERENCES point_system(sys_id),
-    ADD FOREIGN KEY (competitor_group) REFERENCES sys_user_group(sys_id);
-
-ALTER TABLE notifier 
-    ADD FOREIGN KEY (receiver) REFERENCES sys_user(sys_id),
-    ADD FOREIGN KEY (sender) REFERENCES sys_user(sys_id);
-
-ALTER TABLE team_competition 
-    ADD FOREIGN KEY (team_id) REFERENCES team(sys_id),
-    ADD FOREIGN KEY (competition_id) REFERENCES competition(sys_id);
-
-ALTER TABLE goal 
-    ADD FOREIGN KEY (game) REFERENCES game(sys_id),
-    ADD FOREIGN KEY (achievement) REFERENCES achievement(sys_id);
-
-ALTER TABLE badge_competitor 
-    ADD FOREIGN KEY (badge_id) REFERENCES badge(sys_id),
-    ADD FOREIGN KEY (competitor_id) REFERENCES competitor(sys_id);
-
-ALTER TABLE level_instance_member 
-    ADD FOREIGN KEY (level_instance) REFERENCES level_instance(sys_id),
-    ADD FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
-
-ALTER TABLE leaderboard_member 
-    ADD FOREIGN KEY (competition) REFERENCES competition(sys_id),
-    ADD FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
-
-ALTER TABLE kpi_instance 
-    ADD FOREIGN KEY (kpi) REFERENCES key_performance_indicator(sys_id),
-    ADD FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
-
-ALTER TABLE achievement_competitor 
-    ADD FOREIGN KEY (achievement_id) REFERENCES achievement(sys_id),
-    ADD FOREIGN KEY (competitor_id) REFERENCES competitor(sys_id);
-
-ALTER TABLE goal_instance 
-    ADD FOREIGN KEY (goal) REFERENCES goal(sys_id),
-    ADD FOREIGN KEY (competitor) REFERENCES competitor(sys_id);
-
--- Create indexes for frequently queried columns
+-- Create indexes
 CREATE INDEX idx_sys_user_username ON sys_user(user_name);
 CREATE INDEX idx_competitor_user_id ON competitor(user_id);
 CREATE INDEX idx_game_name ON game(name);

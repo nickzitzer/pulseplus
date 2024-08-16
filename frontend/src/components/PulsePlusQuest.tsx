@@ -36,11 +36,8 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
   useEffect(() => {
     const fetchQuest = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/api/quests?game=${gameId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch quest');
-        }
-        const data = await response.json();
+        const response = await fetchWithAuth(`/quests?game=${gameId}`);
+        const data = response.data;
         if (data.length > 0) {
           setQuest(data[0]); // Assuming we're only dealing with one quest per game for now
         }

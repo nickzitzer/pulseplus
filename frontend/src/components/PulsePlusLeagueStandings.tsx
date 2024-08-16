@@ -22,8 +22,8 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
 
   const fetchLeaderboardData = useCallback(async (gameId: string, leagueId: string) => {
     try {
-      const leaderboardResponse = await fetchWithAuth(`/api/leaderboard-members?game=${gameId}&level=${leagueId}`);
-      const leaderboardData = await leaderboardResponse.json();
+      const leaderboardResponse = await fetchWithAuth(`/leaderboard-members?game=${gameId}&level=${leagueId}`);
+      const leaderboardData = leaderboardResponse.data;
       setLeaderboardData(leaderboardData);
     } catch (error) {
       console.error('Error fetching leaderboard data:', error);
@@ -32,8 +32,8 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
 
   const fetchLeagueData = useCallback(async (gameId: string) => {
     try {
-      const leagueResponse = await fetchWithAuth(`/api/levels?game=${gameId}&type=league`);
-      const leagueData = await leagueResponse.json();
+      const leagueResponse = await fetchWithAuth(`/levels?game=${gameId}&type=league`);
+      const leagueData = leagueResponse.data;
       setLeagueData(leagueData);
 
       if (leagueData.length > 0) {

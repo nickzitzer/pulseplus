@@ -41,18 +41,14 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
   useEffect(() => {
     const fetchKPIData = async (gameId: string) => {
       try {
-        const kpiResponse = await fetchWithAuth(`/api/kpis?game=${gameId}`);
-        const competitorResponse = await fetchWithAuth(`/api/competitors?game=${gameId}`);
-        const kpiInstanceResponse = await fetchWithAuth(`/api/kpi-instance-rollup?game=${gameId}&year=${year}`);
-  
-        if (!kpiResponse.ok || !competitorResponse.ok || !kpiInstanceResponse.ok) {
-          throw new Error('Failed to fetch KPI data');
-        }
-  
-        const kpiData = await kpiResponse.json();
-        const competitorData = await competitorResponse.json();
-        const kpiInstanceData = await kpiInstanceResponse.json();
-  
+        const kpiResponse = await fetchWithAuth(`/kpis?game=${gameId}`);
+        const competitorResponse = await fetchWithAuth(`/competitors?game=${gameId}`);
+        const kpiInstanceResponse = await fetchWithAuth(`/kpi-instance-rollup?game=${gameId}&year=${year}`);
+
+        const kpiData = kpiResponse.data;
+        const competitorData = competitorResponse.data;
+        const kpiInstanceData = kpiInstanceResponse.data;
+
         setKpis(kpiData);
         
         const competitorsWithKPIs = competitorData.map((competitor: Competitor) => ({

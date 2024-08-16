@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../context/auth';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [user_name, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -14,25 +14,11 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include', // This is important for including the session cookie
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      login(data.user);
+      await login(user_name, password);
       router.push('/'); // Redirect to home page after successful login
     } catch (err) {
       console.error('Login error:', err);
-      setError('Invalid username or password');
+      setError('Invalid user name or password');
     }
   };
 
@@ -48,16 +34,16 @@ const LoginPage = () => {
           <input type="hidden" name="remember" value="true" />
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">Username</label>
+              <label htmlFor="user_name" className="sr-only">User Name</label>
               <input
-                id="username"
-                name="username"
+                id="user_name"
+                name="user_name"
                 type="text"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="User Name"
+                value={user_name}
+                onChange={(e) => setUserName(e.target.value)}
               />
             </div>
             <div>

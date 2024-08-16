@@ -28,7 +28,7 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
   useEffect(() => {
     const fetchGoals = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/api/goals?game=${gameId}`);
+        const response = await fetchWithAuth(`/goals?game=${gameId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch goals");
         }

@@ -21,11 +21,8 @@ const PulsePlusNotifications: React.FC = () => {
 
     const fetchNotifications = async () => {
       try {
-        const response = await fetchWithAuth(`/api/notifiers`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch notifications');
-        }
-        const data = await response.json();
+        const response = await fetchWithAuth(`/notifiers`);
+        const data = response.data;
         setNotifications(data);
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -42,12 +39,9 @@ const PulsePlusNotifications: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetchWithAuth(`/api/notifications/${notificationId}/read`, {
+      const response = await fetchWithAuth(`/notifications/${notificationId}/read`, {
         method: 'POST',
       });
-      if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
-      }
       setNotifications(notifications.map(notif => 
         notif.sys_id === notificationId ? { ...notif, read: true } : notif
       ));
@@ -58,12 +52,9 @@ const PulsePlusNotifications: React.FC = () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const response = await fetchWithAuth(`/api/notifications/${notificationId}`, {
+      const response = await fetchWithAuth(`/notifications/${notificationId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) {
-        throw new Error('Failed to delete notification');
-      }
       setNotifications(notifications.filter(notif => notif.sys_id !== notificationId));
     } catch (error) {
       console.error('Error deleting notification:', error);

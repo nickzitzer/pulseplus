@@ -60,11 +60,11 @@ const PulsePlusHome: React.FC = () => {
           if (cachedCompetitorId) {
             setCompetitorId(cachedCompetitorId);
           } else {
-            const response = await fetchWithAuth(`/api/competitors/current`);
-            if (!response.ok) {
+            const response = await fetchWithAuth(`/competitors/current`);
+            if (response.status !== 200) {
               throw new Error('Failed to fetch competitor ID');
             }
-            const data = await response.json();
+            const data = await response.data;
             setCompetitorId(data.sys_id);
             localStorage.setItem('cachedCompetitorId', data.sys_id);
           }
@@ -116,9 +116,15 @@ const PulsePlusHome: React.FC = () => {
             </div>
           </Link>
           <div className="flex items-center space-x-4">
-            {user ? (<span><PulsePlusGameDropdown onGameSelect={handleGameSelect} />
-            <PulsePlusNotifications />
-            <PulsePlusHomeAvatar /></span>) : (<></>)}
+            {user ? (
+              <>
+                <PulsePlusGameDropdown onGameSelect={handleGameSelect} />
+                <PulsePlusNotifications />
+                <PulsePlusHomeAvatar />
+              </>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       </header>
@@ -154,10 +160,16 @@ const PulsePlusHome: React.FC = () => {
             {selectedGame ? (
               <div className="bg-white shadow rounded-lg p-6">
                 {activeTab === 'overview' && (
-                  <div className="space-y-8">
-                    <PulsePlusMyLeagueStats gameId={selectedGame} competitorId={competitorId!} />
-                    <PulsePlusLeaderboard gameId={selectedGame} />
-                    <PulsePlusBadges gameId={selectedGame} />
+                  <div className="space-y-8 flex flex-wrap">
+                    <div className="w-full md:w-1/2 pr-4">
+                      <PulsePlusMyLeagueStats gameId={selectedGame} competitorId={competitorId!} />
+                    </div>
+                    <div className="w-full md:w-1/2 pl-4">
+                      <PulsePlusLeaderboard gameId={selectedGame} />
+                    </div>
+                    <div className="w-full">
+                      <PulsePlusBadges gameId={selectedGame} />
+                    </div>
                   </div>
                 )}
                 {activeTab === 'goals' && <PulsePlusGoals gameId={selectedGame} />}
@@ -181,7 +193,6 @@ const PulsePlusHome: React.FC = () => {
         <>
           <PulsePlusChat />
           <PulsePlusSurvey />
-          <PulsePlusTimer eventId={selectedGame} />
         </>
       )}
     </div>

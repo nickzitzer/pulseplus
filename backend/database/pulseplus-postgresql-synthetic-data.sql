@@ -6,12 +6,12 @@ INSERT INTO department (sys_id, name, description) VALUES
 (uuid_generate_v4(), 'Human Resources', 'Employee management and recruitment'),
 (uuid_generate_v4(), 'Finance', 'Financial planning and accounting');
 
--- Insert users with encrypted passwords
-INSERT INTO sys_user (sys_id, user_name, first_name, last_name, email, active, department_id, password_hash) VALUES
-(uuid_generate_v4(), 'john.doe', 'John', 'Doe', 'john.doe@example.com', true, (SELECT sys_id FROM department WHERE name = 'Sales'), crypt('john.doe', gen_salt('bf', 10))),
-(uuid_generate_v4(), 'jane.smith', 'Jane', 'Smith', 'jane.smith@example.com', true, (SELECT sys_id FROM department WHERE name = 'Engineering'), crypt('jane.smith', gen_salt('bf', 10))),
-(uuid_generate_v4(), 'bob.johnson', 'Bob', 'Johnson', 'bob.johnson@example.com', true, (SELECT sys_id FROM department WHERE name = 'Human Resources'), crypt('bob.johnson', gen_salt('bf', 10))),
-(uuid_generate_v4(), 'alice.williams', 'Alice', 'Williams', 'alice.williams@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('alice.williams', gen_salt('bf', 10)));
+-- Insert users with encrypted passwords and roles
+INSERT INTO sys_user (sys_id, user_name, first_name, last_name, email, active, department_id, password_hash, role) VALUES
+(uuid_generate_v4(), 'john.doe', 'John', 'Doe', 'john.doe@example.com', true, (SELECT sys_id FROM department WHERE name = 'Sales'), crypt('john.doe', gen_salt('bf', 10)), 'USER'),
+(uuid_generate_v4(), 'jane.smith', 'Jane', 'Smith', 'jane.smith@example.com', true, (SELECT sys_id FROM department WHERE name = 'Engineering'), crypt('jane.smith', gen_salt('bf', 10)), 'MANAGER'),
+(uuid_generate_v4(), 'bob.johnson', 'Bob', 'Johnson', 'bob.johnson@example.com', true, (SELECT sys_id FROM department WHERE name = 'Human Resources'), crypt('bob.johnson', gen_salt('bf', 10)), 'USER'),
+(uuid_generate_v4(), 'alice.williams', 'Alice', 'Williams', 'alice.williams@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('alice.williams', gen_salt('bf', 10)), 'ADMIN');
 -- Insert point systems
 INSERT INTO point_system (sys_id, label, dollar_conversion) VALUES
 (uuid_generate_v4(), 'Standard Points', 0.01),

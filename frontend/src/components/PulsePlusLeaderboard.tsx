@@ -31,7 +31,7 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
-        const response = await fetchWithAuth(`/api/leaderboard-members?game=${gameId}&timeFrame=${timeFrame}&department=${department}`);
+        const response = await fetchWithAuth(`/leaderboard-members?game=${gameId}&timeFrame=${timeFrame}&department=${department}`);
         if (!response.ok) {
           throw new Error('Failed to fetch leaderboard data');
         }

@@ -31,11 +31,11 @@ const PulsePlusMyLeagueStats: React.FC<PulsePlusMyLeagueStatsProps> = ({ gameId,
   useEffect(() => {
     const fetchLeagueStats = async () => {
       try {
-        const response = await fetchWithAuth(`/api/league-stats?game=${gameId}&competitor=${competitorId}`);
-        if (!response.ok) {
+        const response = await fetchWithAuth(`/league-stats?game=${gameId}&competitor=${competitorId}`);
+        if (response.status !== 200) {
           throw new Error('Failed to fetch league stats');
         }
-        const data = await response.json();
+        const data = response.data;
         setLeagueStats(data);
       } catch (error) {
         console.error('Error fetching league stats:', error);

@@ -1,38 +1,42 @@
 import type { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
 import { AuthProvider, useAuth } from '../context/auth';
-import { useAuthCheck } from '../hooks/useAuthCheck';
-import Layout from '@/components/Layout'; // Updated import statement
+import Layout from '@/components/Layout';
 import '@/styles/globals.css';
-
-const publicRoutes = ['/login', '/terms-of-service'];
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <AuthProvider>
-      <AuthWrapper>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </AuthWrapper>
-    </AuthProvider>
-  );
-}
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
 
-  if (loading) {
-    return <div>Loading...</div>; // Or a loading spinner
-  }
+  useEffect(() => {
+    if (!loading) {
+      if (!user && router.pathname !== '/login') {
+        router.push('/login');
+      } else {
+        setIsReady(true);
+      }
+    }
+  }, [user, loading, router]);
 
-  if (!user && !publicRoutes.includes(router.pathname)) {
-    router.push('/login');
-    return null;
+  if (loading || !isReady) {
+    return <div>Loading...</div>;
   }
 
   return <>{children}</>;
+}
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <AuthProvider>
+      <Layout>
+        <AuthWrapper>
+          <Component {...pageProps} />
+        </AuthWrapper>
+      </Layout>
+    </AuthProvider>
+  );
 }
 
 export default MyApp;

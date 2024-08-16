@@ -1,32 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, User, Camera, Edit } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
-
-interface UserProfile {
-  sys_id: string;
-  name: string;
-  avatar: string;
-  department: string;
-  account_balance: number;
-  total_earnings: number;
-  total_badges: number;
-  total_achievements: number;
-  about_me: string;
-}
+import Image from 'next/image';
+import Cookies from 'js-cookie'; // Add this import
 
 const PulsePlusHomeAvatar: React.FC = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditingAboutMe, setIsEditingAboutMe] = useState(false);
   const [newAboutMe, setNewAboutMe] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { user, logout } = useAuth();
+  const { user, competitor, logout, updateCompetitor } = useAuth();
   const fetchWithAuth = useAuthenticatedFetch();
   const router = useRouter();
+
+  // Add this useEffect to initialize newAboutMe
+  useEffect(() => {
+    if (competitor?.about_me) {
+      setNewAboutMe(competitor.about_me);
+    }
+  }, [competitor?.about_me]);
 
   const handleLogout = async () => {
     try {
@@ -38,52 +34,24 @@ const PulsePlusHomeAvatar: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user && user.sys_id) {
-        try {
-          const cachedProfile = localStorage.getItem('cachedProfile');
-          if (cachedProfile) {
-            setProfile(JSON.parse(cachedProfile));
-            setNewAboutMe(JSON.parse(cachedProfile).about_me || '');
-          } else {
-            const response = await fetchWithAuth(`/api/competitors/current`);
-            if (!response.ok) {
-              throw new Error('Failed to fetch user profile');
-            }
-            const data = await response.json();
-            setProfile(data);
-            setNewAboutMe(data.about_me || '');
-            localStorage.setItem('cachedProfile', JSON.stringify(data));
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-          setError('Failed to fetch user profile. Please try again.');
-        }
-      }
-    };
-  
-    fetchUserProfile();
-  }, [user, fetchWithAuth]);
-
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && profile) {
+    if (file && competitor) {
       const formData = new FormData();
       formData.append('avatar', file);
 
       try {
-        const response = await fetchWithAuth(`/api/competitors/${profile.sys_id}/avatar`, {
+        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}/avatar`, {
           method: 'POST',
-          body: formData,
+          data: formData,
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to upload avatar');
-        }
-
-        const updatedProfile = await response.json();
-        setProfile(updatedProfile);
+        // Update the competitor context with the new avatar URL
+        const updatedCompetitor = { ...competitor, avatar: response.data.avatar };
+        updateCompetitor(updatedCompetitor);
+        
+        // Update the competitor_data cookie
+        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
       } catch (error) {
         console.error('Error uploading avatar:', error);
         setError('Failed to upload avatar. Please try again.');
@@ -92,22 +60,19 @@ const PulsePlusHomeAvatar: React.FC = () => {
   };
 
   const handleUpdateAboutMe = async () => {
-    if (profile) {
+    if (competitor) {
       try {
-        const response = await fetchWithAuth(`/api/competitors/${profile.sys_id}`, {
+        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}`, {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ about_me: newAboutMe }),
+          data: { about_me: newAboutMe },
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to update about me');
-        }
-
-        const updatedProfile = await response.json();
-        setProfile(updatedProfile);
+        // Update the competitor context with the new about_me
+        const updatedCompetitor = { ...competitor, about_me: newAboutMe } as typeof competitor;
+        updateCompetitor(updatedCompetitor);
+        
+        // Update the competitor_data cookie
+        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
+        
         setIsEditingAboutMe(false);
       } catch (error) {
         console.error('Error updating about me:', error);
@@ -116,11 +81,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
     }
   };
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
-
-  if (!profile) {
+  if (!user || !competitor) {
     return <div>Loading profile...</div>;
   }
 
@@ -130,18 +91,20 @@ const PulsePlusHomeAvatar: React.FC = () => {
         className="flex items-center space-x-2"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
-        {profile.avatar ? (
-          <img
-            src={profile.avatar}
-            alt={profile.name}
-            className="w-10 h-10 rounded-full object-cover"
+        {competitor.avatar ? (
+          <Image
+            src={competitor.avatar}
+            alt={`${user.first_name} ${user.last_name}`}
+            width={40}
+            height={40}
+            className="rounded-full object-cover"
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
             <User size={20} className="text-gray-500" />
           </div>
         )}
-        <span className="font-medium">{profile.name}</span>
+        <span className="font-medium">{`${user.first_name} ${user.last_name}`}</span>
         <ChevronDown size={16} />
       </button>
 
@@ -169,19 +132,11 @@ const PulsePlusHomeAvatar: React.FC = () => {
             <div className="space-y-2 text-gray-800">
               <div className="flex justify-between">
                 <span>Account Balance:</span>
-                <span className="font-bold">${profile.account_balance}</span>
+                <span className="font-bold">${competitor.account_balance}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total Earnings:</span>
-                <span className="font-bold">${profile.total_earnings}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Badges:</span>
-                <span className="font-bold">{profile.total_badges}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Achievements:</span>
-                <span className="font-bold">{profile.total_achievements}</span>
+                <span className="font-bold">${competitor.total_earnings}</span>
               </div>
             </div>
           </div>
@@ -198,7 +153,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
                 <textarea
                   value={newAboutMe}
                   onChange={(e) => setNewAboutMe(e.target.value)}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded text-gray-800 bg-white"
                 />
                 <button
                   onClick={handleUpdateAboutMe}
@@ -209,7 +164,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
               </div>
             ) : (
               <p className="text-gray-600">
-                {profile.about_me || 'No information provided yet.'}
+                {competitor.about_me || 'No information provided yet.'}
               </p>
             )}
           </div>
@@ -223,6 +178,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
           </div>
         </div>
       )}
+      {error && <div className="text-red-500 mt-2">{error}</div>}
     </div>
   );
 };

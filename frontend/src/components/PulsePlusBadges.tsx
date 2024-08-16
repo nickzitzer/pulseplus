@@ -42,11 +42,8 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
   useEffect(() => {
     const fetchBadges = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/api/badges?game=${gameId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch badges');
-        }
-        const data = await response.json();
+        const response = await fetchWithAuth(`/badges?game=${gameId}`);
+        const data = response.data;
         setBadges(data);
       } catch (error) {
         console.error('Error fetching badges:', error);

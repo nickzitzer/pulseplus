@@ -82,12 +82,12 @@ const AdminDashboard: React.FC = () => {
       setError(null);
       try {
         const response = await fetchWithAuth(
-          `/api/${sectionMappings[activeSection].tableName}`
+          `/${sectionMappings[activeSection].tableName}`
         );
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const result = await response.json();
+        const result = response.data;
         setData(result);
       } catch (err: unknown) {
         console.error(`Error fetching ${activeSection}:`, err);
@@ -176,12 +176,12 @@ const AdminDashboard: React.FC = () => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
         const response = await fetchWithAuth(
-          `/api/${sectionMappings[activeSection].tableName}/${sys_id}`,
+          `/${sectionMappings[activeSection].tableName}/${sys_id}`,
           {
             method: "DELETE",
           }
         );
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         // Remove the deleted item from the data
@@ -238,7 +238,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleModalSubmit = async (formData: any) => {
     try {
-      const url = `/api/${sectionMappings[activeSection].tableName}${
+      const url = `/${sectionMappings[activeSection].tableName}${
         modalMode === "edit" ? `/${formData.sys_id}` : ""
       }`;
       const method = modalMode === "create" ? "POST" : "PUT";
@@ -247,14 +247,14 @@ const AdminDashboard: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        data: formData,
       });
 
-      if (!response.ok) {
+      if (response.status < 200 || response.status >= 300) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = response.data;
 
       if (modalMode === "create") {
         setData([...data, result]);

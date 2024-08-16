@@ -21,11 +21,11 @@ const PulsePlusSurvey: React.FC = () => {
   useEffect(() => {
     const fetchSurveyQuestions = async () => {
       try {
-        const response = await fetchWithAuth(`/api/survey-questions`);
-        if (!response.ok) {
+        const response = await fetchWithAuth(`/survey-questions`);
+        if (response.status !== 200) {
           throw new Error('Failed to fetch survey questions');
         }
-        const data = await response.json();
+        const data = response.data;
         setQuestions(data);
       } catch (error) {
         console.error('Error fetching survey questions:', error);
@@ -60,15 +60,15 @@ const PulsePlusSurvey: React.FC = () => {
 
   const submitSurvey = async () => {
     try {
-      const response = await fetchWithAuth(`/api/survey-responses`, {
+      const response = await fetchWithAuth(`/survey-responses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(answers),
+        data: answers,
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Failed to submit survey');
       }
 

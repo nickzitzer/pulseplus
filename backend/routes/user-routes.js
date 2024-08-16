@@ -6,15 +6,15 @@ const bcrypt = require('bcrypt');
 // Create a new user
 router.post('/', async (req, res) => {
   try {
-    const { user_name, first_name, last_name, email, active, locked_out, password, password_needs_reset, last_login, source, department_id } = req.body;
+    const { user_name, first_name, last_name, email, active, locked_out, password, password_needs_reset, last_login, source, department_id, role } = req.body;
     
     // Hash the password
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
 
     const { rows } = await pool.query(
-      'INSERT INTO sys_user (user_name, first_name, last_name, email, active, locked_out, password_hash, password_needs_reset, last_login, source, department_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
-      [user_name, first_name, last_name, email, active, locked_out, password_hash, password_needs_reset, last_login, source, department_id]
+      'INSERT INTO sys_user (user_name, first_name, last_name, email, active, locked_out, password_hash, password_needs_reset, last_login, source, department_id, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+      [user_name, first_name, last_name, email, active, locked_out, password_hash, password_needs_reset, last_login, source, department_id, role]
     );
     
     // Don't send the password_hash back to the client
@@ -66,16 +66,16 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { user_name, first_name, last_name, email, active, locked_out, password, password_needs_reset, last_login, source, department_id } = req.body;
+    const { user_name, first_name, last_name, email, active, locked_out, password, password_needs_reset, last_login, source, department_id, role } = req.body;
 
-    let query = 'UPDATE sys_user SET user_name = $1, first_name = $2, last_name = $3, email = $4, active = $5, locked_out = $6, password_needs_reset = $7, last_login = $8, source = $9, department_id = $10';
-    let values = [user_name, first_name, last_name, email, active, locked_out, password_needs_reset, last_login, source, department_id];
+    let query = 'UPDATE sys_user SET user_name = $1, first_name = $2, last_name = $3, email = $4, active = $5, locked_out = $6, password_needs_reset = $7, last_login = $8, source = $9, department_id = $10, role = $11';
+    let values = [user_name, first_name, last_name, email, active, locked_out, password_needs_reset, last_login, source, department_id, role];
 
     // If a new password is provided, hash it and add it to the update query
     if (password) {
       const saltRounds = 10;
       const password_hash = await bcrypt.hash(password, saltRounds);
-      query += ', password_hash = $11';
+      query += ', password_hash = $12';
       values.push(password_hash);
     }
 
