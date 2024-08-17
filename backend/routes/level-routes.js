@@ -1,14 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const { pool, parseFilterQuery } = require('../db');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const { writeFile } = require('../utils/fileUtils');
 
 // Create a new level
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { name, description, game, competition, type, image, order_num, color, entry_points } = req.body;
+    const { name, description, game, competition, type, order_num, color, entry_points } = req.body;
+    let image_url = null;
+
+    if (req.file) {
+      const fileName = `level_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'INSERT INTO level (name, description, game, competition, type, image, order_num, color, entry_points) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-      [name, description, game, competition, type, image, order_num, color, entry_points]
+      'INSERT INTO level (name, description, game, competition, type, image_url, order_num, color, entry_points) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+      [name, description, game, competition, type, image_url, order_num, color, entry_points]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -50,13 +61,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a level
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, game, competition, type, image, order_num, color, entry_points } = req.body;
+    const { name, description, game, competition, type, order_num, color, entry_points } = req.body;
+    let image_url = req.body.image_url;
+
+    if (req.file) {
+      const fileName = `level_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'UPDATE level SET name = $1, description = $2, game = $3, competition = $4, type = $5, image = $6, order_num = $7, color = $8, entry_points = $9 WHERE sys_id = $10 RETURNING *',
-      [name, description, game, competition, type, image, order_num, color, entry_points, id]
+      'UPDATE level SET name = $1, description = $2, game = $3, competition = $4, type = $5, image_url = $6, order_num = $7, color = $8, entry_points = $9 WHERE sys_id = $10 RETURNING *',
+      [name, description, game, competition, type, image_url, order_num, color, entry_points, id]
     );
     if (rows.length === 0) {
       res.status(404).json({ error: 'Level not found' });

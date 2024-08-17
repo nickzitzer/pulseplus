@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import useAuthenticatedFetch from '../utils/api';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 
 interface PulsePlusBadgesProps {
   gameId: string | undefined;
@@ -71,7 +72,7 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
         <div className="flex flex-wrap justify-center gap-6">
           {badges.map((badge: {
             name: string;
-            image: string;
+            image_url: string;
             sys_id: string;
             color: string;
             sys_created_on: string;
@@ -86,8 +87,8 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
               title={new Date(badge.sys_created_on).toLocaleDateString()}
             >
               <div className="badge-circle">
-                {badge.image ? (
-                  <img src={badge.image} alt={badge.name} />
+                {badge.image_url ? (
+                  <Image src={badge.image_url} alt={badge.name} />
                 ) : (
                   <Star size={24} color={`${lightenDarkenColor(badge.color, -60)}`} />
                 )}

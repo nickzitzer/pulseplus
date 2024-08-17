@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Users, Calendar } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
-
-
+import Image from 'next/image';
 
 interface PulsePlusCompetitionsProps {
   gameId: string | undefined;
@@ -12,7 +11,7 @@ interface Competition {
   sys_id: string;
   name: string;
   description: string;
-  image: string;
+  image_url: string;
   start_date: string;
   end_date: string;
   competition_type: string;
@@ -25,8 +24,6 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
   const [error, setError] = useState<string | null>(null);
 
   const fetchWithAuth = useAuthenticatedFetch();
-
-  
 
   useEffect(() => {
     const fetchCompetitions = async (gameId: string) => {
@@ -57,7 +54,7 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
         competitions.map(competition => (
           <div key={competition.sys_id} className="bg-white shadow rounded-lg overflow-hidden">
             <div className="relative h-40">
-              <img src={competition.image || '/next.svg'} alt={competition.name} className="w-full h-full object-cover" />
+              <Image src={competition.image_url || '/next.svg'} alt={competition.name} className="w-full h-full object-cover" />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                 <h3 className="text-white font-bold text-xl">{competition.name}</h3>
               </div>

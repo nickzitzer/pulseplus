@@ -4,7 +4,7 @@ import useAuthenticatedFetch from '../utils/api';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import Cookies from 'js-cookie'; // Add this import
+import Cookies from 'js-cookie';
 
 const PulsePlusHomeAvatar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -17,7 +17,6 @@ const PulsePlusHomeAvatar: React.FC = () => {
   const fetchWithAuth = useAuthenticatedFetch();
   const router = useRouter();
 
-  // Add this useEffect to initialize newAboutMe
   useEffect(() => {
     if (competitor?.about_me) {
       setNewAboutMe(competitor.about_me);
@@ -41,16 +40,15 @@ const PulsePlusHomeAvatar: React.FC = () => {
       formData.append('avatar', file);
 
       try {
-        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}/avatar`, {
-          method: 'POST',
+        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}`, {
+          method: 'PATCH',
           data: formData,
         });
 
-        // Update the competitor context with the new avatar URL
-        const updatedCompetitor = { ...competitor, avatar: response.data.avatar };
+        const avatarUrl = response.data.avatar || response.data.image_url;
+        const updatedCompetitor = { ...competitor, avatar: avatarUrl };
         updateCompetitor(updatedCompetitor);
         
-        // Update the competitor_data cookie
         Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
       } catch (error) {
         console.error('Error uploading avatar:', error);
@@ -66,11 +64,9 @@ const PulsePlusHomeAvatar: React.FC = () => {
           method: 'PATCH',
           data: { about_me: newAboutMe },
         });
-        // Update the competitor context with the new about_me
         const updatedCompetitor = { ...competitor, about_me: newAboutMe } as typeof competitor;
         updateCompetitor(updatedCompetitor);
         
-        // Update the competitor_data cookie
         Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
         
         setIsEditingAboutMe(false);
@@ -93,11 +89,16 @@ const PulsePlusHomeAvatar: React.FC = () => {
       >
         {competitor.avatar ? (
           <Image
-            src={competitor.avatar}
+            src={competitor.avatar || '/default-avatar.png'}
             alt={`${user.first_name} ${user.last_name}`}
             width={40}
             height={40}
             className="rounded-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.onerror = null;
+              target.src = '/default-avatar.png';
+            }}
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">

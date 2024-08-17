@@ -1,14 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const { pool, parseFilterQuery } = require('../db');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const { writeFile } = require('../utils/fileUtils');
 
 // Create a new Point System
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { label, image, dollar_conversion } = req.body;
+    const { label, dollar_conversion } = req.body;
+    let image_url = null;
+
+    if (req.file) {
+      const fileName = `point_system_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'INSERT INTO point_system (label, image, dollar_conversion) VALUES ($1, $2, $3) RETURNING *',
-      [label, image, dollar_conversion]
+      'INSERT INTO point_system (label, image_url, dollar_conversion) VALUES ($1, $2, $3) RETURNING *',
+      [label, image_url, dollar_conversion]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -50,13 +61,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a Point System
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { label, image, dollar_conversion } = req.body;
+    const { label, dollar_conversion } = req.body;
+    let image_url = req.body.image_url;
+
+    if (req.file) {
+      const fileName = `point_system_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'UPDATE point_system SET label = $1, image = $2, dollar_conversion = $3 WHERE sys_id = $4 RETURNING *',
-      [label, image, dollar_conversion, id]
+      'UPDATE point_system SET label = $1, image_url = $2, dollar_conversion = $3 WHERE sys_id = $4 RETURNING *',
+      [label, image_url, dollar_conversion, id]
     );
     if (rows.length === 0) {
       res.status(404).json({ error: 'Point System not found' });

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, GamepadIcon } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
-
+import Image from 'next/image';
 
 interface Game {
   sys_id: string;
   name: string;
   description: string;
-  image: string;
+  image_url: string;
   competition_count: number;
 }
 
@@ -53,8 +53,8 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
   }, []);
 
   const renderGameIcon = useCallback((game: Game) => {
-    if (game.image) {
-      return <img src={game.image} alt={game.name} width={32} height={32} className="w-8 h-8 mr-3 rounded-full" />;
+    if (game.image_url) {
+      return <Image src={game.image_url} alt={game.name} width={32} height={32} className="w-8 h-8 mr-3 rounded-full" />;
     }
     return <GamepadIcon className="w-8 h-8 mr-3 text-gray-400" />;
   }, []);
@@ -77,7 +77,7 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
         </div>
       </button>
     ));
-  }, [games, handleGameSelect]);
+  }, [games, handleGameSelect, renderGameIcon]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;

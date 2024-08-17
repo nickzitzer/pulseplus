@@ -1,14 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const { pool, parseFilterQuery } = require('../db');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const { writeFile } = require('../utils/fileUtils');
 
 // Create a new Team
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { name, members, image } = req.body;
+    const { name, members } = req.body;
+    let image_url = null;
+
+    if (req.file) {
+      const fileName = `team_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'INSERT INTO team (name, members, image) VALUES ($1, $2, $3) RETURNING *',
-      [name, members, image]
+      'INSERT INTO team (name, members, image_url) VALUES ($1, $2, $3) RETURNING *',
+      [name, members, image_url]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -50,13 +61,21 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a Team
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, members, image } = req.body;
+    const { name, members } = req.body;
+    let image_url = req.body.image_url;
+
+    if (req.file) {
+      const fileName = `team_${Date.now()}_${req.file.originalname}`;
+      const filePath = await writeFile(fileName, req.file.buffer);
+      image_url = `/uploads/${fileName}`;
+    }
+
     const { rows } = await pool.query(
-      'UPDATE team SET name = $1, members = $2, image = $3 WHERE sys_id = $4 RETURNING *',
-      [name, members, image, id]
+      'UPDATE team SET name = $1, members = $2, image_url = $3 WHERE sys_id = $4 RETURNING *',
+      [name, members, image_url, id]
     );
     if (rows.length === 0) {
       res.status(404).json({ error: 'Team not found' });
