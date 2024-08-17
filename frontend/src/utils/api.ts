@@ -23,7 +23,7 @@ const useAuthenticatedApi = () => {
     (response) => {
       const newToken = response.headers['x-new-token'];
       if (newToken) {
-        Cookies.set('auth_token', newToken, { expires: 7 });
+        Cookies.set('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       }
       return response;
     },
@@ -31,7 +31,7 @@ const useAuthenticatedApi = () => {
       if (error.response?.status === 401) {
         try {
           const newToken = await refreshToken();
-          Cookies.set('auth_token', newToken, { expires: 7 });
+          Cookies.set('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
           error.config.headers['Authorization'] = `Bearer ${newToken}`;
           return axios(error.config);
         } catch (refreshError) {

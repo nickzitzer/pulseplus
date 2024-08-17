@@ -5,6 +5,7 @@ import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Cookies from 'js-cookie';
+import imageLoader from '@/utils/imageLoader';
 
 const PulsePlusHomeAvatar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -34,22 +35,35 @@ const PulsePlusHomeAvatar: React.FC = () => {
   };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Avatar upload triggered');
     const file = event.target.files?.[0];
     if (file && competitor) {
+      console.log('File selected:', file.name);
       const formData = new FormData();
       formData.append('avatar', file);
 
       try {
+        console.log('Sending request to upload avatar');
         const response = await fetchWithAuth(`/competitors/${competitor.sys_id}`, {
           method: 'PATCH',
           data: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         });
 
-        const avatarUrl = response.data.avatar || response.data.image_url;
-        const updatedCompetitor = { ...competitor, avatar: avatarUrl };
+        console.log('Upload response:', response);
+
+        const avatarUrl = response.data.avatar_url;
+        console.log('New avatar URL:', avatarUrl);
+        const updatedCompetitor = { ...competitor, avatar_url: avatarUrl };
         updateCompetitor(updatedCompetitor);
         
-        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
+        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+
+        // Force a re-render
+        setIsDropdownOpen(false);
+        setIsDropdownOpen(true);
       } catch (error) {
         console.error('Error uploading avatar:', error);
         setError('Failed to upload avatar. Please try again.');
@@ -67,7 +81,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
         const updatedCompetitor = { ...competitor, about_me: newAboutMe } as typeof competitor;
         updateCompetitor(updatedCompetitor);
         
-        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 7 });
+        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: new Date(new Date().getTime() + 30 * 60 * 1000)  });
         
         setIsEditingAboutMe(false);
       } catch (error) {
@@ -87,18 +101,20 @@ const PulsePlusHomeAvatar: React.FC = () => {
         className="flex items-center space-x-2"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
-        {competitor.avatar ? (
+        {competitor.avatar_url ? (
           <Image
-            src={competitor.avatar || '/default-avatar.png'}
+            src={competitor.avatar_url}
             alt={`${user.first_name} ${user.last_name}`}
             width={40}
             height={40}
             className="rounded-full object-cover"
+            loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
               target.src = '/default-avatar.png';
             }}
+            key={competitor.avatar_url} // Added this line
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
@@ -127,6 +143,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
                 className="hidden"
                 onChange={handleAvatarUpload}
                 accept="image/*"
+                style={{ display: 'none' }}
               />
             </div>
             <h4 className="font-semibold mb-2 text-gray-800">My Experience</h4>

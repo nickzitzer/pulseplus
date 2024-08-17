@@ -39,6 +39,10 @@ const userRoutes = require('./routes/user-routes');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Serve static files from the 'uploads' directory
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Middleware
 app.use(helmet());
 app.use(cors());
@@ -73,10 +77,6 @@ const authenticateJwt = (req, res, next) => {
   })(req, res, next);
 };
 app.use(authenticateJwt);
-
-// Serve static files from the 'uploads' directory
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Configure multer for file uploads
 const multer = require('multer');

@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Target } from "lucide-react";
 import PulsePlusProgressBar from "./PulsePlusProgressBar";
 import useAuthenticatedFetch from "../utils/api";
 import Image from 'next/image';
+import imageLoader from "@/utils/imageLoader";
 
 interface PulsePlusGoalsProps {
   gameId: string | undefined;
@@ -14,7 +15,7 @@ interface Goal {
   description: string;
   target: number;
   value: number;
-  image: string;
+  image_url: string;
   color: string;
   recurring: string;
 }
@@ -89,12 +90,13 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
                 .map((goal) => (
                   <div key={goal.sys_id} className="bg-gray-100 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
-                      {goal.image ? (
+                      {goal.image_url ? (
                         <Image
-                          src={goal.image}
+                          src={goal.image_url}
                           alt={goal.name}
                           width={32}
                           height={32}
+                          loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
                           className="mr-2 rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;

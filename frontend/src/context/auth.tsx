@@ -35,13 +35,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const response = await axios.post(`${apiUrl}/auth/login`, { user_name, password });
       const { token, user: userData, competitor: competitorData } = response.data;
-      Cookies.set('auth_token', token, { expires: 7 });
+      Cookies.set('auth_token', token, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       
       // Store full user and competitor data in state and cookies
       setUser(userData);
       setCompetitor(competitorData);
-      Cookies.set('user_data', JSON.stringify(userData), { expires: 7 });
-      Cookies.set('competitor_data', JSON.stringify(competitorData), { expires: 7 });
+      Cookies.set('user_data', JSON.stringify(userData), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+      Cookies.set('competitor_data', JSON.stringify(competitorData), { expires:new Date(new Date().getTime() + 30 * 60 * 1000) });
       
       router.push('/');
     } catch (error) {
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(prevUser => {
       if (!prevUser) return null;
       const newUser = { ...prevUser, ...updatedData };
-      Cookies.set('user_data', JSON.stringify(newUser), { expires: 7 });
+      Cookies.set('user_data', JSON.stringify(newUser), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       return newUser;
     });
   };
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCompetitor(prevCompetitor => {
       if (!prevCompetitor) return null;
       const newCompetitor = { ...prevCompetitor, ...updatedData };
-      Cookies.set('competitor_data', JSON.stringify(newCompetitor), { expires: 7 });
+      Cookies.set('competitor_data', JSON.stringify(newCompetitor), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       return newCompetitor;
     });
   };
@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { Authorization: `Bearer ${Cookies.get('auth_token')}` }
       });
       const { token } = response.data;
-      Cookies.set('auth_token', token, { expires: 7 });
+      Cookies.set('auth_token', token, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       return token;
     } catch (error) {
       console.error('Token refresh failed', error);

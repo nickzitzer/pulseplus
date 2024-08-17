@@ -13,7 +13,7 @@ interface QuestLevel {
   sys_id: string;
   name: string;
   entry_points: number;
-  image: string;
+  image_url: string;
   color: string;
 }
 
@@ -68,7 +68,7 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
           <div className="p-4" style={{background: `linear-gradient(to right, ${level.color}, white)`}}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <img src={level.image || '/next.svg'} alt={level.name} className="w-12 h-12 rounded-full mr-4" />
+                <img src={level.image_url || '/next.svg'} alt={level.name} className="w-12 h-12 rounded-full mr-4" />
                 <h3 className="font-bold text-xl">{level.name}</h3>
               </div>
               {quest.current_points < level.entry_points && (

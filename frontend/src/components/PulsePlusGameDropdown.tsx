@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, GamepadIcon } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
 import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 interface Game {
   sys_id: string;
@@ -54,7 +55,7 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
 
   const renderGameIcon = useCallback((game: Game) => {
     if (game.image_url) {
-      return <Image src={game.image_url} alt={game.name} width={32} height={32} className="w-8 h-8 mr-3 rounded-full" />;
+      return <Image src={game.image_url} alt={game.name} width={32} height={32} loader={({ src, width, quality }) => imageLoader({ src, width, quality })} className="w-8 h-8 mr-3 rounded-full" />;
     }
     return <GamepadIcon className="w-8 h-8 mr-3 text-gray-400" />;
   }, []);

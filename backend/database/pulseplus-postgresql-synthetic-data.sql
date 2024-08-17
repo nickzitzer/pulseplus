@@ -14,25 +14,25 @@ INSERT INTO sys_user (sys_id, user_name, first_name, last_name, email, active, d
 (uuid_generate_v4(), 'alice.williams', 'Alice', 'Williams', 'alice.williams@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('alice.williams', gen_salt('bf', 10)), 'ADMIN');
 -- Insert point systems
 INSERT INTO point_system (sys_id, label, dollar_conversion, image_url) VALUES
-(uuid_generate_v4(), 'Standard Points', 0.01, 'https://example.com/images/point-systems/standard-points.png'),
-(uuid_generate_v4(), 'Premium Points', 0.02, 'https://example.com/images/point-systems/premium-points.png');
+(uuid_generate_v4(), 'Standard Points', 0.01, '/uploads/point-system.png'),
+(uuid_generate_v4(), 'Premium Points', 0.02, '/uploads/point-system.png');
 
 -- Insert games
 INSERT INTO game (sys_id, number, name, description, gamemaster, point_system, active, image_url, background_url) VALUES
-(uuid_generate_v4(), 'GAME001', 'Sales Challenge 2024', 'Boost your sales performance and climb the leaderboard!', (SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), (SELECT sys_id FROM point_system WHERE label = 'Standard Points'), true, 'https://example.com/images/games/sales-challenge-2024.jpg', 'https://example.com/images/backgrounds/sales-challenge-2024-bg.jpg'),
-(uuid_generate_v4(), 'GAME002', 'Code Masters', 'Showcase your coding skills and solve challenging problems!', (SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), (SELECT sys_id FROM point_system WHERE label = 'Premium Points'), true, 'https://example.com/images/games/code-masters.jpg', 'https://example.com/images/backgrounds/code-masters-bg.jpg');
+(uuid_generate_v4(), 'GAME001', 'Sales Challenge 2024', 'Boost your sales performance and climb the leaderboard!', (SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), (SELECT sys_id FROM point_system WHERE label = 'Standard Points'), true, '/uploads/game.png', '/uploads/game-background.png'),
+(uuid_generate_v4(), 'GAME002', 'Code Masters', 'Showcase your coding skills and solve challenging problems!', (SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), (SELECT sys_id FROM point_system WHERE label = 'Premium Points'), true, '/uploads/game.png', '/uploads/game-background.png');
 
 -- Insert competitors
 INSERT INTO competitor (sys_id, user_id, total_earnings, account_balance, performance_group, about_me, avatar_url) VALUES
-(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), 5000, 1000, 'High Performers', 'Enthusiastic sales professional with a passion for exceeding targets.', 'https://example.com/images/avatars/john-doe.jpg'),
-(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), 4500, 900, 'High Performers', 'Innovative software engineer always looking for the next big challenge.', 'https://example.com/images/avatars/jane-smith.jpg'),
-(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'bob.johnson'), 3000, 600, 'Mid Performers', 'Dedicated HR specialist focused on creating a positive work environment.', 'https://example.com/images/avatars/bob-johnson.jpg'),
-(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'alice.williams'), 3500, 700, 'Mid Performers', 'Detail-oriented finance expert with a knack for spotting trends.', 'https://example.com/images/avatars/alice-williams.jpg');
+(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), 5000, 1000, 'High Performers', 'Enthusiastic sales professional with a passion for exceeding targets.', '/uploads/avatar.png'),
+(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), 4500, 900, 'High Performers', 'Innovative software engineer always looking for the next big challenge.', '/uploads/avatar.png'),
+(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'bob.johnson'), 3000, 600, 'Mid Performers', 'Dedicated HR specialist focused on creating a positive work environment.', '/uploads/avatar.png'),
+(uuid_generate_v4(), (SELECT sys_id FROM sys_user WHERE user_name = 'alice.williams'), 3500, 700, 'Mid Performers', 'Detail-oriented finance expert with a knack for spotting trends.', '/uploads/avatar.png');
 
 -- Insert competitions
 INSERT INTO competition (sys_id, number, name, description, game, start_date, end_date, competition_type, player_type, deadline, image_url) VALUES
-(uuid_generate_v4(), 'COMP001', 'Q2 Sales Sprint', 'Race to close the most deals in Q2', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), '2024-04-01', '2024-06-30', 'Individual', 'Solo', '2024-06-30 23:59:59', 'https://example.com/images/competitions/q2-sales-sprint.jpg'),
-(uuid_generate_v4(), 'COMP002', 'Hackathon 2024', 'Build an innovative app in 48 hours', (SELECT sys_id FROM game WHERE name = 'Code Masters'), '2024-07-15', '2024-07-17', 'Team', 'Group', '2024-07-17 23:59:59', 'https://example.com/images/competitions/hackathon-2024.jpg');
+(uuid_generate_v4(), 'COMP001', 'Q2 Sales Sprint', 'Race to close the most deals in Q2', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), '2024-04-01', '2024-06-30', 'Individual', 'Solo', '2024-06-30 23:59:59', '/uploads/competition.png'),
+(uuid_generate_v4(), 'COMP002', 'Hackathon 2024', 'Build an innovative app in 48 hours', (SELECT sys_id FROM game WHERE name = 'Code Masters'), '2024-07-15', '2024-07-17', 'Team', 'Group', '2024-07-17 23:59:59', '/uploads/competition.png');
 
 -- Insert chat groups
 INSERT INTO chat_group (sys_id, name, created_by) VALUES
@@ -65,8 +65,8 @@ INSERT INTO survey_question (sys_id, survey_id, question_text, question_type, op
 
 -- Insert badges
 INSERT INTO badge (sys_id, name, description, color, game, image_url) VALUES
-(uuid_generate_v4(), 'Sales Superstar', 'Awarded for exceptional sales performance', '#FFD700', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'https://example.com/images/badges/sales-superstar.png'),
-(uuid_generate_v4(), 'Code Ninja', 'Awarded for solving complex coding challenges', '#4B0082', (SELECT sys_id FROM game WHERE name = 'Code Masters'), 'https://example.com/images/badges/code-ninja.png');
+(uuid_generate_v4(), 'Sales Superstar', 'Awarded for exceptional sales performance', '#FFD700', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), '/uploads/badge.png'),
+(uuid_generate_v4(), 'Code Ninja', 'Awarded for solving complex coding challenges', '#4B0082', (SELECT sys_id FROM game WHERE name = 'Code Masters'), '/uploads/badge.png');
 
 -- Insert achievements
 INSERT INTO achievement (sys_id, number, name, description, game, point_value) VALUES
@@ -100,9 +100,9 @@ INSERT INTO goal (sys_id, name, description, game, achievement, recurring, targe
 
 -- Insert levels
 INSERT INTO level (sys_id, number, name, description, game, type, order_num, color, entry_points, image_url) VALUES
-(uuid_generate_v4(), 'LVL001', 'Bronze League', 'Entry level for all competitors', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 1, '#CD7F32', 0, 'https://example.com/images/levels/bronze-league.png'),
-(uuid_generate_v4(), 'LVL002', 'Silver League', 'Intermediate level for consistent performers', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 2, '#C0C0C0', 1000, 'https://example.com/images/levels/silver-league.png'),
-(uuid_generate_v4(), 'LVL003', 'Gold League', 'Advanced level for top performers', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 3, '#FFD700', 5000, 'https://example.com/images/levels/gold-league.png');
+(uuid_generate_v4(), 'LVL001', 'Bronze League', 'Entry level for all competitors', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 1, '#CD7F32', 0, '/uploads/level.png'),
+(uuid_generate_v4(), 'LVL002', 'Silver League', 'Intermediate level for consistent performers', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 2, '#C0C0C0', 1000, '/uploads/level.png'),
+(uuid_generate_v4(), 'LVL003', 'Gold League', 'Advanced level for top performers', (SELECT sys_id FROM game WHERE name = 'Sales Challenge 2024'), 'league', 3, '#FFD700', 5000, '/uploads/level.png');
 
 -- Insert level instances
 INSERT INTO level_instance (sys_id, level, start_date, end_date, order_num) VALUES
@@ -137,8 +137,8 @@ INSERT INTO goal_instance (sys_id, number, goal, competitor, start_date, end_dat
 
 -- Insert some team data
 INSERT INTO team (sys_id, name, members, image_url) VALUES
-(uuid_generate_v4(), 'Alpha Sales Team', ARRAY[(SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), (SELECT sys_id FROM sys_user WHERE user_name = 'alice.williams')], 'https://example.com/images/teams/alpha-sales-team.jpg'),
-(uuid_generate_v4(), 'Beta Dev Team', ARRAY[(SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), (SELECT sys_id FROM sys_user WHERE user_name = 'bob.johnson')], 'https://example.com/images/teams/beta-dev-team.jpg');
+(uuid_generate_v4(), 'Alpha Sales Team', ARRAY[(SELECT sys_id FROM sys_user WHERE user_name = 'john.doe'), (SELECT sys_id FROM sys_user WHERE user_name = 'alice.williams')], '/uploads/team.png'),
+(uuid_generate_v4(), 'Beta Dev Team', ARRAY[(SELECT sys_id FROM sys_user WHERE user_name = 'jane.smith'), (SELECT sys_id FROM sys_user WHERE user_name = 'bob.johnson')], '/uploads/team.png');
 
 -- Insert some team competition data
 INSERT INTO team_competition (sys_id, team_id, competition_id) VALUES

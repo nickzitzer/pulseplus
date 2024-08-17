@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import useAuthenticatedFetch from '../utils/api';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
+import imageLoader from '../utils/imageLoader';
 
 interface PulsePlusBadgesProps {
   gameId: string | undefined;
@@ -88,7 +89,13 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
             >
               <div className="badge-circle">
                 {badge.image_url ? (
-                  <Image src={badge.image_url} alt={badge.name} />
+                  <Image 
+                    src={badge.image_url} 
+                    alt={badge.name} 
+                    width={24} 
+                    height={24} 
+                    loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                  />
                 ) : (
                   <Star size={24} color={`${lightenDarkenColor(badge.color, -60)}`} />
                 )}

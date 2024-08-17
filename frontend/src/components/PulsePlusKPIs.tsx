@@ -20,7 +20,7 @@ interface Competitor {
   sys_id: string;
   name: string;
   department: string;
-  image: string;
+  avatar_url: string;
   kpis: KPI[];
 }
 
@@ -139,7 +139,7 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
               <tr key={competitor.sys_id} className="border-b">
                 <td className="p-2">
                   <div className="flex items-center">
-                    <img src={competitor.image || '/next.svg'} alt={competitor.name} className="w-8 h-8 rounded-full mr-2" />
+                    <img src={competitor.avatar_url || '/next.svg'} alt={competitor.name} className="w-8 h-8 rounded-full mr-2" />
                     <div>
                       <div>{competitor.name}</div>
                       <div className="text-sm text-gray-500">{competitor.department}</div>

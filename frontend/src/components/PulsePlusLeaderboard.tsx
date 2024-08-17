@@ -9,7 +9,7 @@ interface Competitor {
   name: string;
   department: string;
   points: number;
-  image: string;
+  image_url: string;
   change: 'up' | 'down' | 'none';
 }
 
@@ -90,7 +90,7 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
                   {index + 1}
                 </div>
                 <div className="flex-shrink-0 mr-4">
-                  <img src={competitor.image} alt={competitor.name} className="w-12 h-12 rounded-full" />
+                  <img src={competitor.image_url} alt={competitor.name} className="w-12 h-12 rounded-full" />
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-bold">{competitor.name}</h3>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import useAuthenticatedFetch from "../utils/api";
+import useAuthenticatedApi from "../utils/api";
 import { convertToCSV } from "../utils/csvExport";
 import {
   Menu,
@@ -41,6 +41,7 @@ const sectionMappings: Record<
 const defaultSection = Object.keys(sectionMappings)[0];
 
 const AdminDashboard: React.FC = () => {
+  const api = useAuthenticatedApi();
   const [activeSection, setActiveSection] = useState<string>(defaultSection);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,8 +58,6 @@ const AdminDashboard: React.FC = () => {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [navFilter, setNavFilter] = useState("");
-
-  const fetchWithAuth = useAuthenticatedFetch();
 
   const sortedSections = useMemo(() => {
     return Object.entries(sectionMappings).sort(([, a], [, b]) =>
@@ -81,9 +80,7 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetchWithAuth(
-          `/${sectionMappings[activeSection].tableName}`
-        );
+        const response = await api(`/${sectionMappings[activeSection].tableName}`);
         if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -100,7 +97,7 @@ const AdminDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [activeSection, fetchWithAuth]);
+  }, [activeSection, api]);
 
   const TABLE_HEAD = useMemo(() => {
     const section = sectionMappings[activeSection];
@@ -175,7 +172,7 @@ const AdminDashboard: React.FC = () => {
   const handleDelete = async (sys_id: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        const response = await fetchWithAuth(
+        const response = await api(
           `/${sectionMappings[activeSection].tableName}/${sys_id}`,
           {
             method: "DELETE",
@@ -242,24 +239,37 @@ const AdminDashboard: React.FC = () => {
         modalMode === "edit" ? `/${formData.sys_id}` : ""
       }`;
       const method = modalMode === "create" ? "POST" : "PUT";
-      const response = await fetchWithAuth(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: formData,
+
+      // Create a new FormData object
+      const data = new FormData();
+
+      // Append all form fields to the FormData object
+      Object.keys(formData).forEach(key => {
+        const fieldType = DataModelFields[sectionMappings[activeSection].displayName as keyof typeof DataModelFields][key as keyof (typeof DataModelFields)[keyof typeof DataModelFields]];
+        if (isImageField(fieldType)) {
+          // If it's an image field, trim '_url' from the end and use that as the key
+          const imageFieldName = key.replace(/_url$/, '');
+          data.append(imageFieldName, formData[key], formData[key].name);
+        } else {
+          // For other fields, just append the value
+          data.append(key, formData[key]);
+        }
       });
 
-      if (response.status < 200 || response.status >= 300) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await api({
+        method,
+        url,
+        data,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       const result = response.data;
-
       if (modalMode === "create") {
-        setData([...data, result]);
+        setData((prevData) => [...prevData, result]);
       } else {
-        setData(data.map((item) => (item.sys_id === result.sys_id ? result : item)));
+        setData((prevData) => prevData.map((item) => (item.sys_id === result.sys_id ? result : item)));
       }
 
       setIsModalOpen(false);
@@ -284,6 +294,10 @@ const AdminDashboard: React.FC = () => {
       console.error("Error formatting date:", error);
       return dateString; // Return original string if parsing fails
     }
+  };
+
+  const isImageField = (fieldType: string): boolean => {
+    return fieldType === 'image';
   };
 
   return (
@@ -432,9 +446,17 @@ const AdminDashboard: React.FC = () => {
                               key={head.value}
                               className="p-1 border-b border-r border-gray-300"
                             >
-                              {head.type === "string" && head.value === "Date"
-                                ? formatDate(item[head.value])
-                                : item[head.value]}
+                              {isImageField(head.type) ? (
+                                <img 
+                                  src={item[head.value]} 
+                                  alt="File preview" 
+                                  className="w-[50px] h-[50px] object-contain"
+                                />
+                              ) : head.type === "Date" ? (
+                                formatDate(item[head.value])
+                              ) : (
+                                item[head.value]
+                              )}
                             </td>
                           ))}
                           <td className="p-0 sticky right-0 z-5 relative">

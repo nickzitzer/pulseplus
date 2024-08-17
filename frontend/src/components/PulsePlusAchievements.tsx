@@ -6,7 +6,7 @@ interface Achievement {
   sys_id: string;
   name: string;
   description: string;
-  image: string;
+  image_url: string;
   unlocked: boolean;
   unlock_date?: string;
   progress?: number;
@@ -51,7 +51,7 @@ const PulsePlusAchievements: React.FC<PulsePlusAchievementsProps> = ({ gameId, c
       {achievements.map((achievement) => (
         <div key={achievement.sys_id} className="bg-white rounded-lg shadow-md p-4">
           <div className="flex items-center mb-2">
-            <img src={achievement.image} alt={achievement.name} className="w-12 h-12 mr-4" />
+            <img src={achievement.image_url} alt={achievement.name} className="w-12 h-12 mr-4" />
             <div>
               <h3 className="font-bold text-lg">{achievement.name}</h3>
               <p className="text-sm text-gray-600">{achievement.description}</p>

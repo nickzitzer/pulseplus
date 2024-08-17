@@ -6,11 +6,12 @@ import PulsePlusLeagueStandings from './PulsePlusLeagueStandings';
 import PulsePlusBadges from './PulsePlusBadges';
 import PulsePlusKPIs from './PulsePlusKPIs';
 import useAuthenticatedFetch from '../utils/api';
+import imageLoader from '@/utils/imageLoader';
 
 interface CompetitorData {
   sys_id: string;
   name: string;
-  avatar: string;
+  avatar_url: string;
   department: string;
   league: {
     name: string;
@@ -57,7 +58,7 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
         const formattedData: CompetitorData = {
           sys_id: data.sys_id,
           name: `${data.user.first_name} ${data.user.last_name}`,
-          avatar: data.avatar || '/next.svg',
+          avatar_url: data.avatar || '/next.svg',
           department: data.user.department.name,
           league: {
             name: leagueData.level.name,
@@ -112,10 +113,11 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
             <X className="w-6 h-6" />
           </button>
           <Image
-            src={competitorData.avatar}
+            src={competitorData.avatar_url}
             alt={competitorData.name}
             width={128}
             height={128}
+            loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
             className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-32 h-32 rounded-full border-4 border-white"
           />
         </div>

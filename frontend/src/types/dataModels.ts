@@ -17,7 +17,7 @@ export const DataModelFields = {
     sys_updated_by: 'string',
     department_id: 'string',
     role: 'string',
-    token: 'token'
+    password_hash: 'string'
   },
   Game: {
     sys_id: 'string',
@@ -25,11 +25,11 @@ export const DataModelFields = {
     name: 'string',
     description: 'string',
     gamemaster: 'string',
-    image: 'Uint8Array',
+    image_url: 'image',
     point_system: 'string',
     primary_color: 'string',
     secondary_color: 'string',
-    background: 'Uint8Array',
+    background_url: 'image',
     competitor_group: 'string',
     active: 'boolean',
     advance_percentage: 'number',
@@ -50,7 +50,7 @@ export const DataModelFields = {
     start_date: 'Date',
     end_date: 'Date',
     competitor_group: 'string',
-    image: 'Uint8Array',
+    image_url: 'image',
     competition_type: 'string',
     player_type: 'string',
     schedule_type: 'string',
@@ -84,7 +84,7 @@ export const DataModelFields = {
     sys_id: 'string',
     name: 'string',
     description: 'string',
-    image: 'Uint8Array',
+    image_url: 'image',
     color: 'string',
     game: 'string',
     sys_created_on: 'Date',
@@ -127,7 +127,7 @@ export const DataModelFields = {
     total_earnings: 'number',
     account_balance: 'number',
     performance_group: 'string',
-    avatar: 'Uint8Array',
+    avatar_url: 'image',
     about_me: 'string',
     sys_created_on: 'Date',
     sys_updated_on: 'Date',
@@ -159,7 +159,7 @@ export const DataModelFields = {
     game: 'string',
     competition: 'string',
     type: 'string',
-    image: 'Uint8Array',
+    image_url: 'image',
     order_num: 'number',
     color: 'string',
     entry_points: 'number',
@@ -171,7 +171,7 @@ export const DataModelFields = {
   PointSystem: {
     sys_id: 'string',
     label: 'string',
-    image: 'Uint8Array',
+    image_url: 'image',
     dollar_conversion: 'number',
     sys_created_on: 'Date',
     sys_updated_on: 'Date',
@@ -195,7 +195,7 @@ export const DataModelFields = {
     sys_id: 'string',
     name: 'string',
     members: 'string[]',
-    image: 'Uint8Array',
+    image_url: 'image',
     sys_created_on: 'Date',
     sys_updated_on: 'Date',
     sys_created_by: 'string',
@@ -376,17 +376,14 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
       case 'Date':
         emptyObject[key] = new Date();
         break;
-      case 'Uint8Array':
-        emptyObject[key] = new Uint8Array();
-        break;
       case 'string[]':
         emptyObject[key] = [];
         break;
       case 'any':
         emptyObject[key] = null;
         break;
-      case 'token':
-        emptyObject[key] = '';
+      case 'image':
+        emptyObject[key] = null;
         break;
       default:
         emptyObject[key] = null;

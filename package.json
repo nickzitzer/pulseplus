@@ -5,7 +5,8 @@
     "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "start:frontend": "cd frontend && npm run dev",
     "start:backend": "cd backend && npm start",
-    "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\""
+    "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
+    "rebuild-db": "cd backend && node database/rebuildDatabase.js"
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
