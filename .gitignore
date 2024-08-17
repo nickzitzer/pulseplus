@@ -32,7 +32,7 @@ backend/.env
 backend/node_modules/
 backend/error.log
 backend/combined.log
-
+backend/uploads
 # Frontend
 frontend/.env.local
 frontend/node_modules/
