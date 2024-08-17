@@ -28,4 +28,11 @@ yarn-error.log*
 next-env.d.ts
 
 # Backend
-pulseplus-backend/.env
+backend/.env
+backend/node_modules/
+backend/error.log
+backend/combined.log
+
+# Frontend
+frontend/.env.local
+frontend/node_modules/
