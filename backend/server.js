@@ -58,9 +58,29 @@ const authenticateJwt = (req, res, next) => {
   if (req.path.startsWith('/api/auth')) {
     return next();
   }
-  passport.authenticate('jwt', { session: false })(req, res, next);
+  passport.authenticate('jwt', { session: false }, (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    if (!result) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    req.user = result.user;
+    if (result.newToken) {
+      res.setHeader('X-New-Token', result.newToken);
+    }
+    next();
+  })(req, res, next);
 };
 app.use(authenticateJwt);
+
+// Serve static files from the 'uploads' directory
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Configure multer for file uploads
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Routes
 app.use('/api/auth', authRoutes);

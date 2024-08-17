@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshToken } = useAuth();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
@@ -19,6 +19,25 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
       }
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const handleRouteChange = async () => {
+      if (user) {
+        try {
+          await refreshToken();
+        } catch (error) {
+          console.error('Token refresh failed', error);
+          router.push('/login');
+        }
+      }
+    };
+
+    router.events.on('routeChangeStart', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, [user, refreshToken, router]);
 
   if (loading || !isReady) {
     return <div>Loading...</div>;

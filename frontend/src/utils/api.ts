@@ -8,7 +8,7 @@ const api: AxiosInstance = axios.create({
 });
 
 const useAuthenticatedApi = () => {
-  const { logout } = useAuth();
+  const { logout, refreshToken } = useAuth();
   const router = useRouter();
 
   api.interceptors.request.use((config) => {
@@ -20,11 +20,24 @@ const useAuthenticatedApi = () => {
   });
 
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      const newToken = response.headers['x-new-token'];
+      if (newToken) {
+        Cookies.set('auth_token', newToken, { expires: 7 });
+      }
+      return response;
+    },
     async (error) => {
       if (error.response?.status === 401) {
-        await logout();
-        router.push('/login');
+        try {
+          const newToken = await refreshToken();
+          Cookies.set('auth_token', newToken, { expires: 7 });
+          error.config.headers['Authorization'] = `Bearer ${newToken}`;
+          return axios(error.config);
+        } catch (refreshError) {
+          await logout();
+          router.push('/login');
+        }
       }
       return Promise.reject(error);
     }

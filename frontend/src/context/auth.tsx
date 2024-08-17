@@ -15,6 +15,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (updatedData: Partial<User>) => void;
   updateCompetitor: (updatedData: Partial<Competitor>) => void;
+  refreshToken: () => Promise<string>;
   loading: boolean;
 }
 
@@ -76,16 +77,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const refreshToken = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL is not defined');
+      }
+      const response = await axios.post(`${apiUrl}/auth/refresh-token`, {}, {
+        headers: { Authorization: `Bearer ${Cookies.get('auth_token')}` }
+      });
+      const { token } = response.data;
+      Cookies.set('auth_token', token, { expires: 7 });
+      return token;
+    } catch (error) {
+      console.error('Token refresh failed', error);
+      throw error;
+    }
+  }, []);
+
+  const checkTokenExpiration = useCallback(async () => {
+    const token = Cookies.get('auth_token');
+    if (token) {
+      try {
+        const decoded = jwtDecode<{ exp?: number }>(token);
+        if (decoded.exp && decoded.exp - Date.now() / 1000 < 300) { // Refresh if less than 5 minutes left
+          await refreshToken();
+        } else if (decoded.exp && decoded.exp < Date.now() / 1000) {
+          await logout();
+        }
+      } catch (error) {
+        console.error('Token check failed', error);
+        await logout();
+      }
+    }
+  }, [logout, refreshToken]);
+
   const checkAuthStatus = useCallback(async () => {
     const token = Cookies.get('auth_token');
     const userData = Cookies.get('user_data');
     const competitorData = Cookies.get('competitor_data');
     if (token && userData && competitorData) {
       try {
-        const decoded = jwtDecode<{ exp?: number }>(token);
-        if (decoded.exp && decoded.exp < Date.now() / 1000) {
-          throw new Error('Token expired');
-        }
+        await checkTokenExpiration();
         setUser(JSON.parse(userData));
         setCompetitor(JSON.parse(competitorData));
       } catch (error) {
@@ -97,14 +130,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCompetitor(null);
     }
     setLoading(false);
-  }, [logout]);
+  }, [logout, checkTokenExpiration]);
 
   useEffect(() => {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      checkTokenExpiration();
+    }, 60000); // Check every minute
+
+    return () => clearInterval(intervalId);
+  }, [checkTokenExpiration]);
+
   return (
-    <AuthContext.Provider value={{ user, competitor, login, logout, updateUser, updateCompetitor, loading }}>
+    <AuthContext.Provider value={{ user, competitor, login, logout, updateUser, updateCompetitor, refreshToken, loading }}>
       {children}
     </AuthContext.Provider>
   );
