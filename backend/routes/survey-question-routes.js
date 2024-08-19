@@ -1,43 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const { pool, parseFilterQuery } = require('../db');
+const databaseUtils = require('../utils/databaseUtils');
 
-// Create a new survey question
 router.post('/', async (req, res) => {
   try {
-    const { survey_id, question_text, question_type, options } = req.body;
-    const { rows } = await pool.query(
-      'INSERT INTO survey_question (survey_id, question_text, question_type, options) VALUES ($1, $2, $3, $4) RETURNING *',
-      [survey_id, question_text, question_type, JSON.stringify(options)]
-    );
-    res.status(201).json(rows[0]);
+    const surveyQuestion = await databaseUtils.create('survey_question', req.body);
+    res.status(201).json(surveyQuestion);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Read all survey questions for a specific survey
 router.get('/survey/:surveyId', async (req, res) => {
   try {
     const { surveyId } = req.params;
-    const { rows } = await pool.query('SELECT * FROM survey_question WHERE survey_id = $1', [surveyId]);
-    res.json(rows);
+    const filterQuery = `survey_id = '${surveyId}'`;
+    const surveyQuestions = await databaseUtils.findAll('survey_question', filterQuery);
+    res.json(surveyQuestions);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Read a single survey question by ID
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { rows } = await pool.query('SELECT * FROM survey_question WHERE sys_id = $1', [id]);
-    if (rows.length === 0) {
+    const surveyQuestion = await databaseUtils.findOne('survey_question', req.params.id);
+    if (!surveyQuestion) {
       res.status(404).json({ error: 'Survey question not found' });
     } else {
-      res.json(rows[0]);
+      res.json(surveyQuestion);
     }
   } catch (err) {
     console.error(err);
@@ -45,19 +38,14 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update a survey question
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { question_text, question_type, options } = req.body;
-    const { rows } = await pool.query(
-      'UPDATE survey_question SET question_text = $1, question_type = $2, options = $3 WHERE sys_id = $4 RETURNING *',
-      [question_text, question_type, JSON.stringify(options), id]
-    );
-    if (rows.length === 0) {
+    const surveyQuestion = await databaseUtils.update('survey_question', id, req.body);
+    if (!surveyQuestion) {
       res.status(404).json({ error: 'Survey question not found' });
     } else {
-      res.json(rows[0]);
+      res.json(surveyQuestion);
     }
   } catch (err) {
     console.error(err);
@@ -65,27 +53,14 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Partial update of a Survey Question
 router.patch('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updateFields = req.body;
-    
-    const setClause = Object.keys(updateFields)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(', ');
-    
-    const values = Object.values(updateFields);
-    values.push(id);
-
-    const query = `UPDATE survey_question SET ${setClause} WHERE sys_id = $${values.length} RETURNING *`;
-    
-    const { rows } = await pool.query(query, values);
-    
-    if (rows.length === 0) {
-      res.status(404).json({ error: 'Survey Question not found' });
+    const surveyQuestion = await databaseUtils.partialUpdate('survey_question', id, req.body);
+    if (!surveyQuestion) {
+      res.status(404).json({ error: 'Survey question not found' });
     } else {
-      res.json(rows[0]);
+      res.json(surveyQuestion);
     }
   } catch (err) {
     console.error(err);
@@ -93,12 +68,10 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-// Delete a survey question
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { rowCount } = await pool.query('DELETE FROM survey_question WHERE sys_id = $1', [id]);
-    if (rowCount === 0) {
+    const deleted = await databaseUtils.delete('survey_question', req.params.id);
+    if (!deleted) {
       res.status(404).json({ error: 'Survey question not found' });
     } else {
       res.status(204).send();

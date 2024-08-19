@@ -1,58 +1,41 @@
 const express = require('express');
 const router = express.Router();
-const { pool, parseFilterQuery } = require('../db');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
-const { writeFile } = require('../utils/fileUtils');
+const { processImageUpload, deleteFile } = require('../utils/fileUtils');
+const databaseUtils = require('../utils/databaseUtils');
+const path = require('path');
 
-// Create a new Team
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { name, members } = req.body;
-    let image_url = null;
-
-    if (req.file) {
-      const fileName = `team_${Date.now()}_${req.file.originalname}`;
-      const filePath = await writeFile(fileName, req.file.buffer);
-      image_url = `/uploads/${fileName}`;
-    }
-
-    const { rows } = await pool.query(
-      'INSERT INTO team (name, members, image_url) VALUES ($1, $2, $3) RETURNING *',
-      [name, members, image_url]
-    );
-    res.status(201).json(rows[0]);
+    const imageData = await processImageUpload(req.file, 'image_url');
+    const team = await databaseUtils.create('team', { ...req.body, image_url: imageData.image_url });
+    res.status(201).json(team);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Read all Teams (with optional filtering)
 router.get('/', async (req, res) => {
   try {
-    let query = 'SELECT * FROM team';
-    const filterQuery = parseFilterQuery(req.query);
-    if (filterQuery) {
-      query += ` WHERE ${filterQuery}`;
-    }
-    const { rows } = await pool.query(query);
-    res.json(rows);
+    const filterQuery = req.query ? databaseUtils.parseFilterQuery(req.query) : '';
+    const teams = await databaseUtils.findAll('team', filterQuery);
+    res.json(teams);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Read a single Team by ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rows } = await pool.query('SELECT * FROM team WHERE sys_id = $1', [id]);
-    if (rows.length === 0) {
+    const team = await databaseUtils.findOne('team', id);
+    if (!team) {
       res.status(404).json({ error: 'Team not found' });
     } else {
-      res.json(rows[0]);
+      res.json(team);
     }
   } catch (err) {
     console.error(err);
@@ -60,27 +43,19 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update a Team
 router.put('/:id', upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, members } = req.body;
-    let image_url = req.body.image_url;
-
-    if (req.file) {
-      const fileName = `team_${Date.now()}_${req.file.originalname}`;
-      const filePath = await writeFile(fileName, req.file.buffer);
-      image_url = `/uploads/${fileName}`;
-    }
-
-    const { rows } = await pool.query(
-      'UPDATE team SET name = $1, members = $2, image_url = $3 WHERE sys_id = $4 RETURNING *',
-      [name, members, image_url, id]
-    );
-    if (rows.length === 0) {
+    const imageData = await processImageUpload(req.file, 'image_url', id, 'team');
+    const team = await databaseUtils.update('team', id, { ...req.body, image_url: imageData.image_url });
+    if (!team) {
       res.status(404).json({ error: 'Team not found' });
     } else {
-      res.json(rows[0]);
+      if (imageData.oldImageUrl) {
+        const oldFilePath = path.join(__dirname, '..', imageData.oldImageUrl);
+        await deleteFile(oldFilePath);
+      }
+      res.json(team);
     }
   } catch (err) {
     console.error(err);
@@ -88,27 +63,23 @@ router.put('/:id', upload.single('image'), async (req, res) => {
   }
 });
 
-// Partial update of a Team
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
     const updateFields = req.body;
-    
-    const setClause = Object.keys(updateFields)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(', ');
-    
-    const values = Object.values(updateFields);
-    values.push(id);
-
-    const query = `UPDATE team SET ${setClause} WHERE sys_id = $${values.length} RETURNING *`;
-    
-    const { rows } = await pool.query(query, values);
-    
-    if (rows.length === 0) {
+    const imageData = await processImageUpload(req.file, 'image_url', id, 'team');
+    if (imageData.image_url) {
+      updateFields.image_url = imageData.image_url;
+    }
+    const team = await databaseUtils.partialUpdate('team', id, updateFields);
+    if (!team) {
       res.status(404).json({ error: 'Team not found' });
     } else {
-      res.json(rows[0]);
+      if (imageData.oldImageUrl && imageData.oldImageUrl !== team.image_url) {
+        const oldFilePath = path.join(__dirname, '..', imageData.oldImageUrl);
+        await deleteFile(oldFilePath);
+      }
+      res.json(team);
     }
   } catch (err) {
     console.error(err);
@@ -116,12 +87,11 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-// Delete a Team
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rowCount } = await pool.query('DELETE FROM team WHERE sys_id = $1', [id]);
-    if (rowCount === 0) {
+    const deleted = await databaseUtils.delete('team', id);
+    if (!deleted) {
       res.status(404).json({ error: 'Team not found' });
     } else {
       res.status(204).send();
