@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Lock } from 'lucide-react';
 import PulsePlusProgressBar from './PulsePlusProgressBar';
 import useAuthenticatedFetch from '../utils/api';
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 
 
@@ -68,7 +70,14 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
           <div className="p-4" style={{background: `linear-gradient(to right, ${level.color}, white)`}}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <img src={level.image_url || '/next.svg'} alt={level.name} className="w-12 h-12 rounded-full mr-4" />
+                <Image
+                  src={level.image_url || '/next.svg'}
+                  alt={level.name}
+                  width={48}
+                  height={48}
+                  loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                  className="w-12 h-12 rounded-full mr-4"
+                />
                 <h3 className="font-bold text-xl">{level.name}</h3>
               </div>
               {quest.current_points < level.entry_points && (

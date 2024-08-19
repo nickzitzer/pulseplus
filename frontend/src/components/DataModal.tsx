@@ -6,6 +6,8 @@ import { DataModelFields, DataModelName } from '../types/dataModels';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { parseISO, format } from 'date-fns';
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 type ModelType = DataModelName;
 
@@ -196,13 +198,14 @@ function renderField(
             }}
             className={commonClasses}
           />
-          {values[field.name] && (
-            <img
-              src={typeof values[field.name] === 'string' ? values[field.name] : URL.createObjectURL(values[field.name])}
-              alt="Preview"
-              className="mt-2 w-32 h-32 object-cover rounded"
-            />
-          )}
+          <Image
+            src={typeof values[field.name] === 'string' ? values[field.name] : URL.createObjectURL(values[field.name])}
+            alt="Preview"
+            width={128}
+            height={128}
+            loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+            className="mt-2 object-cover rounded"
+          />
         </div>
       );
     default:

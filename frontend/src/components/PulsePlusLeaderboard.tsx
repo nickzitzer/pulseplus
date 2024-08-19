@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, ChevronUp, ChevronDown } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 
 
@@ -90,7 +92,14 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
                   {index + 1}
                 </div>
                 <div className="flex-shrink-0 mr-4">
-                  <img src={competitor.image_url} alt={competitor.name} className="w-12 h-12 rounded-full" />
+                  <Image
+                    src={competitor.image_url}
+                    alt={competitor.name}
+                    width={48}
+                    height={48}
+                    loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                    className="w-12 h-12 rounded-full"
+                  />
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-bold">{competitor.name}</h3>

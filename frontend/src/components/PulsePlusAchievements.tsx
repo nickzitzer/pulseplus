@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Lock } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 interface Achievement {
   sys_id: string;
@@ -51,7 +53,14 @@ const PulsePlusAchievements: React.FC<PulsePlusAchievementsProps> = ({ gameId, c
       {achievements.map((achievement) => (
         <div key={achievement.sys_id} className="bg-white rounded-lg shadow-md p-4">
           <div className="flex items-center mb-2">
-            <img src={achievement.image_url} alt={achievement.name} className="w-12 h-12 mr-4" />
+            <Image
+              src={achievement.image_url}
+              alt={achievement.name}
+              width={48}
+              height={48}
+              loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+              className="mr-4"
+            />
             <div>
               <h3 className="font-bold text-lg">{achievement.name}</h3>
               <p className="text-sm text-gray-600">{achievement.description}</p>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PulsePlusProgressBar from './PulsePlusProgressBar';
 import useAuthenticatedFetch from '../utils/api';
-
-
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 interface LeagueStats {
   leagueName: string;
@@ -61,7 +61,14 @@ const PulsePlusMyLeagueStats: React.FC<PulsePlusMyLeagueStatsProps> = ({ gameId,
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
       <div className="p-4" style={{ backgroundColor: leagueStats.leagueColor }}>
         <div className="flex items-center justify-between">
-          <img src={leagueStats.leagueImage} alt={leagueStats.leagueName} className="w-16 h-16 rounded-full" />
+          <Image
+            src={leagueStats.leagueImage}
+            alt={leagueStats.leagueName}
+            width={64}
+            height={64}
+            loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+            className="rounded-full"
+          />
           <h2 className="text-2xl font-bold text-white">{leagueStats.leagueName}</h2>
         </div>
       </div>

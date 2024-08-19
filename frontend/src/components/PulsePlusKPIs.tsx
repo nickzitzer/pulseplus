@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 
 
@@ -139,7 +141,14 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
               <tr key={competitor.sys_id} className="border-b">
                 <td className="p-2">
                   <div className="flex items-center">
-                    <img src={competitor.avatar_url || '/next.svg'} alt={competitor.name} className="w-8 h-8 rounded-full mr-2" />
+                    <Image
+                      src={competitor.avatar_url || '/next.svg'}
+                      alt={competitor.name}
+                      width={32}
+                      height={32}
+                      loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                      className="w-8 h-8 rounded-full mr-2"
+                    />
                     <div>
                       <div>{competitor.name}</div>
                       <div className="text-sm text-gray-500">{competitor.department}</div>

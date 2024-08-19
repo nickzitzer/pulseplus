@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy, ChevronUp, ChevronDown, User, Star } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
 import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 interface PulsePlusLeagueStandingsProps {
   gameId: string | undefined;
@@ -67,13 +68,14 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
               }
             }}
           >
-            {league.image_url ? (
-              <img src={league.image_url} alt={league.name} className="w-12 h-12 rounded-full" />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-                <Star className="w-8 h-8" style={{ color: league.color }} />
-              </div>
-            )}
+            <Image
+              src={league.image_url}
+              alt={league.name}
+              width={48}
+              height={48}
+              loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+              className="rounded-full"
+            />
           </button>
         ))}
       </div>
@@ -85,13 +87,14 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
           <div key={competitor.sys_id} className="bg-white shadow rounded-lg p-4 flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="relative">
-                {competitor.avatar_url ? (
-                  <img src={competitor.avatar_url} alt={competitor.name} className="w-12 h-12 rounded-full" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                    <User className="w-8 h-8 text-gray-500" />
-                  </div>
-                )}
+                <Image
+                  src={competitor.avatar_url}
+                  alt={competitor.name}
+                  width={48}
+                  height={48}
+                  loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                  className="rounded-full"
+                />
                 <div className="absolute -top-2 -left-2 bg-gray-800 text-white rounded-full w-6 h-6 flex items-center justify-center">
                   {index + 1}
                 </div>

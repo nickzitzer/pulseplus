@@ -16,6 +16,8 @@ import Link from "next/link";
 import styles from "./AdminDashboard.module.css";
 import DataModal from "./DataModal";
 import { parseISO, format } from "date-fns";
+import Image from 'next/image';
+import imageLoader from '@/utils/imageLoader';
 
 import { DataModelFields, DataModelName } from "../types/dataModels";
 
@@ -447,10 +449,13 @@ const AdminDashboard: React.FC = () => {
                               className="p-1 border-b border-r border-gray-300"
                             >
                               {isImageField(head.type) ? (
-                                <img 
+                                <Image 
                                   src={item[head.value]} 
                                   alt="File preview" 
-                                  className="w-[50px] h-[50px] object-contain"
+                                  width={50}
+                                  height={50}
+                                  loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                                  className="object-contain"
                                 />
                               ) : head.type === "datetime" ? (
                                 formatDate(item[head.value])
