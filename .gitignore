@@ -28,17 +28,17 @@ yarn-error.log*
 next-env.d.ts
 
 # Backend
-backend/.env
+backend/.env*
 backend/node_modules/
 backend/error.log
 backend/combined.log
 backend/uploads
 # Frontend
-frontend/.env.local
+frontend/.env*
 frontend/node_modules/
 
 # Environment files
 .env*
 !.env.example
 .ebextensions/env.config
-Dockerrun.aws.*.json
+task-definition.*.json
