@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { X } from 'lucide-react';
 import { DataModelFields, DataModelName } from '../types/dataModels';
@@ -19,6 +19,12 @@ interface DataModalProps {
   title: string;
 }
 
+interface FieldConfig {
+  name: string;
+  fieldType: string;
+  label: string;
+}
+
 const DataModal: React.FC<DataModalProps> = ({
   isOpen,
   onClose,
@@ -31,15 +37,15 @@ const DataModal: React.FC<DataModalProps> = ({
   if (!isOpen) return null;
 
   const model = DataModelFields[modelType];
-  const fields = Object.entries(model).map(([key, value]) => ({
+  const fields: FieldConfig[] = Object.entries(model).map(([key, value]) => ({
     name: key,
-    type: getFieldType(value),
+    fieldType: getFieldType(value),
     label: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),
   }));
 
   const validationSchema = Yup.object().shape(
     fields.reduce((schema, field) => {
-      switch (field.type) {
+      switch (field.fieldType) {
         case 'email':
           schema[field.name] = Yup.string().email(`Invalid email address`).required(`${field.label} is required`);
           break;
@@ -55,7 +61,8 @@ const DataModal: React.FC<DataModalProps> = ({
         case 'image':
           schema[field.name] = Yup.mixed().test('fileType', 'Unsupported file format', (value) => {
             if (!value) return true;
-            return value && (typeof value === 'string' || ['image/jpeg', 'image/png', 'image/gif'].includes(value.type));
+            if (typeof value === 'string') return true;
+            return value instanceof File && ['image/jpeg', 'image/png', 'image/gif'].includes(value.type);
           });
           break;
         default:
@@ -79,7 +86,7 @@ const DataModal: React.FC<DataModalProps> = ({
         <Formik
           initialValues={initialData}
           validationSchema={validationSchema}
-          onSubmit={onSubmit}
+          onSubmit={(values, formikHelpers: FormikHelpers<any>) => onSubmit(values)}
         >
           {({ errors, touched, setFieldValue, values }) => (
             <Form className="flex flex-col h-full">
@@ -129,7 +136,7 @@ function getFieldType(value: string): string {
       return 'number';
     case 'boolean':
       return 'boolean';
-    case 'Date':
+    case 'datetime':
       return 'datetime';
     case 'image':
       return 'image';
@@ -139,13 +146,13 @@ function getFieldType(value: string): string {
 }
 
 function renderField(
-  field: { name: string; type: string; label: string },
+  field: FieldConfig,
   setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void,
   values: any
 ) {
   const commonClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500";
   
-  switch (field.type) {
+  switch (field.fieldType) {
     case 'boolean':
       return (
         <Field
@@ -201,7 +208,7 @@ function renderField(
     default:
       return (
         <Field
-          type={field.type}
+          type={field.fieldType}
           id={field.name}
           name={field.name}
           className={commonClasses}

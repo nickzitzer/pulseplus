@@ -9,10 +9,10 @@ export const DataModelFields = {
     locked_out: 'boolean',
     password: 'string',
     password_needs_reset: 'boolean',
-    last_login: 'Date',
+    last_login: 'datetime',
     source: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string',
     department_id: 'string',
@@ -34,10 +34,10 @@ export const DataModelFields = {
     active: 'boolean',
     advance_percentage: 'number',
     recurring: 'string',
-    league_last_action: 'Date',
+    league_last_action: 'datetime',
     kpi_data: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -47,8 +47,8 @@ export const DataModelFields = {
     name: 'string',
     description: 'string',
     game: 'string',
-    start_date: 'Date',
-    end_date: 'Date',
+    start_date: 'datetime',
+    end_date: 'datetime',
     competitor_group: 'string',
     image_url: 'image',
     competition_type: 'string',
@@ -62,9 +62,9 @@ export const DataModelFields = {
     include_all_game_achievements: 'boolean',
     goal_points: 'number',
     recurring: 'string',
-    deadline: 'Date',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    deadline: 'datetime',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -75,8 +75,8 @@ export const DataModelFields = {
     kpi: 'string',
     value: 'number',
     year: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -87,8 +87,8 @@ export const DataModelFields = {
     image_url: 'image',
     color: 'string',
     game: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -96,11 +96,11 @@ export const DataModelFields = {
     sys_id: 'string',
     number: 'string',
     level: 'string',
-    start_date: 'Date',
-    end_date: 'Date',
+    start_date: 'datetime',
+    end_date: 'datetime',
     order_num: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -116,8 +116,8 @@ export const DataModelFields = {
     condition: 'string',
     achievement: 'string',
     order_num: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -129,8 +129,8 @@ export const DataModelFields = {
     performance_group: 'string',
     avatar_url: 'image',
     about_me: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -146,8 +146,8 @@ export const DataModelFields = {
     point_value: 'number',
     active: 'boolean',
     award_date: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -163,8 +163,8 @@ export const DataModelFields = {
     order_num: 'number',
     color: 'string',
     entry_points: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -173,8 +173,8 @@ export const DataModelFields = {
     label: 'string',
     image_url: 'image',
     dollar_conversion: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -186,8 +186,8 @@ export const DataModelFields = {
     sender: 'string',
     notification_type: 'string',
     type: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -196,8 +196,8 @@ export const DataModelFields = {
     name: 'string',
     members: 'string[]',
     image_url: 'image',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -206,8 +206,8 @@ export const DataModelFields = {
     team_id: 'string',
     competition_id: 'string',
     weight: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -223,10 +223,10 @@ export const DataModelFields = {
     competitors: 'string[]',
     active: 'boolean',
     color: 'string',
-    last_action: 'Date',
+    last_action: 'datetime',
     exclude_weekends: 'boolean',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -234,8 +234,8 @@ export const DataModelFields = {
     sys_id: 'string',
     badge_id: 'string',
     competitor_id: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -247,8 +247,8 @@ export const DataModelFields = {
     place: 'number',
     league_change: 'string',
     level_order: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -259,8 +259,8 @@ export const DataModelFields = {
     competitor_type: 'string',
     points: 'number',
     place: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -269,11 +269,11 @@ export const DataModelFields = {
     number: 'string',
     kpi: 'string',
     competitor: 'string',
-    date: 'Date',
+    date: 'datetime',
     value: 'number',
     year: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -282,8 +282,8 @@ export const DataModelFields = {
     achievement_id: 'string',
     competitor_id: 'string',
     record_id: 'string',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -292,12 +292,12 @@ export const DataModelFields = {
     number: 'string',
     goal: 'string',
     competitor: 'string',
-    start_date: 'Date',
-    end_date: 'Date',
+    start_date: 'datetime',
+    end_date: 'datetime',
     target: 'number',
     value: 'number',
-    sys_created_on: 'Date',
-    sys_updated_on: 'Date',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
     sys_created_by: 'string',
     sys_updated_by: 'string'
   },
@@ -310,26 +310,26 @@ export const DataModelFields = {
     sys_id: 'string',
     name: 'string',
     created_by: 'string',
-    created_on: 'Date'
+    created_on: 'datetime'
   },
   ChatMessage: {
     sys_id: 'string',
     chat_group_id: 'string',
     sender_id: 'string',
     content: 'string',
-    sent_at: 'Date'
+    sent_at: 'datetime'
   },
   ChatGroupMember: {
     sys_id: 'string',
     chat_group_id: 'string',
     user_id: 'string',
-    joined_at: 'Date'
+    joined_at: 'datetime'
   },
   Survey: {
     sys_id: 'string',
     title: 'string',
     description: 'string',
-    created_on: 'Date'
+    created_on: 'datetime'
   },
   SurveyQuestion: {
     sys_id: 'string',
@@ -343,14 +343,14 @@ export const DataModelFields = {
     survey_id: 'string',
     respondent_id: 'string',
     responses: 'any',
-    submitted_at: 'Date'
+    submitted_at: 'datetime'
   },
   NotificationStatus: {
     sys_id: 'string',
     notification_id: 'string',
     user_id: 'string',
     read: 'boolean',
-    read_at: 'Date | null'
+    read_at: 'datetime | null'
   }
 } as const;
 
@@ -373,7 +373,7 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
       case 'boolean':
         emptyObject[key] = false;
         break;
-      case 'Date':
+      case 'datetime':
         emptyObject[key] = new Date();
         break;
       case 'string[]':

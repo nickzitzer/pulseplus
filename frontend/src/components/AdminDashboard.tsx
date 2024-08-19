@@ -112,7 +112,7 @@ const AdminDashboard: React.FC = () => {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" "),
       value: key,
-      type: DataModelFields[section.displayName as keyof typeof DataModelFields][key as keyof (typeof DataModelFields)[keyof typeof DataModelFields]],
+      type: DataModelFields[section.displayName as keyof typeof DataModelFields][key as keyof (typeof DataModelFields)[keyof typeof DataModelFields]] as string,
     }));
   }, [activeSection]);
 
@@ -296,7 +296,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const isImageField = (fieldType: string): boolean => {
+  const isImageField = (fieldType: string | undefined): boolean => {
     return fieldType === 'image';
   };
 
@@ -452,7 +452,7 @@ const AdminDashboard: React.FC = () => {
                                   alt="File preview" 
                                   className="w-[50px] h-[50px] object-contain"
                                 />
-                              ) : head.type === "Date" ? (
+                              ) : head.type === "datetime" ? (
                                 formatDate(item[head.value])
                               ) : (
                                 item[head.value]

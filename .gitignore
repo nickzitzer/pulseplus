@@ -36,3 +36,5 @@ backend/uploads
 # Frontend
 frontend/.env.local
 frontend/node_modules/
+
+.gitignore
