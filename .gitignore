@@ -38,3 +38,4 @@ frontend/.env.local
 frontend/node_modules/
 
 .gitignore
+.env

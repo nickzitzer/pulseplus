@@ -5,22 +5,22 @@ const nextConfig = {
       return [
         {
           source: '/uploads/:path*',
-          destination: 'http://localhost:3001/uploads/:path*', // Proxy to local Backend for uploads
+          destination: 'http://backend:3001/uploads/:path*', // Proxy to Backend container for uploads
         },
         {
           source: '/api/:path*',
-          destination: 'http://localhost:3001/api/:path*', // Proxy to local Backend for API
+          destination: 'http://backend:3001/api/:path*', // Proxy to Backend container for API
         },
       ];
     } else {
       return [
         {
           source: '/uploads/:path*',
-          destination: '/uploads/:path*', // Use Vercel's routing in production for uploads
+          destination: '/uploads/:path*', // Use container's routing in production for uploads
         },
         {
           source: '/api/:path*',
-          destination: '/api/:path*', // Use Vercel's routing in production for API
+          destination: '/api/:path*', // Use container's routing in production for API
         },
       ];
     }

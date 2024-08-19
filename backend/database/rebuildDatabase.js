@@ -8,7 +8,8 @@ const dataFile = path.join(__dirname, 'pulseplus-postgresql-synthetic-data.sql')
 
 async function rebuildDatabase() {
   const client = new Client({
-    connectionString: process.env.POSTGRES_URL
+    connectionString: process.env.POSTGRES_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   });
 
   try {
