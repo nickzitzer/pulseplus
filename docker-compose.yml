@@ -5,36 +5,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}
-      - NODE_ENV=${NODE_ENV}
+    env_file: 
+      - .env.${NODE_ENV:-development}
+    # ... other configurations
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "${PORT}:${PORT}"
-    environment:
-      - PORT=${PORT}
-      - JWT_SECRET=${JWT_SECRET}
-      - SESSION_SECRET=${SESSION_SECRET}
-      - NODE_ENV=${NODE_ENV}
-      - POSTGRES_URL=${POSTGRES_URL}
-    volumes:
-      - ./backend/uploads:/app/uploads
-
-  db:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=pulseplus-admin
-      - POSTGRES_PASSWORD=Work4PulsePlus1
-      - POSTGRES_DB=pulseplus_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+    env_file:
+      - .env.${NODE_ENV:-development}
+    # ... other configurations

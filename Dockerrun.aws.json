@@ -1,0 +1,61 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "frontend",
+      "image": "${FRONTEND_IMAGE}",
+      "essential": true,
+      "memory": "${FRONTEND_MEMORY}",
+      "portMappings": [
+        {
+          "hostPort": "${FRONTEND_HOST_PORT}",
+          "containerPort": "${FRONTEND_CONTAINER_PORT}"
+        }
+      ],
+      "environment": [
+        {
+          "name": "NEXT_PUBLIC_API_URL",
+          "value": "${NEXT_PUBLIC_API_URL}"
+        },
+        {
+          "name": "NEXT_PUBLIC_BASE_URL",
+          "value": "${NEXT_PUBLIC_BASE_URL}"
+        }
+      ]
+    },
+    {
+      "name": "backend",
+      "image": "${BACKEND_IMAGE}",
+      "essential": true,
+      "memory": "${BACKEND_MEMORY}",
+      "portMappings": [
+        {
+          "hostPort": "${BACKEND_HOST_PORT}",
+          "containerPort": "${BACKEND_CONTAINER_PORT}"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "${PORT}"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "${JWT_SECRET}"
+        },
+        {
+          "name": "SESSION_SECRET",
+          "value": "${SESSION_SECRET}"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "${NODE_ENV}"
+        },
+        {
+          "name": "POSTGRES_URL",
+          "value": "${POSTGRES_URL}"
+        }
+      ]
+    }
+  ]
+}

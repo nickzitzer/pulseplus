@@ -37,5 +37,8 @@ backend/uploads
 frontend/.env.local
 frontend/node_modules/
 
-.gitignore
-.env
+# Environment files
+.env*
+!.env.example
+.ebextensions/env.config
+Dockerrun.aws.*.json

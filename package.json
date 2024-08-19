@@ -6,7 +6,8 @@
     "start:frontend": "cd frontend && npm run dev",
     "start:backend": "cd backend && npm start",
     "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
-    "rebuild-db": "docker-compose run --rm db-rebuild"
+    "rebuild-db": "docker-compose run --rm db-rebuild",
+    "generate-env": "node scripts/generate-env.js"
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
