@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 const { processImageUpload, deleteFile } = require('../utils/fileUtils');
 const databaseUtils = require('../utils/databaseUtils');
 const path = require('path');

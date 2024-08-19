@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, GamepadIcon } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
 interface Game {

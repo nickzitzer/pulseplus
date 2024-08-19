@@ -16,7 +16,7 @@ import Link from "next/link";
 import styles from "./AdminDashboard.module.css";
 import DataModal from "./DataModal";
 import { parseISO, format } from "date-fns";
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
 import { DataModelFields, DataModelName } from "../types/dataModels";

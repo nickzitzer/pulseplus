@@ -1,4 +1,4 @@
-const { pool } = require('../db');
+const { pool, parseFilterQuery } = require('../db');
 
 const databaseUtils = {
   async create(tableName, data) {
@@ -85,6 +85,8 @@ const databaseUtils = {
       throw err;
     }
   },
+
+  parseFilterQuery, // This now correctly references the imported function
 };
 
 module.exports = databaseUtils;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import useAuthenticatedFetch from '../utils/api';
 import { Star } from 'lucide-react';
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '../utils/imageLoader';
 
 interface PulsePlusBadgesProps {

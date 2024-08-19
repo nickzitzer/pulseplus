@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Users, Calendar } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
 interface PulsePlusCompetitionsProps {

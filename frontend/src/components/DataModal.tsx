@@ -6,7 +6,7 @@ import { DataModelFields, DataModelName } from '../types/dataModels';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { parseISO, format } from 'date-fns';
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
 type ModelType = DataModelName;

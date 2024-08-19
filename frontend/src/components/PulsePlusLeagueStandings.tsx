@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy, ChevronUp, ChevronDown, User, Star } from 'lucide-react';
 import useAuthenticatedFetch from '../utils/api';
-import Image from 'next/image';
+import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
 interface PulsePlusLeagueStandingsProps {
