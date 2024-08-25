@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import { DataModelFields } from '../types/dataModels';
+import { setCookie, getCookie, deleteCookie } from 'cookies-next';
 
 type User = typeof DataModelFields.User;
 type Competitor = typeof DataModelFields.Competitor;
@@ -35,13 +35,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const response = await axios.post(`${apiUrl}/auth/login`, { user_name, password });
       const { token, user: userData, competitor: competitorData } = response.data;
-      Cookies.set('auth_token', token, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       
-      // Store full user and competitor data in state and cookies
+      // Set HttpOnly cookie for auth token (this should be done server-side)
+      setCookie('auth_token', token, { 
+        maxAge: 30 * 60, // 30 minutes
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
+      
+      // Store non-sensitive data in localStorage
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      localStorage.setItem('competitor_data', JSON.stringify(competitorData));
+      
+      // Set state for in-memory data
       setUser(userData);
       setCompetitor(competitorData);
-      Cookies.set('user_data', JSON.stringify(userData), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
-      Cookies.set('competitor_data', JSON.stringify(competitorData), { expires:new Date(new Date().getTime() + 30 * 60 * 1000) });
       
       router.push('/');
     } catch (error) {
@@ -51,9 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = useCallback(async () => {
-    Cookies.remove('auth_token');
-    Cookies.remove('user_data');
-    Cookies.remove('competitor_data');
+    deleteCookie('auth_token');
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('competitor_data');
     setUser(null);
     setCompetitor(null);
     router.push('/login');
@@ -63,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(prevUser => {
       if (!prevUser) return null;
       const newUser = { ...prevUser, ...updatedData };
-      Cookies.set('user_data', JSON.stringify(newUser), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+      localStorage.setItem('user_data', JSON.stringify(newUser));
       return newUser;
     });
   };
@@ -72,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCompetitor(prevCompetitor => {
       if (!prevCompetitor) return null;
       const newCompetitor = { ...prevCompetitor, ...updatedData };
-      Cookies.set('competitor_data', JSON.stringify(newCompetitor), { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+      localStorage.setItem('competitor_data', JSON.stringify(newCompetitor));
       return newCompetitor;
     });
   };
@@ -84,10 +93,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('API URL is not defined');
       }
       const response = await axios.post(`${apiUrl}/auth/refresh-token`, {}, {
-        headers: { Authorization: `Bearer ${Cookies.get('auth_token')}` }
+        headers: { Authorization: `Bearer ${getCookie('auth_token')}` }
       });
       const { token } = response.data;
-      Cookies.set('auth_token', token, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+      setCookie('auth_token', token, { 
+        maxAge: 30 * 60, // 30 minutes
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      });
       return token;
     } catch (error) {
       console.error('Token refresh failed', error);
@@ -96,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkTokenExpiration = useCallback(async () => {
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
     if (token) {
       try {
         const decoded = jwtDecode<{ exp?: number }>(token);
@@ -113,9 +127,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [logout, refreshToken]);
 
   const checkAuthStatus = useCallback(async () => {
-    const token = Cookies.get('auth_token');
-    const userData = Cookies.get('user_data');
-    const competitorData = Cookies.get('competitor_data');
+    const token = getCookie('auth_token');
+    const userData = localStorage.getItem('user_data');
+    const competitorData = localStorage.getItem('competitor_data');
     if (token && userData && competitorData) {
       try {
         await checkTokenExpiration();

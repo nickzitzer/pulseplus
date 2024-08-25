@@ -4,7 +4,6 @@ import useAuthenticatedFetch from '../utils/api';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 import Image from '@/components/PulsePlusImage';
-import Cookies from 'js-cookie';
 
 const PulsePlusHomeAvatar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -59,7 +58,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
         updateCompetitor(updatedCompetitor);
         
         // Update the cookie with the new competitor data
-        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: 30 / 1440 }); // 30 minutes
+        localStorage.setItem('competitor_data', JSON.stringify(updatedCompetitor)); // 30 minutes
 
         // Force a re-render
         setIsDropdownOpen(false);
@@ -81,7 +80,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
         const updatedCompetitor = { ...competitor, about_me: newAboutMe } as typeof competitor;
         updateCompetitor(updatedCompetitor);
         
-        Cookies.set('competitor_data', JSON.stringify(updatedCompetitor), { expires: new Date(new Date().getTime() + 30 * 60 * 1000)  });
+        localStorage.setItem('competitor_data', JSON.stringify(updatedCompetitor));
         
         setIsEditingAboutMe(false);
       } catch (error) {

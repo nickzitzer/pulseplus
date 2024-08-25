@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
+import { getCookie, setCookie } from 'cookies-next';
 
 const api: AxiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api`,
@@ -12,7 +12,7 @@ const useAuthenticatedApi = () => {
   const router = useRouter();
 
   api.interceptors.request.use((config) => {
-    const token = Cookies.get('auth_token');
+    const token = getCookie('auth_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -23,7 +23,7 @@ const useAuthenticatedApi = () => {
     (response) => {
       const newToken = response.headers['x-new-token'];
       if (newToken) {
-        Cookies.set('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+        setCookie('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
       }
       return response;
     },
@@ -31,7 +31,7 @@ const useAuthenticatedApi = () => {
       if (error.response?.status === 401) {
         try {
           const newToken = await refreshToken();
-          Cookies.set('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+          setCookie('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
           error.config.headers['Authorization'] = `Bearer ${newToken}`;
           return axios(error.config);
         } catch (refreshError) {
