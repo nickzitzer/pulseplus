@@ -5,13 +5,16 @@ FROM node:18
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY backend/package*.json ./
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install || (sleep 5 && npm install)
 
 # Copy the rest of the backend code
-COPY backend/ .
+COPY . .
+
+# Load environment variables from .env file
+RUN npm install dotenv
 
 # Create an uploads directory
 RUN mkdir -p uploads
@@ -20,4 +23,4 @@ RUN mkdir -p uploads
 EXPOSE 3001
 
 # Define the command to run the app
-CMD ["npm", "start"]
+CMD ["sh", "-c", "if [ \"$REBUILD_DB\" = \"true\" ]; then node database/rebuildDatabase.js; fi && npm start"]

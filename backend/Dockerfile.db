@@ -3,8 +3,8 @@ FROM node:18
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install || (sleep 5 && npm install)
 
 COPY . .
 
-CMD ["node", "database/rebuildDatabase.js"]
+#CMD ["node", "database/rebuildDatabase.js"]

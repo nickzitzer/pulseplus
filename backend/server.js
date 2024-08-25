@@ -37,15 +37,27 @@ const notificationStatusRoutes = require('./routes/notification-status-routes');
 const userRoutes = require('./routes/user-routes');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.BACKEND_PORT || 3000;
 
 // Serve static files from the 'uploads' directory
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+console.log('NEXT_PUBLIC_BASE_URL ' + process.env.NEXT_PUBLIC_BASE_URL);
 // Middleware
 app.use(helmet());
-app.use(cors());
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.NEXT_PUBLIC_BASE_URL, // Allow requests only from the frontend
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS", // Specify allowed methods
+  allowedHeaders: "Content-Type,Authorization", // Specify allowed headers
+  credentials: true, // Allow credentials if needed
+  optionsSuccessStatus: 200 // For legacy browsers
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle preflight requests
+
 app.use(express.json());
 
 const limiter = rateLimit({
@@ -56,6 +68,13 @@ app.use(limiter);
 
 app.use(passport.initialize());
 require('./config/passport')(passport);
+
+app.use((req, res, next) => {
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000"; // Fallback if not set
+  const csp = `script-src 'self' ${apiUrl};`; // Include the API URL in the CSP
+  res.setHeader("Content-Security-Policy", csp);
+  next();
+});
 
 // Authenticate all routes except /api/auth
 const authenticateJwt = (req, res, next) => {

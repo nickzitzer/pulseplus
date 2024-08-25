@@ -28,8 +28,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   const login = async (user_name: string, password: string) => {
+    alert(process.env.NEXT_PUBLIC_BACKEND_URL);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL + '/api';
       if (!apiUrl) {
         throw new Error('API URL is not defined');
       }
@@ -79,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshToken = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL + '/api';
       if (!apiUrl) {
         throw new Error('API URL is not defined');
       }
