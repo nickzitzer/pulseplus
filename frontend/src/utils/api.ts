@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import Cookies from 'js-cookie';
 
 const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL + '/api',
+  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api`,
 });
 
 const useAuthenticatedApi = () => {

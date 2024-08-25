@@ -36,7 +36,7 @@ environments.forEach(env => {
         ],
         environment: [
           { name: "NEXT_PUBLIC_API_URL", value: "${NEXT_PUBLIC_API_URL}" },
-          { name: "NEXT_PUBLIC_BASE_URL", value: "${NEXT_PUBLIC_BASE_URL}" }
+          { name: "NEXT_PUBLIC_FRONTEND_URL", value: "${NEXT_PUBLIC_FRONTEND_URL}" }
         ],
         memory: parseInt("${FRONTEND_MEMORY}"),
         cpu: parseInt("${FRONTEND_CPU}")
