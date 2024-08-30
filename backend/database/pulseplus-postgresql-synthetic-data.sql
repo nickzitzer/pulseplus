@@ -167,4 +167,107 @@ INSERT INTO kpi_instance_rollup (sys_id, competitor, kpi, value, year) VALUES
  (SELECT sys_id FROM key_performance_indicator WHERE name = 'Code Quality'),
  92, 2024);
 
+-- Insert script rules
+INSERT INTO script_rule (table_name, rule_name, condition, insert_enabled, update_enabled, query_enabled, delete_enabled, script, active) VALUES
+('level_instance', 'denormalizeOrder', '', true, true, false, false, 
+'const { rows } = await client.query(
+  ''UPDATE level_instance SET "order" = (SELECT order_num FROM level WHERE sys_id = $1) WHERE sys_id = $2 RETURNING *'',
+  [current.level, current.sys_id]
+);
+return rows[0];', true),
+
+('achievement_competitor', 'awardPoints', '', true, false, false, false, 
+'const { rows: [achievement] } = await client.query(
+  ''SELECT * FROM achievement WHERE sys_id = $1'',
+  [current.achievement_id]
+);
+const { rows: [competitor] } = await client.query(
+  ''SELECT * FROM competitor WHERE sys_id = $1'',
+  [current.competitor_id]
+);
+if (achievement && competitor) {
+  await client.query(
+    ''UPDATE competitor SET total_earnings = total_earnings + $1 WHERE sys_id = $2'',
+    [achievement.point_value, competitor.sys_id]
+  );
+}', true),
+
+('achievement_competitor', 'addGoalIncrements', '', true, false, false, false, 
+'await client.query(`
+  UPDATE goal_instance
+  SET value = value + 1
+  WHERE competitor = $1
+    AND goal IN (SELECT sys_id FROM goal WHERE achievement = $2)
+    AND start_date <= CURRENT_DATE
+    AND end_date >= CURRENT_DATE
+`, [current.competitor_id, current.achievement_id]);', true),
+
+('achievement_competitor', 'addLeaguePoints', '', true, false, false, false, 
+'const { rows: [achievement] } = await client.query(
+  ''SELECT * FROM achievement WHERE sys_id = $1'',
+  [current.achievement_id]
+);
+if (achievement) {
+  await client.query(`
+    UPDATE level_instance_member
+    SET points = points + $1
+    WHERE competitor = $2
+      AND level_instance IN (
+        SELECT li.sys_id
+        FROM level_instance li
+        JOIN level l ON li.level = l.sys_id
+        WHERE l.game = $3
+          AND li.start_date <= CURRENT_DATE
+          AND li.end_date >= CURRENT_DATE
+      )
+  `, [achievement.point_value, current.competitor_id, achievement.game]);
+}', true),
+
+('level_instance_member', 'denormalizeLevelOrder', '', true, true, false, false, 
+'const { rows } = await client.query(`
+  UPDATE level_instance_member
+  SET level_order = (SELECT order_num FROM level WHERE sys_id = 
+    (SELECT level FROM level_instance WHERE sys_id = $1))
+  WHERE sys_id = $2
+  RETURNING *
+`, [current.level_instance, current.sys_id]);
+return rows[0];', true),
+
+('team_competition', 'preventDuplicateCompetitor', '', true, true, false, false, 
+'const { rows } = await client.query(`
+  SELECT tc.team_id
+  FROM team_competition tc
+  JOIN team t ON tc.team_id = t.sys_id
+  WHERE tc.competition_id = $1
+    AND $2 != tc.team_id
+    AND t.members && (SELECT members FROM team WHERE sys_id = $2)
+`, [current.competition_id, current.team_id]);
+if (rows.length > 0) {
+  throw new Error(`A member of this team is already part of another team (${rows[0].team_id}) in this competition`);
+}', true),
+
+('goal_instance', 'notifyNewGoalInstance', '', true, false, false, false, 
+'const { rows: [goal] } = await client.query(
+  ''SELECT * FROM goal WHERE sys_id = $1'',
+  [current.goal]
+);
+if (goal) {
+  await client.query(`
+    INSERT INTO notifier (description, receiver, notification_type, type)
+    VALUES ($1, $2, ''info'', ''new_goal'')
+  `, [`Your goal of ${goal.name} has begun!`, current.competitor]);
+}', true),
+
+('badge_competitor', 'notifyNewBadgeEarned', '', true, false, false, false, 
+'const { rows: [badge] } = await client.query(
+  ''SELECT * FROM badge WHERE sys_id = $1'',
+  [current.badges]
+);
+if (badge) {
+  await client.query(`
+    INSERT INTO notifier (description, receiver, notification_type, type)
+    VALUES ($1, $2, ''info'', ''new_badge'')
+  `, [`You have earned the following badge: ${badge.name}`, current.competitor]);
+}', true);
+
 -- You can add more synthetic data here as needed for your testing purposes

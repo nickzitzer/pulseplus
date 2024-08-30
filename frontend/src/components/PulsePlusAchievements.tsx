@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Lock } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -24,12 +24,12 @@ const PulsePlusAchievements: React.FC<PulsePlusAchievementsProps> = ({ gameId, c
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        const response = await fetchWithAuth(`/achievements?game=${gameId}&competitor=${competitorId}`);
+        const response = await api.get(`/achievements?game=${gameId}&competitor=${competitorId}`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch achievements');
         }
@@ -42,7 +42,7 @@ const PulsePlusAchievements: React.FC<PulsePlusAchievementsProps> = ({ gameId, c
     };
     
     fetchAchievements();
-  }, [gameId, competitorId, fetchWithAuth]);
+  }, [gameId, competitorId]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;

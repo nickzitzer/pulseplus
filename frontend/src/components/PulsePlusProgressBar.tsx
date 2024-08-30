@@ -1,5 +1,5 @@
 import React from 'react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 
 interface PulsePlusProgressBarProps {
   min: number;

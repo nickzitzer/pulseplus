@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Trophy, ChevronUp, ChevronDown, User, Star } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -20,21 +20,21 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [activeLeague, setActiveLeague] = useState<League | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   const fetchLeaderboardData = useCallback(async (gameId: string, leagueId: string) => {
     try {
-      const leaderboardResponse = await fetchWithAuth(`/leaderboard-members?game=${gameId}&level=${leagueId}`);
+      const leaderboardResponse = await api.get(`/leaderboard-members?game=${gameId}&level=${leagueId}`);
       const leaderboardData = leaderboardResponse.data;
       setLeaderboardData(leaderboardData);
     } catch (error) {
       console.error('Error fetching leaderboard data:', error);
     }
-  }, [fetchWithAuth]);
+  }, []);
 
   const fetchLeagueData = useCallback(async (gameId: string) => {
     try {
-      const leagueResponse = await fetchWithAuth(`/levels?game=${gameId}&type=league`);
+      const leagueResponse = await api.get(`/levels?game=${gameId}&type=league`);
       const leagueData = leagueResponse.data;
       setLeagueData(leagueData);
 
@@ -45,7 +45,7 @@ const PulsePlusLeagueStandings: React.FC<PulsePlusLeagueStandingsProps> = ({ gam
     } catch (error) {
       console.error('Error fetching league data:', error);
     }
-  }, [fetchWithAuth, fetchLeaderboardData]);
+  }, [fetchLeaderboardData]);
 
   useEffect(() => {
     if (gameId) {

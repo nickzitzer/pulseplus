@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, GamepadIcon } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -22,11 +22,11 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   const fetchGames = useCallback(async () => {
     try {
-      const response = await fetchWithAuth('/games');
+      const response = await api.get('/games');
       const data = response.data;
       setGames(data);
       if (data.length > 0 && !selectedGame) {
@@ -37,7 +37,7 @@ const PulsePlusGameDropdown: React.FC<PulsePlusGameDropdownProps> = React.memo((
       console.error('Error fetching games:', error);
       setError('Failed to load games. Please try again later.');
     }
-  }, [fetchWithAuth, onGameSelect, selectedGame]);
+  }, [onGameSelect, selectedGame]);
 
   useEffect(() => {
     fetchGames();

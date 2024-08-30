@@ -1,42 +1,48 @@
-import axios, { AxiosInstance } from 'axios';
-import { useAuth } from '../context/auth';
-import { useRouter } from 'next/router';
-import { getCookie, setCookie } from 'cookies-next';
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
-const api: AxiosInstance = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api`,
-});
+let csrfToken: string | null = null;
 
-const useAuthenticatedApi = () => {
-  const { logout, refreshToken } = useAuth();
-  const router = useRouter();
+const createAuthenticatedApi = (): AxiosInstance => {
+  const api = axios.create({
+    baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api`,
+    withCredentials: true
+  });
 
-  api.interceptors.request.use((config) => {
-    const token = getCookie('auth_token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+  const fetchCsrfToken = async (): Promise<void> => {
+    try {
+      const response = await axios.get(`${api.defaults.baseURL}/auth/csrf-token`, { withCredentials: true });
+      csrfToken = response.data.csrfToken;
+    } catch (error) {
+      console.error('Failed to fetch CSRF token:', error);
+    }
+  };
+
+  api.interceptors.request.use(async (config) => {
+    if (!csrfToken) {
+      await fetchCsrfToken();
+    }
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
     }
     return config;
   });
 
   api.interceptors.response.use(
-    (response) => {
-      const newToken = response.headers['x-new-token'];
-      if (newToken) {
-        setCookie('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
+    (response: AxiosResponse) => response,
+    async (error: AxiosError) => {
+      const originalRequest = error.config;
+      if (error.response?.status === 403 && (error.response?.data as { message: string })?.message === 'Invalid CSRF token') {
+        await fetchCsrfToken();
+        return originalRequest ? api(originalRequest) : Promise.reject(error);
       }
-      return response;
-    },
-    async (error) => {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && originalRequest?.url !== '/auth/refresh-token') {
         try {
-          const newToken = await refreshToken();
-          setCookie('auth_token', newToken, { expires: new Date(new Date().getTime() + 30 * 60 * 1000) });
-          error.config.headers['Authorization'] = `Bearer ${newToken}`;
-          return axios(error.config);
+          await api.post('/auth/refresh-token');
+          return originalRequest ? api(originalRequest) : Promise.reject(error);
         } catch (refreshError) {
-          await logout();
-          router.push('/login');
+          // Handle refresh token failure (e.g., redirect to login)
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
         }
       }
       return Promise.reject(error);
@@ -46,4 +52,6 @@ const useAuthenticatedApi = () => {
   return api;
 };
 
-export default useAuthenticatedApi;
+const api = createAuthenticatedApi();
+
+export default api;

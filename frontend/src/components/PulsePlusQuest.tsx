@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock } from 'lucide-react';
 import PulsePlusProgressBar from './PulsePlusProgressBar';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -31,14 +31,14 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
   const [quest, setQuest] = useState<Quest | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   
 
   useEffect(() => {
     const fetchQuest = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/quests?game=${gameId}`);
+        const response = await api.get(`/quests?game=${gameId}`);
         const data = response.data;
         if (data.length > 0) {
           setQuest(data[0]); // Assuming we're only dealing with one quest per game for now
@@ -52,7 +52,7 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
     if (gameId) {
       fetchQuest(gameId);
     }
-  }, [gameId, fetchWithAuth]);
+  }, [gameId]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;

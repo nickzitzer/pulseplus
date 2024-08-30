@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 
 interface Notification {
   sys_id: string;
@@ -15,13 +15,13 @@ const PulsePlusNotifications: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
 
     const fetchNotifications = async () => {
       try {
-        const response = await fetchWithAuth(`/notifiers`);
+        const response = await api.get(`/notifiers`);
         const data = response.data;
         setNotifications(data);
       } catch (error) {
@@ -35,11 +35,11 @@ const PulsePlusNotifications: React.FC = () => {
     const intervalId = setInterval(fetchNotifications, 60000); // Fetch every minute
 
     return () => clearInterval(intervalId);
-  }, [fetchWithAuth]);
+  }, []);
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetchWithAuth(`/notifications/${notificationId}/read`, {
+      const response = await api.get(`/notifications/${notificationId}/read`, {
         method: 'POST',
       });
       setNotifications(notifications.map(notif => 
@@ -52,7 +52,7 @@ const PulsePlusNotifications: React.FC = () => {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const response = await fetchWithAuth(`/notifications/${notificationId}`, {
+      const response = await api.get(`/notifications/${notificationId}`, {
         method: 'DELETE',
       });
       setNotifications(notifications.filter(notif => notif.sys_id !== notificationId));

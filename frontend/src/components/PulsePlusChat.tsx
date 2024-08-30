@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, ChevronLeft, MessagesSquareIcon } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 
 interface Message {
   sys_id: string;
@@ -25,12 +25,12 @@ const PulsePlusChat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchChatGroups = async () => {
       try {
-        const response = await fetchWithAuth(`/chat-groups`);
+        const response = await api.get(`/chat-groups`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch chat groups');
         }
@@ -45,12 +45,12 @@ const PulsePlusChat: React.FC = () => {
     if (isOpen) {
       fetchChatGroups();
     }
-  }, [isOpen, fetchWithAuth]);
+  }, [isOpen]);
 
   useEffect(() => {
     const fetchMessages = async (groupId: string) => {
       try {
-        const response = await fetchWithAuth(`/messages?group=${groupId}`);
+        const response = await api.get(`/messages?group=${groupId}`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch messages');
         }
@@ -66,7 +66,7 @@ const PulsePlusChat: React.FC = () => {
       fetchMessages(activeGroup);
       // Here you would set up a WebSocket connection for real-time updates
     }
-  }, [activeGroup, fetchWithAuth]);
+  }, [activeGroup]);
 
   useEffect(() => {
     scrollToBottom();
@@ -80,7 +80,7 @@ const PulsePlusChat: React.FC = () => {
   const handleSendMessage = async () => {
     if (newMessage.trim() && activeGroup) {
       try {
-        const response = await fetchWithAuth(`/messages`, {
+        const response = await api.get(`/messages`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

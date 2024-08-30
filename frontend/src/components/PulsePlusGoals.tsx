@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Target } from "lucide-react";
 import PulsePlusProgressBar from "./PulsePlusProgressBar";
-import useAuthenticatedFetch from "../utils/api";
+import api from "../utils/api";
 import Image from '@/components/PulsePlusImage';
 import imageLoader from "@/utils/imageLoader";
 
@@ -25,12 +25,12 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchGoals = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/goals?game=${gameId}`);
+        const response = await api.get(`/goals?game=${gameId}`);
         if (response.status !== 200) {
           throw new Error("Failed to fetch goals");
         }
@@ -49,7 +49,7 @@ const PulsePlusGoals: React.FC<PulsePlusGoalsProps> = ({ gameId }) => {
     if (gameId) {
       fetchGoals(gameId);
     }
-  }, [gameId, fetchWithAuth]);
+  }, [gameId]);
 
   const toggleCategory = (categoryId: string) => {
     setOpenCategories((prev) =>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, ChevronUp, ChevronDown } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -26,14 +26,14 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
   const [departments, setDepartments] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
-        const response = await fetchWithAuth(`/leaderboard-members?game=${gameId}&timeFrame=${timeFrame}&department=${department}`);
+        const response = await api.get(`/leaderboard-members?game=${gameId}&timeFrame=${timeFrame}&department=${department}`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch leaderboard data');
         }
@@ -47,7 +47,7 @@ const PulsePlusLeaderboard: React.FC<PulsePlusLeaderboardProps> = ({ gameId }) =
     };
 
     fetchLeaderboardData();
-  }, [gameId, timeFrame, department, fetchWithAuth]);
+  }, [gameId, timeFrame, department]);
 
   
 

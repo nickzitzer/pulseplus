@@ -1,13 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
+import React from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { X } from 'lucide-react';
-import { DataModelFields, DataModelName } from '../types/dataModels';
+import { convertStringFormat, DataModelFields, DataModelName, getFieldsForTable } from '../types/dataModels';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { parseISO, format } from 'date-fns';
+import { parseISO } from 'date-fns';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
+import CodeMirror from '@uiw/react-codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { ConditionBuilder } from './fields';
+import { HexColorPicker } from 'react-colorful';
+
+// Add this helper function at the top of the file
+const findModelType = (modelType: string): keyof typeof DataModelFields | undefined => {
+  if (!modelType) return undefined;
+  
+  // Remove trailing 's' if present
+  const singularModelType = modelType.endsWith('s') ? modelType.slice(0, -1) : modelType;
+  
+  const pascalCaseModelType = convertStringFormat(singularModelType, 'pascalCase');
+  return Object.keys(DataModelFields).find(
+    key => key === pascalCaseModelType
+  ) as keyof typeof DataModelFields | undefined;
+};
 
 type ModelType = DataModelName;
 
@@ -15,10 +32,13 @@ interface DataModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
-  initialData: any;
   modelType: ModelType;
   mode: 'create' | 'edit';
   title: string;
+  data: any; // New prop for the item data
+  loading: boolean; // New prop for loading state
+  error: string | null; // New prop for error state
+  editingItemId: string | null;
 }
 
 interface FieldConfig {
@@ -31,18 +51,26 @@ const DataModal: React.FC<DataModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  initialData,
   modelType,
   mode,
   title,
+  data,
+  loading,
+  error,
 }) => {
   if (!isOpen) return null;
 
-  const model = DataModelFields[modelType];
+  const actualModelType = findModelType(modelType);
+  if (!actualModelType) {
+    console.error(`No matching model found for: ${modelType}`);
+    return null;
+  }
+
+  const model = DataModelFields[actualModelType];
   const fields: FieldConfig[] = Object.entries(model).map(([key, value]) => ({
     name: key,
     fieldType: getFieldType(value),
-    label: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '),
+    label: convertStringFormat(key, 'display'),
   }));
 
   const validationSchema = Yup.object().shape(
@@ -67,6 +95,21 @@ const DataModal: React.FC<DataModalProps> = ({
             return value instanceof File && ['image/jpeg', 'image/png', 'image/gif'].includes(value.type);
           });
           break;
+        case 'script':
+          schema[field.name] = Yup.string().required(`${field.label} is required`);
+          break;
+        case 'condition':
+          schema[field.name] = Yup.array().of(
+            Yup.object().shape({
+              field: Yup.string().required('Field is required'),
+              operator: Yup.string().oneOf(['==', '===', '!=', '!==', '>', '>=', '<', '<=']).required('Operator is required'),
+              value: Yup.string().required('Value is required'),
+            })
+          );
+          break;
+        case 'color':
+          schema[field.name] = Yup.string().required(`${field.label} is required`);
+          break;
         default:
           schema[field.name] = Yup.string().required(`${field.label} is required`);
       }
@@ -76,7 +119,7 @@ const DataModal: React.FC<DataModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-2xl h-[90vh] max-h-[800px] flex flex-col">
+      <div className="bg-white rounded-lg w-full max-w-[80%] h-[90vh] max-h-[800px] flex flex-col">
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">{title}</h2>
@@ -85,46 +128,53 @@ const DataModal: React.FC<DataModalProps> = ({
             </button>
           </div>
         </div>
-        <Formik
-          initialValues={initialData}
-          validationSchema={validationSchema}
-          onSubmit={(values, formikHelpers: FormikHelpers<any>) => onSubmit(values)}
-        >
-          {({ errors, touched, setFieldValue, values }) => (
-            <Form className="flex flex-col h-full">
-              <div className="flex-grow overflow-y-auto p-6" style={{ maxHeight: 'calc(100% - 140px)' }}>
-                {fields.map((field) => (
-                  <div key={field.name} className="mb-4">
-                    <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
-                      {field.label}
-                    </label>
-                    {renderField(field, setFieldValue, values)}
-                    <ErrorMessage name={field.name}>
-                      {(msg) => <div className="text-red-500 text-sm mt-1">{msg}</div>}
-                    </ErrorMessage>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-gray-200 p-6 bg-white rounded-b-lg">
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 mr-2"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
-                  >
-                    {mode === 'create' ? 'Create' : 'Update'}
-                  </button>
+        {loading ? (
+          <p className="p-6">Loading...</p>
+        ) : error ? (
+          <p className="p-6 text-red-500">{error}</p>
+        ) : (
+          <Formik
+            initialValues={mode === 'create' ? getInitialValues(model) : data}
+            validationSchema={validationSchema}
+            onSubmit={onSubmit}
+            enableReinitialize
+          >
+            {({ errors, touched, setFieldValue, values }) => (
+              <Form className="flex flex-col h-full">
+                <div className="flex-grow overflow-y-auto p-6" style={{ maxHeight: 'calc(100% - 140px)' }}>
+                  {fields.map((field) => (
+                    <div key={field.name} className="mb-4">
+                      <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
+                        {field.label}
+                      </label>
+                      {renderField(field, setFieldValue, values, actualModelType)}
+                      <ErrorMessage name={field.name}>
+                        {(msg) => <div className="text-red-500 text-sm mt-1">{msg}</div>}
+                      </ErrorMessage>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                <div className="border-t border-gray-200 p-6 bg-white rounded-b-lg">
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 mr-2"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                    >
+                      {mode === 'create' ? 'Create' : 'Update'}
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
       </div>
     </div>
   );
@@ -142,6 +192,12 @@ function getFieldType(value: string): string {
       return 'datetime';
     case 'image':
       return 'image';
+    case 'script':
+      return 'script';
+    case 'condition':
+      return 'condition';
+    case 'color':
+      return 'color';
     default:
       return 'text';
   }
@@ -150,7 +206,8 @@ function getFieldType(value: string): string {
 function renderField(
   field: FieldConfig,
   setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void,
-  values: any
+  values: any,
+  modelType: DataModelName
 ) {
   const commonClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500";
   
@@ -198,13 +255,53 @@ function renderField(
             }}
             className={commonClasses}
           />
-          <Image
-            src={typeof values[field.name] === 'string' ? values[field.name] : URL.createObjectURL(values[field.name])}
-            alt="Preview"
-            width={128}
-            height={128}
-            loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
-            className="mt-2 object-cover rounded"
+          {values[field.name] && (
+            <Image
+              src={typeof values[field.name] === 'string' 
+                ? values[field.name] 
+                : values[field.name] instanceof File 
+                  ? URL.createObjectURL(values[field.name]) 
+                  : ''}
+              alt="Preview"
+              width={128}
+              height={128}
+              loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+              className="mt-2 object-cover rounded"
+            />
+          )}
+        </div>
+      );
+    case 'script':
+      return (
+        <CodeMirror
+          value={values[field.name]}
+          height="200px"
+          extensions={[javascript({ jsx: true })]}
+          onChange={(value) => setFieldValue(field.name, value)}
+          className={commonClasses}
+        />
+      );
+    case 'condition':
+      return (
+        <ConditionBuilder
+          conditions={values[field.name] || []}
+          onChange={(newConditions) => setFieldValue(field.name, newConditions)}
+          tableName={values.table_name || modelType}
+        />
+      );
+    case 'color':
+      return (
+        <div>
+          <HexColorPicker
+            color={values[field.name] || '#000000'}
+            onChange={(color) => setFieldValue(field.name, color)}
+          />
+          <input
+            type="text"
+            value={values[field.name] || ''}
+            onChange={(e) => setFieldValue(field.name, e.target.value)}
+            className={`${commonClasses} mt-2`}
+            placeholder="#000000"
           />
         </div>
       );
@@ -218,6 +315,31 @@ function renderField(
         />
       );
   }
+}
+
+function getInitialValues(model: typeof DataModelFields[DataModelName]) {
+  return Object.keys(model).reduce((acc, key) => {
+    switch ((model as Record<string, string>)[key]) {
+      case 'image':
+        acc[key] = null;
+        break;
+      case 'boolean':
+        acc[key] = false;
+        break;
+      case 'number':
+        acc[key] = 0;
+        break;
+      case 'condition':
+        acc[key] = [];
+        break;
+      case 'color':
+        acc[key] = '#000000';
+        break;
+      default:
+        acc[key] = '';
+    }
+    return acc;
+  }, {} as Record<string, any>);
 }
 
 export default DataModal;

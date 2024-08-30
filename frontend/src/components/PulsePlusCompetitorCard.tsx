@@ -5,7 +5,7 @@ import PulsePlusProgressBar from './PulsePlusProgressBar';
 import PulsePlusLeagueStandings from './PulsePlusLeagueStandings';
 import PulsePlusBadges from './PulsePlusBadges';
 import PulsePlusKPIs from './PulsePlusKPIs';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import imageLoader from '@/utils/imageLoader';
 
 interface CompetitorData {
@@ -37,19 +37,19 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchCompetitorData = async () => {
       try {
         setLoading(true);
-        const response = await fetchWithAuth(`/competitors/${competitorId}`);
+        const response = await api.get(`/competitors/${competitorId}`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch competitor data');
         }
         const data = response.data;
         // Fetch league data
-        const leagueResponse = await fetchWithAuth(`/level-instance-members?competitor=${competitorId}&game=${gameId}`);
+        const leagueResponse = await api.get(`/level-instance-members?competitor=${competitorId}&game=${gameId}`);
         if (leagueResponse.status !== 200) {
           throw new Error('Failed to fetch league data');
         }
@@ -82,7 +82,7 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
     };
 
     fetchCompetitorData();
-  }, [competitorId, gameId, fetchWithAuth]);
+  }, [competitorId, gameId]);
 
   const tabs = [
     { id: 'league_standings', label: 'League', icon: <BarChart2 className="w-4 h-4" /> },

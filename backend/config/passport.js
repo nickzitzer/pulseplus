@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 
 const options = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  jwtFromRequest: (req) => req.cookies.auth_token,
   secretOrKey: process.env.JWT_SECRET
 };
 

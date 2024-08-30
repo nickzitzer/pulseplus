@@ -1,4 +1,5 @@
 -- Drop existing tables
+DROP TABLE IF EXISTS sso_provider CASCADE;
 DROP TABLE IF EXISTS goal_instance CASCADE;
 DROP TABLE IF EXISTS achievement_competitor CASCADE;
 DROP TABLE IF EXISTS kpi_instance CASCADE;
@@ -30,12 +31,27 @@ DROP TABLE IF EXISTS survey_question CASCADE;
 DROP TABLE IF EXISTS survey_response CASCADE;
 DROP TABLE IF EXISTS notification_status CASCADE;
 DROP TABLE IF EXISTS sys_user CASCADE;
+DROP TABLE IF EXISTS script_rule CASCADE;
+
+
 
 -- Enable UUID generation if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Create tables
+CREATE TABLE sso_provider (
+    sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    entity_id VARCHAR(255) NOT NULL,
+    single_sign_on_service VARCHAR(255) NOT NULL,
+    single_logout_service VARCHAR(255),
+    certificate TEXT NOT NULL,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE sys_user (
     sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_name VARCHAR(40) NOT NULL UNIQUE,
@@ -53,7 +69,9 @@ CREATE TABLE sys_user (
     sys_created_by VARCHAR(40),
     sys_updated_by VARCHAR(40),
     department_id UUID,
-    role VARCHAR(40)
+    role VARCHAR(40),
+    sso_provider_id UUID REFERENCES sso_provider(sys_id),
+    sso_user_id VARCHAR(255)
 );
 
 CREATE TABLE sys_user_group (
@@ -442,6 +460,23 @@ CREATE TABLE notification_status (
     read BOOLEAN DEFAULT FALSE,
     read_at TIMESTAMP
 );
+
+CREATE TABLE script_rule (
+    sys_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    table_name VARCHAR(80) NOT NULL,
+    rule_name VARCHAR(255) NOT NULL,
+    condition TEXT,
+    insert_enabled BOOLEAN DEFAULT false,
+    update_enabled BOOLEAN DEFAULT false,
+    query_enabled BOOLEAN DEFAULT false,
+    delete_enabled BOOLEAN DEFAULT false,
+    script TEXT NOT NULL,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_script_rule_table_name ON script_rule(table_name);
 
 -- Add foreign key constraints
 ALTER TABLE sys_user ADD CONSTRAINT fk_sys_user_department FOREIGN KEY (department_id) REFERENCES department(sys_id);

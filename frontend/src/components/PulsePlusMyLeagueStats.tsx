@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PulsePlusProgressBar from './PulsePlusProgressBar';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -24,14 +24,14 @@ const PulsePlusMyLeagueStats: React.FC<PulsePlusMyLeagueStatsProps> = ({ gameId,
   const [leagueStats, setLeagueStats] = useState<LeagueStats | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   
 
   useEffect(() => {
     const fetchLeagueStats = async () => {
       try {
-        const response = await fetchWithAuth(`/league-stats?game=${gameId}&competitor=${competitorId}`);
+        const response = await api.get(`/league-stats?game=${gameId}&competitor=${competitorId}`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch league stats');
         }
@@ -44,7 +44,7 @@ const PulsePlusMyLeagueStats: React.FC<PulsePlusMyLeagueStatsProps> = ({ gameId,
     };
 
     fetchLeagueStats();
-  }, [gameId, competitorId, fetchWithAuth]);
+  }, [gameId, competitorId]);
 
 
   if (error) {

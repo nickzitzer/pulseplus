@@ -6,38 +6,22 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, loading, refreshToken } = useAuth();
+  const { user, loading, setIntendedUrl } = useAuth();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (!loading) {
-      if (!user && router.pathname !== '/login' && router.pathname !== '/terms-of-service') {
+      if (user) {
+        setIsReady(true);
+      } else if (router.pathname !== '/login' && router.pathname !== '/terms-of-service') {
+        setIntendedUrl(router.pathname); // Use the setIntendedUrl from context
         router.push('/login');
       } else {
         setIsReady(true);
       }
     }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    const handleRouteChange = async () => {
-      if (user) {
-        try {
-          await refreshToken();
-        } catch (error) {
-          console.error('Token refresh failed', error);
-          router.push('/login');
-        }
-      }
-    };
-
-    router.events.on('routeChangeStart', handleRouteChange);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-    };
-  }, [user, refreshToken, router]);
+  }, [user, loading, router, setIntendedUrl]);
 
   if (loading || !isReady) {
     return <div>Loading...</div>;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Users, Calendar } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -24,12 +24,12 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchCompetitions = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/competitions?game=${gameId}`);
+        const response = await api.get(`/competitions?game=${gameId}`);
         const data = response.data;
         setCompetitions(data);
       } catch (error) {
@@ -41,7 +41,7 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
     if (gameId) {
       fetchCompetitions(gameId);
     }
-  }, [gameId, fetchWithAuth]);
+  }, [gameId]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;

@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "concurrently": "^6.2.0"
+  },
+  "dependencies": {
+    "@react-awesome-query-builder/ui": "^6.6.3"
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 
 interface SurveyQuestion {
   sys_id: string;
@@ -16,12 +16,12 @@ const PulsePlusSurvey: React.FC = () => {
   const [questions, setQuestions] = useState<SurveyQuestion[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   useEffect(() => {
     const fetchSurveyQuestions = async () => {
       try {
-        const response = await fetchWithAuth(`/survey-questions`);
+        const response = await api.get(`/survey-questions`);
         if (response.status !== 200) {
           throw new Error('Failed to fetch survey questions');
         }
@@ -36,7 +36,7 @@ const PulsePlusSurvey: React.FC = () => {
     if (isOpen) {
       fetchSurveyQuestions();
     }
-  }, [isOpen, fetchWithAuth]);
+  }, [isOpen]);
 
   
 
@@ -60,7 +60,7 @@ const PulsePlusSurvey: React.FC = () => {
 
   const submitSurvey = async () => {
     try {
-      const response = await fetchWithAuth(`/survey-responses`, {
+      const response = await api.get(`/survey-responses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

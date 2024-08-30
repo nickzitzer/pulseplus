@@ -1,5 +1,6 @@
 services:
   frontend:
+    container_name: pulseplus-frontend
     image: ${FRONTEND_IMAGE}
     build:
       context: ./frontend
@@ -16,10 +17,15 @@ services:
       - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
       - NEXT_PUBLIC_FRONTEND_PORT=${FRONTEND_PORT}
       - NEXT_PUBLIC_BACKEND_PORT=${BACKEND_PORT}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       - backend
 
   backend:
+    container_name: pulseplus-backend
     image: ${BACKEND_IMAGE}
     build:
       context: ./backend
@@ -48,11 +54,16 @@ services:
       - REBUILD_DB=${REBUILD_DB}
       - FRONTEND_PORT=${FRONTEND_PORT}
       - BACKEND_PORT=${BACKEND_PORT}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
     depends_on:
       db:
         condition: service_healthy
 
   db:
+    container_name: pulseplus-db
     image: postgres:13
     environment:
       - POSTGRES_USER=pulseplus-admin
@@ -62,7 +73,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 

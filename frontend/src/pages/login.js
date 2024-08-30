@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/auth';
+import SSOLoginButtons from '../components/SSOLoginButtons';
 
 const LoginPage = () => {
   const [user_name, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, intendedUrl } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,7 +16,7 @@ const LoginPage = () => {
 
     try {
       await login(user_name, password);
-      router.push('/'); // Redirect to home page after successful login
+      router.push(intendedUrl || '/');
     } catch (err) {
       console.error('Login error:', err);
       setError('Invalid user name or password');
@@ -76,6 +77,7 @@ const LoginPage = () => {
             </button>
           </div>
         </form>
+        <SSOLoginButtons />
       </div>
     </div>
   );

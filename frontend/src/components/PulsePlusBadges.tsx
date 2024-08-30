@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import { Star } from 'lucide-react';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '../utils/imageLoader';
@@ -12,7 +12,7 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
   const [badges, setBadges] = useState([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   function lightenDarkenColor(col: string, amt: number): string {
     let usePound = false;
@@ -44,7 +44,7 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
   useEffect(() => {
     const fetchBadges = async (gameId: string) => {
       try {
-        const response = await fetchWithAuth(`/badges?game=${gameId}`);
+        const response = await api.get(`/badges?game=${gameId}`);
         const data = response.data;
         setBadges(data);
       } catch (error) {
@@ -56,7 +56,7 @@ const PulsePlusBadges: React.FC<PulsePlusBadgesProps> = ({ gameId }) => {
     if (gameId) {
       fetchBadges(gameId);
     }
-  }, [gameId, fetchWithAuth]);
+  }, [gameId]);
 
   
 

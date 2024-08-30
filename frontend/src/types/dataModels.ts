@@ -17,7 +17,9 @@ export const DataModelFields = {
     sys_updated_by: 'string',
     department_id: 'string',
     role: 'string',
-    password_hash: 'string'
+    password_hash: 'string',
+    sso_provider_id: 'string',
+    sso_user_id: 'string'
   },
   Game: {
     sys_id: 'string',
@@ -27,8 +29,8 @@ export const DataModelFields = {
     gamemaster: 'string',
     image_url: 'image',
     point_system: 'string',
-    primary_color: 'string',
-    secondary_color: 'string',
+    primary_color: 'color',
+    secondary_color: 'color',
     background_url: 'image',
     competitor_group: 'string',
     active: 'boolean',
@@ -85,7 +87,7 @@ export const DataModelFields = {
     name: 'string',
     description: 'string',
     image_url: 'image',
-    color: 'string',
+    color: 'color',
     game: 'string',
     sys_created_on: 'datetime',
     sys_updated_on: 'datetime',
@@ -161,7 +163,7 @@ export const DataModelFields = {
     type: 'string',
     image_url: 'image',
     order_num: 'number',
-    color: 'string',
+    color: 'color',
     entry_points: 'number',
     sys_created_on: 'datetime',
     sys_updated_on: 'datetime',
@@ -222,7 +224,7 @@ export const DataModelFields = {
     type: 'string',
     competitors: 'string[]',
     active: 'boolean',
-    color: 'string',
+    color: 'color',
     last_action: 'datetime',
     exclude_weekends: 'boolean',
     sys_created_on: 'datetime',
@@ -351,12 +353,34 @@ export const DataModelFields = {
     user_id: 'string',
     read: 'boolean',
     read_at: 'datetime | null'
+  },
+  ScriptRule: {
+    sys_id: 'string',
+    table_name: 'string',
+    rule_name: 'string',
+    condition: 'condition',
+    insert_enabled: 'boolean',
+    update_enabled: 'boolean',
+    query_enabled: 'boolean',
+    delete_enabled: 'boolean',
+    script: 'script',
+    active: 'boolean',
+    sys_created_on: 'datetime',
+    sys_updated_on: 'datetime',
+    sys_created_by: 'string',
+    sys_updated_by: 'string'
   }
 } as const;
 
 export type DataModelName = keyof typeof DataModelFields;
 export type DataModelField<T extends DataModelName> = keyof typeof DataModelFields[T];
 export type DataModelType<T extends DataModelName, F extends DataModelField<T>> = typeof DataModelFields[T][F];
+
+export type Condition = {
+  field: string;
+  operator: '==' | '===' | '!=' | '!==' | '>' | '>=' | '<' | '<=';
+  value: string | number;
+};
 
 export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in DataModelField<T>]: any } {
   const model = DataModelFields[modelName];
@@ -385,6 +409,15 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
       case 'image':
         emptyObject[key] = null;
         break;
+      case 'script':
+        emptyObject[key] = '';
+        break;
+      case 'condition':
+        emptyObject[key] = [];
+        break;
+      case 'color':
+        emptyObject[key] = '#000000';
+        break;
       default:
         emptyObject[key] = null;
     }
@@ -392,5 +425,82 @@ export function createEmptyModel<T extends DataModelName>(modelName: T): { [K in
 
   return emptyObject as { [K in DataModelField<T>]: any };
 }
+
+export type StringFormat = 'database' | 'api' | 'display' | 'camelCase' | 'pascalCase';
+
+export function convertStringFormat(input: string, outputFormat: StringFormat): string {
+  if(!input) {
+    return '';
+  }
+  // First, convert the input to a common format (array of lowercase words)
+  let words: string[];
+  if (input.includes('_')) {
+    // Database format
+    words = input.toLowerCase().split('_');
+  } else if (input.includes('-')) {
+    // API format
+    words = input.toLowerCase().split('-');
+  } else if (input.includes(' ')) {
+    // Display format
+    words = input.toLowerCase().split(' ');
+  } else {
+    // Camel case
+    words = input.split(/(?=[A-Z])/).map(word => word.toLowerCase());
+  }
+
+  // Now convert to the desired output format
+  switch (outputFormat) {
+    case 'database':
+      return words.join('_');
+    case 'api':
+      return words.join('-');
+    case 'display':
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    case 'camelCase':
+      return words.map((word, index) => 
+        index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)
+      ).join('');
+    case 'pascalCase':
+      return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+    default:
+      throw new Error(`Unsupported output format: ${outputFormat}`);
+  }
+}
+
+export function formatTitle(str: string): string {
+  return convertStringFormat(str, 'display');
+}
+
+export function formatTableName(str: string): string {
+  return convertStringFormat(str, 'api') + 's';
+}
+
+export function convertDatabaseToDisplayName(dbName: string): string {
+  return convertStringFormat(dbName, 'display');
+}
+
+export function convertDisplayToDatabaseName(displayName: string): string {
+  return convertStringFormat(displayName, 'database');
+}
+
+export function getFieldsForTable(tableName: string): string[] {
+  const pascalCaseTableName = convertStringFormat(tableName, 'pascalCase');
+  const model = DataModelFields[pascalCaseTableName as DataModelName];
+  return model ? Object.keys(model) : [];
+}
+
+export const sectionMappings: Record<
+  string,
+  { tableName: string; displayName: string; model: string[] }
+> = Object.entries(DataModelFields).reduce((acc, [key, model]) => {
+  const displayName = formatTitle(key);
+  const tableName = formatTableName(displayName);
+  acc[tableName] = {
+    tableName,
+    displayName,
+    model: Object.keys(model),
+  };
+  return acc;
+}, {} as Record<string, { tableName: string; displayName: string; model: string[] }>);
 
 export type UserRole = 'ADMIN' | 'USER' | 'MANAGER' | string;

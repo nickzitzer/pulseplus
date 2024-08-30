@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
@@ -36,16 +36,16 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
   const [departments, setDepartments] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWithAuth = useAuthenticatedFetch();
+
 
   
 
   useEffect(() => {
     const fetchKPIData = async (gameId: string) => {
       try {
-        const kpiResponse = await fetchWithAuth(`/kpis?game=${gameId}`);
-        const competitorResponse = await fetchWithAuth(`/competitors?game=${gameId}`);
-        const kpiInstanceResponse = await fetchWithAuth(`/kpi-instance-rollup?game=${gameId}&year=${year}`);
+        const kpiResponse = await api.get(`/kpis?game=${gameId}`);
+        const competitorResponse = await api.get(`/competitors?game=${gameId}`);
+        const kpiInstanceResponse = await api.get(`/kpi-instance-rollup?game=${gameId}&year=${year}`);
 
         const kpiData = kpiResponse.data;
         const competitorData = competitorResponse.data;
@@ -68,7 +68,7 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
     if (gameId) {
       fetchKPIData(gameId);
     }
-  }, [gameId, fetchWithAuth, year]);
+  }, [gameId, year]);
 
 
   const handleSort = (column: string) => {

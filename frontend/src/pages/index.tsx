@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import Head from 'next/head';
 import Link from 'next/link';
 import { Home, Target, Trophy, Compass, BarChart2, Medal, Star, Activity, LucideLayoutDashboard, HeartPulse } from 'lucide-react';
@@ -44,8 +44,6 @@ const PulsePlusHome: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const fetchWithAuth = useAuthenticatedFetch();
-
   useEffect(() => {
     if (game) {
       setSelectedGame(game as string);
@@ -60,7 +58,7 @@ const PulsePlusHome: React.FC = () => {
           if (cachedCompetitorId) {
             setCompetitorId(cachedCompetitorId);
           } else {
-            const response = await fetchWithAuth(`/competitors/current`);
+            const response = await api.get(`/competitors/current`);
             if (response.status !== 200) {
               throw new Error('Failed to fetch competitor ID');
             }
@@ -76,7 +74,7 @@ const PulsePlusHome: React.FC = () => {
     };
   
     fetchCompetitorId();
-  }, [user, fetchWithAuth]);
+  }, [user]);
 
   
 

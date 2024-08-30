@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
-import useAuthenticatedApi from "../utils/api";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useRouter } from 'next/router';
+import api from "../utils/api";
 import { convertToCSV } from "../utils/csvExport";
 import {
   Menu,
@@ -11,6 +12,7 @@ import {
   ChevronUp,
   Trash2,
   Download,
+  Key,
 } from "lucide-react";
 import Link from "next/link";
 import styles from "./AdminDashboard.module.css";
@@ -19,32 +21,22 @@ import { parseISO, format } from "date-fns";
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
-import { DataModelFields, DataModelName } from "../types/dataModels";
-
-console.log("Data Models", DataModelFields);
-
-const formatTitle = (str: string) => {
-  return str.replace(/([A-Z])/g, " $1").trim();
-};
-
-const sectionMappings: Record<
-  string,
-  { tableName: string; displayName: string; model: string[] }
-> = Object.entries(DataModelFields).reduce((acc, [key, model]) => {
-  const tableName = key.toLowerCase() + "s"; // Assuming plural form is just adding 's'
-  acc[tableName] = {
-    tableName,
-    displayName: formatTitle(key),
-    model: Object.keys(model),
-  };
-  return acc;
-}, {} as Record<string, { tableName: string; displayName: string; model: string[] }>);
+import { 
+  DataModelFields, 
+  DataModelName, 
+  convertStringFormat,
+  sectionMappings
+} from "../types/dataModels";
 
 const defaultSection = Object.keys(sectionMappings)[0];
 
 const AdminDashboard: React.FC = () => {
-  const api = useAuthenticatedApi();
-  const [activeSection, setActiveSection] = useState<string>(defaultSection);
+  const router = useRouter();
+  const { section, id, page, itemsPerPage: itemsPerPageQuery, view } = router.query;
+
+  const [activeSection, setActiveSection] = useState<string>(() => {
+    return (section as string) || defaultSection;
+  });
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,12 +46,20 @@ const AdminDashboard: React.FC = () => {
     key: string;
     direction: "ascending" | "descending";
   } | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(() => {
+    return parseInt(page as string) || 1;
+  });
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    return parseInt(itemsPerPageQuery as string) || 10;
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [modalData, setModalData] = useState<any>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
   const [navFilter, setNavFilter] = useState("");
+  const [currentView, setCurrentView] = useState<"list" | "form">("list");
 
   const sortedSections = useMemo(() => {
     return Object.entries(sectionMappings).sort(([, a], [, b]) =>
@@ -74,32 +74,186 @@ const AdminDashboard: React.FC = () => {
   }, [sortedSections, navFilter]);
 
   useEffect(() => {
-    console.log("activeSection:", activeSection);
+    if (section) {
+      setActiveSection(section as string);
+    }
+    if (page) {
+      setCurrentPage(parseInt(page as string));
+    }
+    if (itemsPerPageQuery) {
+      setItemsPerPage(parseInt(itemsPerPageQuery as string));
+    }
+    if (view) {
+      setCurrentView(view as "list" | "form");
+      if (view === "form" && !id) {
+        // Open the create form when view is "form" and there's no id
+        setIsModalOpen(true);
+        setModalMode("create");
+        setEditingItemId(null);
+        setModalData(null);
+      }
+    }
+  }, [section, page, itemsPerPageQuery, view, id]);
+
+  const updateQuery = useCallback((newQuery: any) => {
+    router.push({ pathname: router.pathname, query: newQuery }, undefined, { shallow: true });
+  }, [router]);
+
+  const debouncedUpdateQuery = useMemo(() => debounce(updateQuery, 300), [updateQuery]);
+
+  useEffect(() => {
+    const query: { [key: string]: string } = {
+      section: activeSection,
+      page: currentPage.toString(),
+      itemsPerPage: itemsPerPage.toString(),
+      view: currentView,
+    };
+
+    if (isModalOpen && editingItemId) {
+      query.id = editingItemId;
+    }
+
+    // Check if the new query is different from the current URL query
+    const currentQuery = router.query;
+    const hasChanged = Object.keys(query).some(key => query[key] !== currentQuery[key]);
+
+    if (hasChanged) {
+      debouncedUpdateQuery(query);
+    }
+
+    return () => {
+      debouncedUpdateQuery.cancel();
+    };
+  }, [activeSection, currentPage, itemsPerPage, isModalOpen, editingItemId, currentView, debouncedUpdateQuery, router.query]);
+
+  const handleSectionChange = useCallback((newSection: string) => {
+    setActiveSection(newSection);
+    setCurrentPage(1);
+    setCurrentView("list");
+    updateQuery({ section: newSection, page: '1', itemsPerPage: itemsPerPage.toString(), view: 'list' });
+  }, [itemsPerPage, updateQuery]);
+
+  const fetchListData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api(`/${sectionMappings[activeSection].tableName}`);
+      if (response.status !== 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setData(response.data);
+    } catch (err: unknown) {
+      console.error(`Error fetching list data:`, err);
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      setError(`Failed to fetch list data: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
   }, [activeSection]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await api(`/${sectionMappings[activeSection].tableName}`);
-        if (response.status !== 200) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = response.data;
-        setData(result);
-      } catch (err: unknown) {
-        console.error(`Error fetching ${activeSection}:`, err);
-        const errorMessage =
-          err instanceof Error ? err.message : "An unknown error occurred";
-        setError(`Failed to fetch ${activeSection}: ${errorMessage}`);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchListData();
+  }, [activeSection, currentPage, itemsPerPage, fetchListData]);
 
-    fetchData();
-  }, [activeSection, api]);
+  useEffect(() => {
+    if (section && id) {
+      setIsModalOpen(true);
+      setModalMode("edit");
+      setEditingItemId(id as string);
+      fetchItemData(sectionMappings[section as string].tableName, id as string);
+    }
+  }, [section, id]);
+
+  const fetchItemData = async (tableName: string, itemId: string) => {
+    setModalLoading(true);
+    setModalError(null);
+    try {
+      const response = await api(`/${tableName}/${itemId}`);
+      if (response.status !== 200) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setModalData(response.data);
+    } catch (err: unknown) {
+      console.error(`Error fetching item:`, err);
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      setModalError(`Failed to fetch item: ${errorMessage}`);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleCreate = useCallback((sectionKey: string) => {
+    setIsModalOpen(true);
+    setModalMode("create");
+    setEditingItemId(null);
+    setModalData(null);
+    setCurrentView("form");
+    updateQuery({ 
+      section: sectionKey, 
+      view: 'form',
+      itemsPerPage: itemsPerPage.toString(),
+      page: '1' // Reset to page 1 when creating a new item
+    });
+  }, [itemsPerPage, updateQuery]);
+
+  const handleEdit = useCallback((sectionKey: string, itemId: string) => {
+    setIsModalOpen(true);
+    setModalMode("edit");
+    setEditingItemId(itemId);
+    setCurrentView("form");
+    fetchItemData(sectionMappings[sectionKey].tableName, itemId);
+    updateQuery({ 
+      section: sectionKey, 
+      id: itemId,
+      view: 'form',
+      page: currentPage.toString(),
+      itemsPerPage: itemsPerPage.toString()
+    });
+  }, [updateQuery, currentPage, itemsPerPage]);
+
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setModalData(null);
+    setModalLoading(false);
+    setModalError(null);
+    setEditingItemId(null);
+    setCurrentView("list");
+    updateQuery({ 
+      section: activeSection, 
+      page: currentPage.toString(), 
+      itemsPerPage: itemsPerPage.toString(),
+      view: 'list'
+    });
+  }, [activeSection, currentPage, itemsPerPage, updateQuery]);
+
+  const handleModalSubmit = async (formData: any) => {
+    try {
+      const url = `/${section}${modalMode === "edit" ? `/${id}` : ""}`;
+      const method = modalMode === "create" ? "POST" : "PUT";
+
+      const response = await api.request({
+        method,
+        url,
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const result = response.data;
+      if (modalMode === "create") {
+        setData((prevData) => [...prevData, result]);
+      } else {
+        setData((prevData) => prevData.map((item) => (item.sys_id === result.sys_id ? result : item)));
+      }
+
+      handleModalClose();
+      fetchListData(); // Refresh the list after submit
+    } catch (err) {
+      console.error(`Error ${modalMode === "create" ? "creating" : "updating"} item:`, err);
+      alert(`Failed to ${modalMode === "create" ? "create" : "update"} item. Please try again.`);
+    }
+  };
 
   const TABLE_HEAD = useMemo(() => {
     const section = sectionMappings[activeSection];
@@ -108,13 +262,17 @@ const AdminDashboard: React.FC = () => {
       return [];
     }
 
-    return section.model.map((key) => ({
-      label: key
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" "),
+    const dataModelKey = convertStringFormat(section.displayName, 'pascalCase') as DataModelName;
+    const modelFields = DataModelFields[dataModelKey];
+    if (!modelFields) {
+      console.error(`No model fields found for section: ${section.displayName}. Returning empty array.`);
+      return [];
+    }
+
+    return Object.entries(modelFields).map(([key, fieldType]) => ({
+      label: convertStringFormat(key, 'display'),
       value: key,
-      type: DataModelFields[section.displayName as keyof typeof DataModelFields][key as keyof (typeof DataModelFields)[keyof typeof DataModelFields]] as string,
+      type: String(fieldType),
     }));
   }, [activeSection]);
 
@@ -145,11 +303,11 @@ const AdminDashboard: React.FC = () => {
   }, [filteredData, sortConfig]);
 
   const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedData.slice(startIndex, startIndex + itemsPerPage);
+    const startIndex = (currentPage - 1) * Number(itemsPerPage);
+    return sortedData.slice(startIndex, startIndex + Number(itemsPerPage));
   }, [sortedData, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedData.length / Number(itemsPerPage));
 
   const requestSort = (key: string) => {
     let direction: "ascending" | "descending" = "ascending";
@@ -174,12 +332,7 @@ const AdminDashboard: React.FC = () => {
   const handleDelete = async (sys_id: string) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        const response = await api(
-          `/${sectionMappings[activeSection].tableName}/${sys_id}`,
-          {
-            method: "DELETE",
-          }
-        );
+        const response = await api.delete(`/${sectionMappings[activeSection].tableName}/${sys_id}`);
         if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -218,76 +371,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleCreate = () => {
-    setModalMode("create");
-    setSelectedItem(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (item: any) => {
-    setModalMode("edit");
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
-  };
-
-  const handleModalSubmit = async (formData: any) => {
-    try {
-      const url = `/${sectionMappings[activeSection].tableName}${
-        modalMode === "edit" ? `/${formData.sys_id}` : ""
-      }`;
-      const method = modalMode === "create" ? "POST" : "PUT";
-
-      // Create a new FormData object
-      const data = new FormData();
-
-      // Append all form fields to the FormData object
-      Object.keys(formData).forEach(key => {
-        const fieldType = DataModelFields[sectionMappings[activeSection].displayName as keyof typeof DataModelFields][key as keyof (typeof DataModelFields)[keyof typeof DataModelFields]];
-        if (isImageField(fieldType)) {
-          // If it's an image field, trim '_url' from the end and use that as the key
-          const imageFieldName = key.replace(/_url$/, '');
-          data.append(imageFieldName, formData[key], formData[key].name);
-        } else {
-          // For other fields, just append the value
-          data.append(key, formData[key]);
-        }
-      });
-
-      const response = await api({
-        method,
-        url,
-        data,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const result = response.data;
-      if (modalMode === "create") {
-        setData((prevData) => [...prevData, result]);
-      } else {
-        setData((prevData) => prevData.map((item) => (item.sys_id === result.sys_id ? result : item)));
-      }
-
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error(
-        `Error ${modalMode === "create" ? "creating" : "updating"} item:`,
-        err
-      );
-      alert(
-        `Failed to ${
-          modalMode === "create" ? "create" : "update"
-        } item. Please try again.`
-      );
-    }
-  };
-
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     try {
@@ -301,6 +384,22 @@ const AdminDashboard: React.FC = () => {
   const isImageField = (fieldType: string | undefined): boolean => {
     return fieldType === 'image';
   };
+
+  // Add this check before rendering the table
+  const isDataEmpty = data.length === 0;
+
+  // Determine the current model type based on URL or active section
+  const currentModelType = useMemo(() => {
+    if (section) {
+      // If section is in the URL, find the corresponding model type
+      const sectionEntry = Object.entries(sectionMappings).find(([, value]) => value.tableName === section);
+      return sectionEntry ? sectionEntry[0] as DataModelName : 'User';
+    } else if (activeSection) {
+      // If no section in URL, use the active section
+      return sectionMappings[activeSection].tableName as DataModelName;
+    }
+    return 'User' as DataModelName; // Default to User if nothing else matches
+  }, [section, activeSection]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -343,7 +442,7 @@ const AdminDashboard: React.FC = () => {
                 {filteredSections.map(([key, section]) => (
                   <li key={key}>
                     <button
-                      onClick={() => setActiveSection(key)}
+                      onClick={() => handleSectionChange(key)}
                       className={`w-full text-left flex items-center space-x-2 px-2 py-1 rounded ${
                         activeSection === key
                           ? "bg-blue-100 text-blue-600"
@@ -354,6 +453,13 @@ const AdminDashboard: React.FC = () => {
                     </button>
                   </li>
                 ))}
+                <li>
+                  <Link href="/sso-providers">
+                    <p className="w-full text-left flex items-center space-x-2 px-2 py-1 rounded hover:bg-gray-100">
+                      <span>SSO Providers</span>
+                    </p>
+                  </Link>
+                </li>
               </ul>
             </nav>
           </div>
@@ -364,7 +470,7 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="mb-2 flex justify-between items-center">
               <h2 className="text-xl font-bold">
-                {sectionMappings[activeSection]?.displayName ||
+                {convertStringFormat(sectionMappings[activeSection]?.tableName, 'display') ||
                   "No Section Selected"}
               </h2>
               <div className="flex space-x-2">
@@ -377,19 +483,19 @@ const AdminDashboard: React.FC = () => {
                 />
                 <button
                   className={`px-3 py-1 rounded flex items-center text-sm ${
-                    sortedData.length === 0
+                    isDataEmpty || sortedData.length === 0
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-white text-black border border-gray-300 hover:bg-gray-50"
                   }`}
                   onClick={handleExportCSV}
-                  disabled={sortedData.length === 0}
+                  disabled={isDataEmpty || sortedData.length === 0}
                 >
                   <Download className="h-3 w-3 mr-1" />
                   Export CSV
                 </button>
                 <button
                   className="px-3 py-1 bg-green-500 text-white rounded flex items-center text-sm"
-                  onClick={handleCreate}
+                  onClick={() => handleCreate(activeSection)}
                 >
                   <Plus className="h-3 w-3 mr-1" />
                   Add {sectionMappings[activeSection]?.displayName || ""}
@@ -401,14 +507,15 @@ const AdminDashboard: React.FC = () => {
               <p>Loading...</p>
             ) : error ? (
               <p className="text-red-500">{error}</p>
+            ) : isDataEmpty ? (
+              <p>No data available. Create a new entry to get started.</p>
             ) : (
               <div className="relative border border-gray-300 rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr>
-                        {TABLE_HEAD.map((head) => (
-                          <th
+                        {TABLE_HEAD.map((head) =>                          <th
                             key={head.value}
                             className="text-left p-1 bg-gray-100 font-medium whitespace-nowrap border-b border-r border-gray-300"
                             onClick={() => requestSort(head.value)}
@@ -425,7 +532,7 @@ const AdminDashboard: React.FC = () => {
                               </span>
                             </div>
                           </th>
-                        ))}
+                        )}
                         <th className="p-0 bg-gray-100 font-medium sticky right-0 z-10">
                           <div
                             className={`h-full ${styles.actionsColumn} ${styles.actionsHeader}`}
@@ -438,7 +545,7 @@ const AdminDashboard: React.FC = () => {
                     <tbody>
                       {paginatedData.map((item, index) => (
                         <tr
-                          key={item.sys_id || index}
+                          key={item?.sys_id || index}
                           className={
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }
@@ -448,19 +555,23 @@ const AdminDashboard: React.FC = () => {
                               key={head.value}
                               className="p-1 border-b border-r border-gray-300"
                             >
-                              {isImageField(head.type) ? (
-                                <Image 
-                                  src={item[head.value]} 
-                                  alt="File preview" 
-                                  width={50}
-                                  height={50}
-                                  loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
-                                  className="object-contain"
-                                />
-                              ) : head.type === "datetime" ? (
-                                formatDate(item[head.value])
+                              {item && item[head.value] !== undefined ? (
+                                isImageField(head.type) ? (
+                                  <Image 
+                                    src={item[head.value]} 
+                                    alt="File preview" 
+                                    width={50}
+                                    height={50}
+                                    loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+                                    className="object-contain"
+                                  />
+                                ) : head.type === "datetime" ? (
+                                  formatDate(item[head.value])
+                                ) : (
+                                  item[head.value]
+                                )
                               ) : (
-                                item[head.value]
+                                "N/A"
                               )}
                             </td>
                           ))}
@@ -473,13 +584,14 @@ const AdminDashboard: React.FC = () => {
                               <div className="p-1 flex items-center justify-center h-full w-full">
                                 <button
                                   className="p-1 bg-blue-500 text-white rounded m-0.5"
-                                  onClick={() => handleEdit(item)}
+                                  onClick={() => handleEdit(activeSection, item.sys_id)}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </button>
                                 <button
                                   className="p-1 bg-red-500 text-white rounded hover:bg-red-600 m-0.5"
-                                  onClick={() => handleDelete(item.sys_id)}
+                                  onClick={() => item?.sys_id && handleDelete(item.sys_id)}
+                                  disabled={!item?.sys_id}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </button>
@@ -526,12 +638,12 @@ const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   className={`px-3 py-1 rounded flex items-center ${
-                    currentPage === totalPages || totalPages === 0
+                    currentPage === totalPages || totalPages === 0 || isDataEmpty
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-white text-black border border-gray-300 hover:bg-gray-50"
                   }`}
                   onClick={goToNextPage}
-                  disabled={currentPage === totalPages || totalPages === 0}
+                  disabled={currentPage === totalPages || totalPages === 0 || isDataEmpty}
                 >
                   Next
                   <ChevronRight className="h-3 w-3 ml-1" />
@@ -545,15 +657,33 @@ const AdminDashboard: React.FC = () => {
         isOpen={isModalOpen}
         onClose={handleModalClose}
         onSubmit={handleModalSubmit}
-        initialData={selectedItem || {}}
-        modelType={sectionMappings[activeSection]?.displayName as DataModelName}
+        modelType={currentModelType}
         mode={modalMode}
-        title={`${modalMode === "create" ? "Create" : "Edit"} ${
-          sectionMappings[activeSection]?.displayName
-        }`}
+        title={`${modalMode === "create" ? "Create" : "Edit"} ${convertStringFormat(currentModelType, 'display').slice(0, -1)}`}
+        data={modalData}
+        loading={modalLoading}
+        error={modalError}
+        editingItemId={editingItemId}
       />
     </div>
   );
 };
+
+// Modify the debounce function to include a cancel method
+function debounce(func: Function, wait: number) {
+  let timeout: NodeJS.Timeout;
+  const debouncedFunc: any = (...args: any[]) => {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+  debouncedFunc.cancel = () => {
+    clearTimeout(timeout);
+  };
+  return debouncedFunc;
+}
 
 export default AdminDashboard;

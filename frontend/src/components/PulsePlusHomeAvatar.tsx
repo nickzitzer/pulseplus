@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, User, Camera, Edit } from 'lucide-react';
-import useAuthenticatedFetch from '../utils/api';
+import api from '../utils/api';
 import { useAuth } from '../context/auth';
 import { useRouter } from 'next/router';
 import Image from '@/components/PulsePlusImage';
@@ -13,7 +13,6 @@ const PulsePlusHomeAvatar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, competitor, logout, updateCompetitor } = useAuth();
-  const fetchWithAuth = useAuthenticatedFetch();
   const router = useRouter();
 
   useEffect(() => {
@@ -42,7 +41,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
 
       try {
         console.log('Sending request to upload avatar');
-        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}`, {
+        const response = await api(`/competitors/${competitor.sys_id}`, {
           method: 'PATCH',
           data: formData,
           headers: {
@@ -73,7 +72,7 @@ const PulsePlusHomeAvatar: React.FC = () => {
   const handleUpdateAboutMe = async () => {
     if (competitor) {
       try {
-        const response = await fetchWithAuth(`/competitors/${competitor.sys_id}`, {
+        const response = await api(`/competitors/${competitor.sys_id}`, {
           method: 'PATCH',
           data: { about_me: newAboutMe },
         });

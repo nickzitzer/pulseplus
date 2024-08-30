@@ -6,6 +6,9 @@ const rateLimit = require('express-rate-limit');
 const passport = require('passport');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandlers');
 const logger = require('./utils/logger');
+const cookieParser = require('cookie-parser');
+const csrf = require('csurf');
+const applyScriptRules = require('./middleware/scriptRulesMiddleware');
 
 // Import routes
 const authRoutes = require('./routes/auth-routes');
@@ -35,6 +38,8 @@ const surveyQuestionRoutes = require('./routes/survey-question-routes');
 const surveyResponseRoutes = require('./routes/survey-response-routes');
 const notificationStatusRoutes = require('./routes/notification-status-routes');
 const userRoutes = require('./routes/user-routes');
+const ssoRoutes = require('./routes/sso-routes');
+const scriptRuleRoutes = require('./routes/script-rule-routes');
 
 const app = express();
 const port = process.env.BACKEND_PORT || 3000;
@@ -48,7 +53,7 @@ app.use(helmet());
 const corsOptions = {
   origin: `${process.env.NEXT_PUBLIC_FRONTEND_URL}:${process.env.FRONTEND_PORT}` || 'http://localhost:3000', // Allow requests from the frontend
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-  allowedHeaders: "Content-Type,Authorization",
+  allowedHeaders: "Content-Type,Authorization,X-CSRF-Token", // Add X-CSRF-Token here
   credentials: true,
   optionsSuccessStatus: 204
 };
@@ -56,6 +61,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(cookieParser());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -98,7 +104,26 @@ app.use(authenticateJwt);
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Apply CSRF protection to all routes except /api/auth
+const csrfProtection = csrf({ cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'production' } });
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/auth')) {
+    return next();
+  }
+  csrfProtection(req, res, next);
+});
+
+// Apply script rules middleware to all routes except authentication
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/auth')) {
+    applyScriptRules(req, res, next);
+  } else {
+    next();
+  }
+});
+
 // Routes
+app.use('/api/auth/sso', ssoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/competitions', competitionRoutes);
@@ -124,6 +149,7 @@ app.use('/api/survey-questions', surveyQuestionRoutes);
 app.use('/api/survey-responses', surveyResponseRoutes);
 app.use('/api/notification-statuses', notificationStatusRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/script-rules', scriptRuleRoutes);
 
 // Error handling
 app.use(notFoundHandler);
