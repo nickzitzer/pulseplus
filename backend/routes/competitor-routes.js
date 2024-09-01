@@ -8,7 +8,7 @@ const databaseUtils = require('../utils/databaseUtils');
 const path = require('path');
 
 // Create a new competitor
-router.post('/', upload.single('avatar'), async (req, res) => {
+router.post('/', upload.single('avatar_url'), async (req, res) => {
   try {
     const { user_id, total_earnings, account_balance, performance_group } = req.body;
     const imageData = await processImageUpload(req.file, 'avatar_url');
@@ -79,7 +79,7 @@ router.get('/', async (req, res) => {
 });
 
 // Update a competitor
-router.put('/:id', upload.single('avatar'), async (req, res) => {
+router.put('/:id', upload.single('avatar_url'), async (req, res) => {
   try {
     const { id } = req.params;
     const { user_id, total_earnings, account_balance, performance_group } = req.body;
@@ -106,15 +106,16 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
 });
 
 // Partial update of a competitor
-router.patch('/:id', upload.single('avatar'), async (req, res) => {
+router.patch('/:id', upload.single('avatar_url'), async (req, res) => {
   try {
     const { id } = req.params;
     const updateFields = req.body;
     
-    const fileUpdateResult = await handleFileUpdate(req.file, 'avatar_url', id, 'competitor');
-
-    if (fileUpdateResult.avatar_url) {
-      updateFields.avatar_url = fileUpdateResult.avatar_url;
+    if (req.file) {
+      const fileUpdateResult = await handleFileUpdate(req.file, 'avatar_url', id, 'competitor');
+      if (fileUpdateResult.avatar_url) {
+        updateFields.avatar_url = fileUpdateResult.avatar_url;
+      }
     }
 
     const competitor = await databaseUtils.partialUpdate('competitor', id, updateFields);
