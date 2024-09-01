@@ -96,7 +96,7 @@ router.patch('/:id', upload.fields([{ name: 'image_url', maxCount: 1 }, { name: 
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const game = await databaseUtils.findOne('game', `sys_id = '${id}'`);
+    const game = await databaseUtils.findOne('game', id);
     if (!game) {
       return res.status(404).json({ error: 'Game not found' });
     }

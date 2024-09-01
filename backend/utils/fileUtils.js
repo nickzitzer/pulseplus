@@ -55,7 +55,7 @@ async function processImageUpload(file, fieldName, entityId = null, tableName = 
 
   if (file) {
     console.log('File', file);
-    const fileName = `${fieldName}_${Date.now()}_${file.originalname}`;
+    const fileName = `${tableName}_${fieldName}_${entityId}_${Date.now()}_${file.originalname}`;
     const filePath = await writeFile(fileName, file.buffer);
     console.log('File saved successfully');
     imageData[fieldName] = `/uploads/${fileName}`;

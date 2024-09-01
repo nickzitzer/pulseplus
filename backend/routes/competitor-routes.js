@@ -39,11 +39,11 @@ router.get('/current', async (req, res) => {
   }
 
   try {
-    const competitor = await databaseUtils.findOne('competitor', `user_id = '${userId}'`);
+    const competitor = await databaseUtils.findAll('competitor', `user_id = '${userId}'`);
     if (!competitor) {
       return res.status(404).json({ error: 'Competitor not found' });
     }
-    res.json(competitor);
+    res.json(competitor[0]);
   } catch (err) {
     console.error('Error in /competitor/current:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message });
@@ -54,7 +54,7 @@ router.get('/current', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const competitor = await databaseUtils.findOne('competitor', `sys_id = '${id}'`);
+    const competitor = await databaseUtils.findOne('competitor', id);
     if (!competitor) {
       res.status(404).json({ error: 'Competitor not found' });
     } else {
@@ -136,7 +136,7 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     
     // Fetch the competitor to get the avatar_url before deletion
-    const competitor = await databaseUtils.findOne('competitor', `sys_id = '${id}'`);
+    const competitor = await databaseUtils.findOne('competitor', id);
     
     if (!competitor) {
       return res.status(404).json({ error: 'Competitor not found' });

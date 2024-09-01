@@ -87,7 +87,7 @@ router.patch('/:id', upload.single('image_url'), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const competition = await databaseUtils.findOne('competition', `sys_id = '${id}'`);
+    const competition = await databaseUtils.findOne('competition', id);
     if (!competition) {
       return res.status(404).json({ error: 'Competition not found' });
     }

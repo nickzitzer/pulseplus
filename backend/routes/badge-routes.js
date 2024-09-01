@@ -89,7 +89,7 @@ router.patch('/:id', upload.single('image_url'), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const badge = await databaseUtils.findOne('badge', `sys_id = '${id}'`);
+    const badge = await databaseUtils.findOne('badge', id);
     if (!badge) {
       return res.status(404).json({ error: 'Badge not found' });
     }
