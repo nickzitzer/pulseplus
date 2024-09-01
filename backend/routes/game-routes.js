@@ -3,14 +3,14 @@ const router = express.Router();
 const { pool, parseFilterQuery } = require('../db');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
-const { processImageUpload, deleteFile } = require('../utils/fileUtils');
+const { processImageUpload, deleteFile, handleFileUpdate } = require('../utils/fileUtils');
 const databaseUtils = require('../utils/databaseUtils');
 const path = require('path');
 
-router.post('/', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'background', maxCount: 1 }]), async (req, res) => {
+router.post('/', upload.fields([{ name: 'image_url', maxCount: 1 }, { name: 'background_url', maxCount: 1 }]), async (req, res) => {
   try {
-    const imageData = await processImageUpload(req.files['image'][0], 'image_url');
-    const backgroundData = await processImageUpload(req.files['background'][0], 'background_url');
+    const imageData = await processImageUpload(req.files['image_url'] ? req.files['image_url'][0] : null, 'image_url');
+    const backgroundData = await processImageUpload(req.files['background_url'] ? req.files['background_url'][0] : null, 'background_url');
     const game = await databaseUtils.create('game', {
       ...req.body,
       image_url: imageData.image_url,
@@ -48,25 +48,19 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'background', maxCount: 1 }]), async (req, res) => {
+router.put('/:id', upload.fields([{ name: 'image_url', maxCount: 1 }, { name: 'background_url', maxCount: 1 }]), async (req, res) => {
   try {
     const { id } = req.params;
-    const imageData = await processImageUpload(req.files['image'] ? req.files['image'][0] : null, 'image_url', id, 'game');
-    const backgroundData = await processImageUpload(req.files['background'] ? req.files['background'][0] : null, 'background_url', id, 'game');
+    const imageUpdateResult = await handleFileUpdate(req.files['image_url'] ? req.files['image_url'][0] : null, 'image_url', id, 'game');
+    const backgroundUpdateResult = await handleFileUpdate(req.files['background_url'] ? req.files['background_url'][0] : null, 'background_url', id, 'game');
     const game = await databaseUtils.update('game', id, {
       ...req.body,
-      image_url: imageData.image_url,
-      background_url: backgroundData.background_url
+      image_url: imageUpdateResult.image_url,
+      background_url: backgroundUpdateResult.background_url
     });
     if (!game) {
       res.status(404).json({ error: 'Game not found' });
     } else {
-      if (imageData.oldImageUrl) {
-        await deleteFile(path.join(__dirname, '..', imageData.oldImageUrl));
-      }
-      if (backgroundData.oldImageUrl) {
-        await deleteFile(path.join(__dirname, '..', backgroundData.oldImageUrl));
-      }
       res.json(game);
     }
   } catch (err) {
@@ -75,26 +69,23 @@ router.put('/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'backg
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', upload.fields([{ name: 'image_url', maxCount: 1 }, { name: 'background_url', maxCount: 1 }]), async (req, res) => {
   try {
     const { id } = req.params;
     const updateFields = req.body;
-    
-    const setClause = Object.keys(updateFields)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(', ');
-    
-    const values = Object.values(updateFields);
-    values.push(id);
-
-    const query = `UPDATE game SET ${setClause} WHERE sys_id = $${values.length} RETURNING *`;
-    
-    const { rows } = await pool.query(query, values);
-    
-    if (rows.length === 0) {
+    const imageUpdateResult = await handleFileUpdate(req.files['image_url'] ? req.files['image_url'][0] : null, 'image_url', id, 'game');
+    const backgroundUpdateResult = await handleFileUpdate(req.files['background_url'] ? req.files['background_url'][0] : null, 'background_url', id, 'game');
+    if (imageUpdateResult.image_url) {
+      updateFields.image_url = imageUpdateResult.image_url;
+    }
+    if (backgroundUpdateResult.background_url) {
+      updateFields.background_url = backgroundUpdateResult.background_url;
+    }
+    const game = await databaseUtils.partialUpdate('game', id, updateFields);
+    if (!game) {
       res.status(404).json({ error: 'Game not found' });
     } else {
-      res.json(rows[0]);
+      res.json(game);
     }
   } catch (err) {
     console.error(err);
@@ -105,11 +96,23 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rowCount } = await pool.query('DELETE FROM game WHERE sys_id = $1', [id]);
-    if (rowCount === 0) {
-      res.status(404).json({ error: 'Game not found' });
-    } else {
+    const game = await databaseUtils.findOne('game', `sys_id = '${id}'`);
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+    const deleted = await databaseUtils.delete('game', id);
+    if (deleted) {
+      if (game.image_url) {
+        const imageFilePath = path.join(__dirname, '..', game.image_url);
+        await deleteFile(imageFilePath);
+      }
+      if (game.background_url) {
+        const backgroundFilePath = path.join(__dirname, '..', game.background_url);
+        await deleteFile(backgroundFilePath);
+      }
       res.status(204).send();
+    } else {
+      res.status(500).json({ error: 'Failed to delete game' });
     }
   } catch (err) {
     console.error(err);

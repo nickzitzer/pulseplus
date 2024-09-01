@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { X } from 'lucide-react';
+import { X, Pipette } from 'lucide-react';
 import { convertStringFormat, DataModelFields, DataModelName, getFieldsForTable } from '../types/dataModels';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -12,6 +12,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { ConditionBuilder } from './fields';
 import { HexColorPicker } from 'react-colorful';
+import api from '../utils/api'; // Make sure to import your API utility// Import the Pipette icon from lucide-react
 
 // Add this helper function at the top of the file
 const findModelType = (modelType: string): keyof typeof DataModelFields | undefined => {
@@ -117,6 +118,37 @@ const DataModal: React.FC<DataModalProps> = ({
     }, {} as any)
   );
 
+  const handleSubmit = async (values: any, { setSubmitting }: any) => {
+    try {
+      const formData = new FormData();
+      
+      for (const [key, value] of Object.entries(values)) {
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else if (typeof value === 'object' && value !== null) {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+
+      const response = await api(`/${modelType}${mode === 'edit' ? `/${data.sys_id}` : ''}`, {
+        method: mode === 'create' ? 'POST' : 'PATCH',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      onSubmit(response.data);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      // Handle error (e.g., show error message)
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-[80%] h-[90vh] max-h-[800px] flex flex-col">
@@ -136,7 +168,7 @@ const DataModal: React.FC<DataModalProps> = ({
           <Formik
             initialValues={mode === 'create' ? getInitialValues(model) : data}
             validationSchema={validationSchema}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             enableReinitialize
           >
             {({ errors, touched, setFieldValue, values }) => (
@@ -257,11 +289,9 @@ function renderField(
           />
           {values[field.name] && (
             <Image
-              src={typeof values[field.name] === 'string' 
-                ? values[field.name] 
-                : values[field.name] instanceof File 
-                  ? URL.createObjectURL(values[field.name]) 
-                  : ''}
+              src={values[field.name] instanceof File 
+                ? URL.createObjectURL(values[field.name])
+                : values[field.name]}
               alt="Preview"
               width={128}
               height={128}
@@ -292,10 +322,32 @@ function renderField(
     case 'color':
       return (
         <div>
-          <HexColorPicker
-            color={values[field.name] || '#000000'}
-            onChange={(color) => setFieldValue(field.name, color)}
-          />
+          <div className="flex items-center mb-2">
+            <HexColorPicker
+              color={values[field.name] || '#000000'}
+              onChange={(color) => setFieldValue(field.name, color)}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                if ('EyeDropper' in window) {
+                  try {
+                    const eyeDropper = new (window as any).EyeDropper();
+                    const result = await eyeDropper.open();
+                    setFieldValue(field.name, result.sRGBHex);
+                  } catch (error) {
+                    console.error('EyeDropper error:', error);
+                  }
+                } else {
+                  alert('EyeDropper is not supported in this browser.');
+                }
+              }}
+              className="ml-4 p-2 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Pick color from screen"
+            >
+              <Pipette className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
           <input
             type="text"
             value={values[field.name] || ''}

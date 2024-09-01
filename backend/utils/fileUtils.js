@@ -50,18 +50,39 @@ async function processImageUpload(file, fieldName, entityId = null, tableName = 
     if (rows.length > 0) {
       oldImageUrl = rows[0][fieldName];
     }
+
   }
 
   if (file) {
+    console.log('File', file);
     const fileName = `${fieldName}_${Date.now()}_${file.originalname}`;
     const filePath = await writeFile(fileName, file.buffer);
+    console.log('File saved successfully');
     imageData[fieldName] = `/uploads/${fileName}`;
   } else {
     imageData[fieldName] = oldImageUrl || null;
   }
 
+  console.log
+
   imageData.oldImageUrl = oldImageUrl;
   return imageData;
+}
+
+async function handleFileUpdate(file, fieldName, entityId, tableName) {
+  const imageData = await processImageUpload(file, fieldName, entityId, tableName);
+  
+  let result = {
+    [fieldName]: imageData[fieldName]
+  };
+
+  if (imageData.oldImageUrl && imageData.oldImageUrl !== imageData[fieldName]) {
+    const oldFilePath = path.join(__dirname, '..', imageData.oldImageUrl);
+    await deleteFile(oldFilePath);
+    result.oldFileDeleted = true;
+  }
+
+  return result;
 }
 
 module.exports = {
@@ -69,4 +90,5 @@ module.exports = {
   readFile,
   deleteFile,
   processImageUpload,
+  handleFileUpdate, // Add this new function to the exports
 };
