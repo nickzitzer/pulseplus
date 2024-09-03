@@ -1,0 +1,39 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install -g npm@latest
+      - npm install -g aws-cli
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker images...
+      - docker build -t $BACKEND_REPOSITORY_URI:$IMAGE_TAG ./backend
+      - docker build -t $FRONTEND_REPOSITORY_URI:$IMAGE_TAG ./frontend
+      - docker tag $BACKEND_REPOSITORY_URI:$IMAGE_TAG $BACKEND_REPOSITORY_URI:latest
+      - docker tag $FRONTEND_REPOSITORY_URI:$IMAGE_TAG $FRONTEND_REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $BACKEND_REPOSITORY_URI:$IMAGE_TAG
+      - docker push $BACKEND_REPOSITORY_URI:latest
+      - docker push $FRONTEND_REPOSITORY_URI:$IMAGE_TAG
+      - docker push $FRONTEND_REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"backend","imageUri":"%s"},{"name":"frontend","imageUri":"%s"}]' $BACKEND_REPOSITORY_URI:$IMAGE_TAG $FRONTEND_REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+
+artifacts:
+  files: imagedefinitions.json
