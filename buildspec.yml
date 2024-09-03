@@ -16,13 +16,23 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
+      - echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
+      - echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
+      - |
+        if [ -z "$AWS_ACCOUNT_ID" ]; then
+          echo "AWS_ACCOUNT_ID is not set. Attempting to retrieve it..."
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "Retrieved AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
+        fi
+      - echo "ECR login command:"
+      - echo "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
       - BACKEND_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPOSITORY_NAME
       - FRONTEND_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME
-      - echo $BACKEND_REPOSITORY_URI
-      - echo $FRONTEND_REPOSITORY_URI
+      - echo "BACKEND_REPOSITORY_URI: $BACKEND_REPOSITORY_URI"
+      - echo "FRONTEND_REPOSITORY_URI: $FRONTEND_REPOSITORY_URI"
 
   build:
     commands:
