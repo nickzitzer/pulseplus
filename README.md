@@ -108,3 +108,43 @@ For any questions or issues, please contact support@happy-tech.biz or visit our 
 ---
 
 © 2024 Happy Technologies LLC. All rights reserved.
+
+---
+
+## Credentials for Testing
+
+1. John Doe (USER):
+```
+Username: john.doe
+Password: P@8xK2#mL9qF5$vN
+```
+2. Jane Smith (MANAGER):
+```
+Username: jane.smith
+Password: R@7zJ3$nH6wT9#bM
+```
+3. Bob Johnson (USER):
+```
+Username: bob.johnson
+Password: G@5yC8#fD2sX7$pQ
+```
+4. Alice Williams (ADMIN):
+```
+Username: alice.williams
+Password: W@3tB6$kM4nL9#hF
+```
+5. Eric Singer (ADMIN):
+```
+Username: eric.singer
+Password: Z@9qN7#xV2mS5$jH
+```
+6. Dan Romano (ADMIN):
+```
+Username: dan.romano
+Password: Y@6wF4$cT8pK3#bL
+```
+7. Nick Zitzer (ADMIN):
+```
+Username: nick.zitzer
+Password: U@2mH9#rJ7sN5$xQ
+```

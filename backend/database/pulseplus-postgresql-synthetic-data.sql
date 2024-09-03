@@ -6,12 +6,16 @@ INSERT INTO department (sys_id, name, description) VALUES
 (uuid_generate_v4(), 'Human Resources', 'Employee management and recruitment'),
 (uuid_generate_v4(), 'Finance', 'Financial planning and accounting');
 
--- Insert users with encrypted passwords and roles
+-- Update existing users with stronger passwords and add new admin users
 INSERT INTO sys_user (sys_id, user_name, first_name, last_name, email, active, department_id, password_hash, role) VALUES
-(uuid_generate_v4(), 'john.doe', 'John', 'Doe', 'john.doe@example.com', true, (SELECT sys_id FROM department WHERE name = 'Sales'), crypt('john.doe', gen_salt('bf', 10)), 'USER'),
-(uuid_generate_v4(), 'jane.smith', 'Jane', 'Smith', 'jane.smith@example.com', true, (SELECT sys_id FROM department WHERE name = 'Engineering'), crypt('jane.smith', gen_salt('bf', 10)), 'MANAGER'),
-(uuid_generate_v4(), 'bob.johnson', 'Bob', 'Johnson', 'bob.johnson@example.com', true, (SELECT sys_id FROM department WHERE name = 'Human Resources'), crypt('bob.johnson', gen_salt('bf', 10)), 'USER'),
-(uuid_generate_v4(), 'alice.williams', 'Alice', 'Williams', 'alice.williams@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('alice.williams', gen_salt('bf', 10)), 'ADMIN');
+(uuid_generate_v4(), 'john.doe', 'John', 'Doe', 'john.doe@example.com', true, (SELECT sys_id FROM department WHERE name = 'Sales'), crypt('P@8xK2#mL9qF5$vN', gen_salt('bf', 12)), 'USER'),
+(uuid_generate_v4(), 'jane.smith', 'Jane', 'Smith', 'jane.smith@example.com', true, (SELECT sys_id FROM department WHERE name = 'Engineering'), crypt('R@7zJ3$nH6wT9#bM', gen_salt('bf', 12)), 'MANAGER'),
+(uuid_generate_v4(), 'bob.johnson', 'Bob', 'Johnson', 'bob.johnson@example.com', true, (SELECT sys_id FROM department WHERE name = 'Human Resources'), crypt('G@5yC8#fD2sX7$pQ', gen_salt('bf', 12)), 'USER'),
+(uuid_generate_v4(), 'alice.williams', 'Alice', 'Williams', 'alice.williams@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('W@3tB6$kM4nL9#hF', gen_salt('bf', 12)), 'ADMIN'),
+(uuid_generate_v4(), 'eric.singer', 'Eric', 'Singer', 'eric.singer@example.com', true, (SELECT sys_id FROM department WHERE name = 'Engineering'), crypt('Z@9qN7#xV2mS5$jH', gen_salt('bf', 12)), 'ADMIN'),
+(uuid_generate_v4(), 'dan.romano', 'Dan', 'Romano', 'dan.romano@example.com', true, (SELECT sys_id FROM department WHERE name = 'Sales'), crypt('Y@6wF4$cT8pK3#bL', gen_salt('bf', 12)), 'ADMIN'),
+(uuid_generate_v4(), 'nick.zitzer', 'Nick', 'Zitzer', 'nick.zitzer@example.com', true, (SELECT sys_id FROM department WHERE name = 'Finance'), crypt('U@2mH9#rJ7sN5$xQ', gen_salt('bf', 12)), 'ADMIN');
+
 -- Insert point systems
 INSERT INTO point_system (sys_id, label, dollar_conversion, image_url) VALUES
 (uuid_generate_v4(), 'Standard Points', 0.01, '/uploads/point-system.png'),
