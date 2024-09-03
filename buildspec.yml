@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  variables:
+    BACKEND_REPOSITORY_NAME: "pulseplus-backend"
+    FRONTEND_REPOSITORY_NAME: "pulseplus-frontend"
+
 phases:
   install:
     runtime-versions:
@@ -11,9 +16,13 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 211125677151.dkr.ecr.us-west-2.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - BACKEND_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPOSITORY_NAME
+      - FRONTEND_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME
+      - echo $BACKEND_REPOSITORY_URI
+      - echo $FRONTEND_REPOSITORY_URI
 
   build:
     commands:
