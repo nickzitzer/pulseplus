@@ -9,23 +9,16 @@ phases:
   install:
     runtime-versions:
       nodejs: 18
+      docker: 20
     commands:
       - npm install -g npm@latest
       - npm install -g aws-cli
+      - curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+      - chmod +x /usr/local/bin/docker-compose
 
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - echo "AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
-      - echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
-      - |
-        if [ -z "$AWS_ACCOUNT_ID" ]; then
-          echo "AWS_ACCOUNT_ID is not set. Attempting to retrieve it..."
-          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "Retrieved AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
-        fi
-      - echo "ECR login command:"
-      - echo "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
@@ -33,24 +26,21 @@ phases:
       - FRONTEND_REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$FRONTEND_REPOSITORY_NAME
       - echo "BACKEND_REPOSITORY_URI: $BACKEND_REPOSITORY_URI"
       - echo "FRONTEND_REPOSITORY_URI: $FRONTEND_REPOSITORY_URI"
+      - sed -i 's|${BACKEND_IMAGE}|'${BACKEND_REPOSITORY_URI}:${IMAGE_TAG}'|g' docker-compose.yml
+      - sed -i 's|${FRONTEND_IMAGE}|'${FRONTEND_REPOSITORY_URI}:${IMAGE_TAG}'|g' docker-compose.yml
 
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker images...
-      - docker build -t $BACKEND_REPOSITORY_URI:$IMAGE_TAG ./backend
-      - docker build -t $FRONTEND_REPOSITORY_URI:$IMAGE_TAG ./frontend
-      - docker tag $BACKEND_REPOSITORY_URI:$IMAGE_TAG $BACKEND_REPOSITORY_URI:latest
-      - docker tag $FRONTEND_REPOSITORY_URI:$IMAGE_TAG $FRONTEND_REPOSITORY_URI:latest
+      - docker-compose build
 
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $BACKEND_REPOSITORY_URI:$IMAGE_TAG
-      - docker push $BACKEND_REPOSITORY_URI:latest
       - docker push $FRONTEND_REPOSITORY_URI:$IMAGE_TAG
-      - docker push $FRONTEND_REPOSITORY_URI:latest
       - echo Writing image definitions file...
       - printf '[{"name":"backend","imageUri":"%s"},{"name":"frontend","imageUri":"%s"}]' $BACKEND_REPOSITORY_URI:$IMAGE_TAG $FRONTEND_REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
