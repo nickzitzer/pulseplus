@@ -489,18 +489,46 @@ export function getFieldsForTable(tableName: string): string[] {
   return model ? Object.keys(model) : [];
 }
 
-export const sectionMappings: Record<
-  string,
-  { tableName: string; displayName: string; model: string[] }
-> = Object.entries(DataModelFields).reduce((acc, [key, model]) => {
-  const displayName = formatTitle(key);
-  const tableName = formatTableName(displayName);
-  acc[tableName] = {
-    tableName,
-    displayName,
-    model: Object.keys(model),
+export interface ModelInfo {
+  displayName: string;
+  apiName: string;
+  databaseName: string;
+  pluralName: string;
+  fields: {
+    [key: string]: {
+      type: string;
+      displayName: string;
+      apiName: string;
+      databaseName: string;
+    };
   };
-  return acc;
-}, {} as Record<string, { tableName: string; displayName: string; model: string[] }>);
+}
 
-export type UserRole = 'ADMIN' | 'USER' | 'MANAGER' | string;
+export const DataModels: { [key: string]: ModelInfo } = Object.entries(DataModelFields).reduce((acc, [key, fields]) => {
+  const displayName = formatTitle(key);
+  const apiName = convertStringFormat(displayName, 'api');
+  const databaseName = convertStringFormat(displayName, 'database');
+  const pluralName = formatTableName(displayName);
+
+  acc[key] = {
+    displayName,
+    apiName,
+    databaseName,
+    pluralName,
+    fields: Object.entries(fields).reduce((fieldAcc, [fieldKey, fieldType]) => {
+      fieldAcc[fieldKey] = {
+        type: fieldType,
+        displayName: convertDatabaseToDisplayName(fieldKey),
+        apiName: convertStringFormat(fieldKey, 'api'),
+        databaseName: fieldKey,
+      };
+      return fieldAcc;
+    }, {} as ModelInfo['fields']),
+  };
+
+  return acc;
+}, {} as { [key: string]: ModelInfo });
+
+export function getModelInfo(modelName: string): ModelInfo | undefined {
+  return DataModels[modelName];
+}

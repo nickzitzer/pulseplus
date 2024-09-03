@@ -10,6 +10,9 @@ const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 const applyScriptRules = require('./middleware/scriptRulesMiddleware');
 
+// Platform Routes
+const happyTechPlatformRoutes = require('./routes/happytechplatform-routes');
+
 // Import routes
 const authRoutes = require('./routes/auth-routes');
 const gameRoutes = require('./routes/game-routes');
@@ -27,8 +30,6 @@ const levelInstanceRoutes = require('./routes/level-instance-routes');
 const levelInstanceMemberRoutes = require('./routes/level-instance-member-routes');
 const leaderboardMemberRoutes = require('./routes/leaderboard-member-routes');
 const m2mRoutes = require('./routes/m2m-routes');
-
-// Import new routes
 const departmentRoutes = require('./routes/department-routes');
 const chatGroupRoutes = require('./routes/chat-group-routes');
 const chatMessageRoutes = require('./routes/chat-message-routes');
@@ -64,7 +65,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 30 * 60 * 1000, // 30 minutes
   max: 100 // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
@@ -123,6 +124,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.use('/api/happytechplatform', happyTechPlatformRoutes);
 app.use('/api/auth/sso', ssoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);

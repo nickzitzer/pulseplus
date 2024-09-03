@@ -58,7 +58,7 @@ const PulsePlusCompetitorCard: React.FC<PulsePlusCompetitorCardProps> = ({ compe
         const formattedData: CompetitorData = {
           sys_id: data.sys_id,
           name: `${data.user.first_name} ${data.user.last_name}`,
-          avatar_url: data.avatar || '/next.svg',
+          avatar_url: data.avatar,
           department: data.user.department.name,
           league: {
             name: leagueData.level.name,

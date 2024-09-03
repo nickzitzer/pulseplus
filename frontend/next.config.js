@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const removeImports = require("next-remove-imports")();
+
 const nextConfig = {
   async rewrites() {
     const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}`|| `http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT || 3001}`;
@@ -28,4 +30,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = removeImports(nextConfig);

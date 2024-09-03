@@ -142,7 +142,7 @@ const PulsePlusKPIs: React.FC<PulsePlusKPIsProps> = ({ gameId }) => {
                 <td className="p-2">
                   <div className="flex items-center">
                     <Image
-                      src={competitor.avatar_url || '/next.svg'}
+                      src={competitor.avatar_url}
                       alt={competitor.name}
                       width={32}
                       height={32}

@@ -71,7 +71,7 @@ const PulsePlusQuest: React.FC<PulsePlusQuestProps> = ({ gameId }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Image
-                  src={level.image_url || '/next.svg'}
+                  src={level.image_url}
                   alt={level.name}
                   width={48}
                   height={48}

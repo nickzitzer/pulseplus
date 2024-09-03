@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from 'next/router';
 import api from "../utils/api";
 import { convertToCSV } from "../utils/csvExport";
@@ -12,7 +12,6 @@ import {
   ChevronUp,
   Trash2,
   Download,
-  Key,
 } from "lucide-react";
 import Link from "next/link";
 import styles from "./AdminDashboard.module.css";
@@ -21,48 +20,46 @@ import { parseISO, format } from "date-fns";
 import Image from '@/components/PulsePlusImage';
 import imageLoader from '@/utils/imageLoader';
 
-import { 
-  DataModelFields, 
-  DataModelName, 
-  convertStringFormat,
-  sectionMappings
-} from "../types/dataModels";
+import { DataModels, getModelInfo, ModelInfo } from "../types/dataModels";
 
-const defaultSection = Object.keys(sectionMappings)[0];
+const defaultSection = Object.keys(DataModels)[0];
 
 const AdminDashboard: React.FC = () => {
   const router = useRouter();
-  const { section, id, page, itemsPerPage: itemsPerPageQuery, view } = router.query;
+  const { section: urlSection, id, page: urlPage, itemsPerPage: urlItemsPerPage, view: urlView } = router.query;
 
-  const [activeSection, setActiveSection] = useState<string>(() => {
-    return (section as string) || defaultSection;
-  });
+  const [activeSection, setActiveSection] = useState<string>(defaultSection);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentView, setCurrentView] = useState<"list" | "form">("list");
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: "ascending" | "descending";
-  } | null>(null);
-  const [currentPage, setCurrentPage] = useState(() => {
-    return parseInt(page as string) || 1;
-  });
-  const [itemsPerPage, setItemsPerPage] = useState(() => {
-    return parseInt(itemsPerPageQuery as string) || 10;
-  });
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "ascending" | "descending" } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [modalData, setModalData] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [navFilter, setNavFilter] = useState("");
-  const [currentView, setCurrentView] = useState<"list" | "form">("list");
+
+  const currentModelInfo: ModelInfo | undefined = useMemo(() => getModelInfo(activeSection), [activeSection]);
+
+  const TABLE_HEAD = useMemo(() => {
+    if (!currentModelInfo) return [];
+    return Object.values(currentModelInfo.fields).map(field => ({
+      label: field.displayName,
+      value: field.databaseName,
+      type: field.type,
+    }));
+  }, [currentModelInfo]);
 
   const sortedSections = useMemo(() => {
-    return Object.entries(sectionMappings).sort(([, a], [, b]) =>
+    return Object.entries(DataModels).sort(([, a], [, b]) =>
       a.displayName.localeCompare(b.displayName)
     );
   }, []);
@@ -73,71 +70,82 @@ const AdminDashboard: React.FC = () => {
     );
   }, [sortedSections, navFilter]);
 
-  useEffect(() => {
-    if (section) {
-      setActiveSection(section as string);
+  const updateURL = useCallback((newState: Partial<{
+    section: string;
+    page: number;
+    itemsPerPage: number;
+    view: "list" | "form";
+    id: string | null;
+  }>) => {
+    const query: { [key: string]: string } = {};
+    for (const [key, value] of Object.entries(router.query)) {
+      if (typeof value === 'string') query[key] = value;
     }
-    if (page) {
-      setCurrentPage(parseInt(page as string));
-    }
-    if (itemsPerPageQuery) {
-      setItemsPerPage(parseInt(itemsPerPageQuery as string));
-    }
-    if (view) {
-      setCurrentView(view as "list" | "form");
-      if (view === "form" && !id) {
-        // Open the create form when view is "form" and there's no id
-        setIsModalOpen(true);
-        setModalMode("create");
-        setEditingItemId(null);
-        setModalData(null);
-      }
-    }
-  }, [section, page, itemsPerPageQuery, view, id]);
 
-  const updateQuery = useCallback((newQuery: any) => {
-    router.push({ pathname: router.pathname, query: newQuery }, undefined, { shallow: true });
+    if (newState.section) query.section = newState.section;
+    if (newState.page) query.page = newState.page.toString();
+    if (newState.itemsPerPage) query.itemsPerPage = newState.itemsPerPage.toString();
+    if (newState.view) query.view = newState.view;
+    if (newState.id) {
+      query.id = newState.id;
+    } else {
+      delete query.id;
+    }
+
+    router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
   }, [router]);
 
-  const debouncedUpdateQuery = useMemo(() => debounce(updateQuery, 300), [updateQuery]);
-
   useEffect(() => {
-    const query: { [key: string]: string } = {
-      section: activeSection,
-      page: currentPage.toString(),
-      itemsPerPage: itemsPerPage.toString(),
-      view: currentView,
-    };
+    if (router.isReady) {
+      if (typeof urlSection === 'string') {
+        const matchingSection = Object.keys(DataModels).find(
+          key => key.toLowerCase() === urlSection.toLowerCase()
+        );
+        if (matchingSection && matchingSection !== activeSection) {
+          setActiveSection(matchingSection);
+        }
+      }
 
-    if (isModalOpen && editingItemId) {
-      query.id = editingItemId;
+      if (typeof urlPage === 'string') {
+        const newPage = parseInt(urlPage, 10);
+        if (!isNaN(newPage) && newPage !== currentPage) {
+          setCurrentPage(newPage);
+        }
+      }
+
+      if (typeof urlItemsPerPage === 'string') {
+        const newItemsPerPage = parseInt(urlItemsPerPage, 10);
+        if (!isNaN(newItemsPerPage) && newItemsPerPage !== itemsPerPage) {
+          setItemsPerPage(newItemsPerPage);
+        }
+      }
+
+      if (urlView === 'form' || urlView === 'list') {
+        setCurrentView(urlView);
+      }
+
+      if (typeof id === 'string' && urlView === 'form') {
+        setEditingItemId(id);
+      } else {
+        setEditingItemId(null);
+      }
     }
-
-    // Check if the new query is different from the current URL query
-    const currentQuery = router.query;
-    const hasChanged = Object.keys(query).some(key => query[key] !== currentQuery[key]);
-
-    if (hasChanged) {
-      debouncedUpdateQuery(query);
-    }
-
-    return () => {
-      debouncedUpdateQuery.cancel();
-    };
-  }, [activeSection, currentPage, itemsPerPage, isModalOpen, editingItemId, currentView, debouncedUpdateQuery, router.query]);
+  }, [router.isReady, urlSection, urlPage, urlItemsPerPage, urlView, id, activeSection, currentPage, itemsPerPage]);
 
   const handleSectionChange = useCallback((newSection: string) => {
     setActiveSection(newSection);
     setCurrentPage(1);
     setCurrentView("list");
-    updateQuery({ section: newSection, page: '1', itemsPerPage: itemsPerPage.toString(), view: 'list' });
-  }, [itemsPerPage, updateQuery]);
+    setEditingItemId(null);
+    updateURL({ section: newSection, page: 1, view: "list", id: null });
+  }, [updateURL]);
 
   const fetchListData = useCallback(async () => {
+    if (!currentModelInfo) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await api(`/${sectionMappings[activeSection].tableName}`);
+      const response = await api(`/${currentModelInfo.pluralName}`);
       if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -149,26 +157,18 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeSection]);
+  }, [currentModelInfo]);
 
   useEffect(() => {
     fetchListData();
-  }, [activeSection, currentPage, itemsPerPage, fetchListData]);
+  }, [fetchListData]);
 
-  useEffect(() => {
-    if (section && id) {
-      setIsModalOpen(true);
-      setModalMode("edit");
-      setEditingItemId(id as string);
-      fetchItemData(sectionMappings[section as string].tableName, id as string);
-    }
-  }, [section, id]);
-
-  const fetchItemData = async (tableName: string, itemId: string) => {
+  const fetchItemData = useCallback(async (itemId: string) => {
+    if (!currentModelInfo) return;
     setModalLoading(true);
     setModalError(null);
     try {
-      const response = await api(`/${tableName}/${itemId}`);
+      const response = await api(`/${currentModelInfo.pluralName}/${itemId}`);
       if (response.status !== 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -180,55 +180,30 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setModalLoading(false);
     }
-  };
+  }, [currentModelInfo]);
 
-  const handleCreate = useCallback((sectionKey: string) => {
-    setIsModalOpen(true);
-    setModalMode("create");
+  const handleCreate = useCallback(() => {
+    setCurrentView("form");
     setEditingItemId(null);
-    setModalData(null);
-    setCurrentView("form");
-    updateQuery({ 
-      section: sectionKey, 
-      view: 'form',
-      itemsPerPage: itemsPerPage.toString(),
-      page: '1' // Reset to page 1 when creating a new item
-    });
-  }, [itemsPerPage, updateQuery]);
+    updateURL({ view: "form", id: null });
+  }, [updateURL]);
 
-  const handleEdit = useCallback((sectionKey: string, itemId: string) => {
-    setIsModalOpen(true);
-    setModalMode("edit");
-    setEditingItemId(itemId);
+  const handleEdit = useCallback((itemId: string) => {
     setCurrentView("form");
-    fetchItemData(sectionMappings[sectionKey].tableName, itemId);
-    updateQuery({ 
-      section: sectionKey, 
-      id: itemId,
-      view: 'form',
-      page: currentPage.toString(),
-      itemsPerPage: itemsPerPage.toString()
-    });
-  }, [updateQuery, currentPage, itemsPerPage]);
+    setEditingItemId(itemId);
+    fetchItemData(itemId);
+    updateURL({ view: "form", id: itemId });
+  }, [updateURL, fetchItemData]);
 
   const handleModalClose = useCallback(() => {
-    setIsModalOpen(false);
-    setModalData(null);
-    setModalLoading(false);
-    setModalError(null);
-    setEditingItemId(null);
     setCurrentView("list");
-    updateQuery({ 
-      section: activeSection, 
-      page: currentPage.toString(), 
-      itemsPerPage: itemsPerPage.toString(),
-      view: 'list'
-    });
-  }, [activeSection, currentPage, itemsPerPage, updateQuery]);
+    setEditingItemId(null);
+    updateURL({ view: "list", id: null });
+  }, [updateURL]);
 
   const handleModalSubmit = async (formData: any) => {
     try {
-      const url = `/${section}${modalMode === "edit" ? `/${id}` : ""}`;
+      const url = `/${currentModelInfo?.pluralName}${modalMode === "edit" ? `/${editingItemId}` : ""}`;
       const method = modalMode === "create" ? "POST" : "PUT";
 
       const response = await api.request({
@@ -248,33 +223,12 @@ const AdminDashboard: React.FC = () => {
       }
 
       handleModalClose();
-      fetchListData(); // Refresh the list after submit
+      fetchListData();
     } catch (err) {
       console.error(`Error ${modalMode === "create" ? "creating" : "updating"} item:`, err);
       alert(`Failed to ${modalMode === "create" ? "create" : "update"} item. Please try again.`);
     }
   };
-
-  const TABLE_HEAD = useMemo(() => {
-    const section = sectionMappings[activeSection];
-    if (!section) {
-      console.error("No valid section found. Returning empty array.");
-      return [];
-    }
-
-    const dataModelKey = convertStringFormat(section.displayName, 'pascalCase') as DataModelName;
-    const modelFields = DataModelFields[dataModelKey];
-    if (!modelFields) {
-      console.error(`No model fields found for section: ${section.displayName}. Returning empty array.`);
-      return [];
-    }
-
-    return Object.entries(modelFields).map(([key, fieldType]) => ({
-      label: convertStringFormat(key, 'display'),
-      value: key,
-      type: String(fieldType),
-    }));
-  }, [activeSection]);
 
   const filteredData = useMemo(() => {
     return data.filter((item) =>
@@ -323,20 +277,22 @@ const AdminDashboard: React.FC = () => {
 
   const goToPreviousPage = () => {
     setCurrentPage((page) => Math.max(1, page - 1));
+    updateURL({ page: Math.max(1, currentPage - 1) });
   };
 
   const goToNextPage = () => {
     setCurrentPage((page) => Math.min(totalPages, page + 1));
+    updateURL({ page: Math.min(totalPages, currentPage + 1) });
   };
 
   const handleDelete = async (sys_id: string) => {
+    if (!currentModelInfo) return;
     if (window.confirm("Are you sure you want to delete this item?")) {
       try {
-        const response = await api.delete(`/${sectionMappings[activeSection].tableName}/${sys_id}`);
+        const response = await api.delete(`/${currentModelInfo.pluralName}/${sys_id}`);
         if (response.status !== 200) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        // Remove the deleted item from the data
         setData(data.filter((item) => item.sys_id !== sys_id));
       } catch (err) {
         console.error("Error deleting item:", err);
@@ -345,13 +301,12 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleItemsPerPageChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleItemsPerPageChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newItemsPerPage = parseInt(e.target.value, 10);
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
+    setCurrentPage(1);
+    updateURL({ itemsPerPage: newItemsPerPage, page: 1 });
+  }, [updateURL]);
 
   const handleExportCSV = () => {
     const csv = convertToCSV(sortedData);
@@ -360,10 +315,7 @@ const AdminDashboard: React.FC = () => {
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `${sectionMappings[activeSection].displayName}.csv`
-      );
+      link.setAttribute("download", `${currentModelInfo?.displayName || 'export'}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
@@ -377,7 +329,7 @@ const AdminDashboard: React.FC = () => {
       return format(parseISO(dateString), "MMM d, yyyy h:mm a");
     } catch (error) {
       console.error("Error formatting date:", error);
-      return dateString; // Return original string if parsing fails
+      return dateString;
     }
   };
 
@@ -385,21 +337,7 @@ const AdminDashboard: React.FC = () => {
     return fieldType === 'image';
   };
 
-  // Add this check before rendering the table
   const isDataEmpty = data.length === 0;
-
-  // Determine the current model type based on URL or active section
-  const currentModelType = useMemo(() => {
-    if (section) {
-      // If section is in the URL, find the corresponding model type
-      const sectionEntry = Object.entries(sectionMappings).find(([, value]) => value.tableName === section);
-      return sectionEntry ? sectionEntry[0] as DataModelName : 'User';
-    } else if (activeSection) {
-      // If no section in URL, use the active section
-      return sectionMappings[activeSection].tableName as DataModelName;
-    }
-    return 'User' as DataModelName; // Default to User if nothing else matches
-  }, [section, activeSection]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -470,7 +408,7 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="mb-2 flex justify-between items-center">
               <h2 className="text-xl font-bold">
-                {convertStringFormat(sectionMappings[activeSection]?.tableName, 'display') ||
+                {currentModelInfo?.displayName ||
                   "No Section Selected"}
               </h2>
               <div className="flex space-x-2">
@@ -495,10 +433,10 @@ const AdminDashboard: React.FC = () => {
                 </button>
                 <button
                   className="px-3 py-1 bg-green-500 text-white rounded flex items-center text-sm"
-                  onClick={() => handleCreate(activeSection)}
+                  onClick={handleCreate}
                 >
                   <Plus className="h-3 w-3 mr-1" />
-                  Add {sectionMappings[activeSection]?.displayName || ""}
+                  Add {currentModelInfo?.displayName || ""}
                 </button>
               </div>
             </div>
@@ -515,7 +453,8 @@ const AdminDashboard: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr>
-                        {TABLE_HEAD.map((head) =>                          <th
+                        {TABLE_HEAD.map((head) => (
+                          <th
                             key={head.value}
                             className="text-left p-1 bg-gray-100 font-medium whitespace-nowrap border-b border-r border-gray-300"
                             onClick={() => requestSort(head.value)}
@@ -532,7 +471,7 @@ const AdminDashboard: React.FC = () => {
                               </span>
                             </div>
                           </th>
-                        )}
+                        ))}
                         <th className="p-0 bg-gray-100 font-medium sticky right-0 z-10">
                           <div
                             className={`h-full ${styles.actionsColumn} ${styles.actionsHeader}`}
@@ -584,7 +523,7 @@ const AdminDashboard: React.FC = () => {
                               <div className="p-1 flex items-center justify-center h-full w-full">
                                 <button
                                   className="p-1 bg-blue-500 text-white rounded m-0.5"
-                                  onClick={() => handleEdit(activeSection, item.sys_id)}
+                                  onClick={() => handleEdit(item.sys_id)}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </button>
@@ -654,12 +593,12 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
       <DataModal
-        isOpen={isModalOpen}
+        isOpen={currentView === "form"}
         onClose={handleModalClose}
         onSubmit={handleModalSubmit}
-        modelType={currentModelType}
-        mode={modalMode}
-        title={`${modalMode === "create" ? "Create" : "Edit"} ${convertStringFormat(currentModelType, 'display').slice(0, -1)}`}
+        modelType={activeSection}
+        mode={editingItemId ? "edit" : "create"}
+        title={`${editingItemId ? "Edit" : "Create"} ${currentModelInfo?.displayName || ""}`}
         data={modalData}
         loading={modalLoading}
         error={modalError}
@@ -668,22 +607,5 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 };
-
-// Modify the debounce function to include a cancel method
-function debounce(func: Function, wait: number) {
-  let timeout: NodeJS.Timeout;
-  const debouncedFunc: any = (...args: any[]) => {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-  debouncedFunc.cancel = () => {
-    clearTimeout(timeout);
-  };
-  return debouncedFunc;
-}
 
 export default AdminDashboard;

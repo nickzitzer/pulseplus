@@ -55,7 +55,7 @@ const PulsePlusCompetitions: React.FC<PulsePlusCompetitionsProps> = ({ gameId })
         competitions.map(competition => (
           <div key={competition.sys_id} className="bg-white shadow rounded-lg overflow-hidden">
             <div className="relative h-40">
-              <Image src={competition.image_url || '/next.svg'} alt={competition.name} width={100} height={100} className="w-full h-full object-cover" loader={({ src, width, quality }) => imageLoader({ src, width, quality })} />
+              <Image src={competition.image_url} alt={competition.name} width={100} height={100} className="w-full h-full object-cover" loader={({ src, width, quality }) => imageLoader({ src, width, quality })} />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                 <h3 className="text-white font-bold text-xl">{competition.name}</h3>
               </div>
