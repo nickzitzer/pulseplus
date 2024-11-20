@@ -1,0 +1,401 @@
+{
+  "version": "36.0.24",
+  "artifacts": {
+    "PulsePlusStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "PulsePlusStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "PulsePlusStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://211125677151/us-east-1",
+      "properties": {
+        "templateFile": "PulsePlusStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-deploy-role-211125677151-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-cfn-exec-role-211125677151-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-211125677151-us-east-1/6f9580eac5c7ca3df62d617d2427fbcbb2ae2af7a79ec63e53232a361c570408.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "PulsePlusStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-lookup-role-211125677151-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "PulsePlusStack.assets"
+      ],
+      "metadata": {
+        "/PulsePlusStack/PulsePlusVpc/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpc9FBAFCBB"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1Subnet894121E7"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1RouteTable1A8D746A"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1RouteTableAssociation9135E0AF"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1DefaultRoute62A066F5"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1EIPC2825D1D"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet1/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet1NATGateway8FA5F7B9"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2Subnet1E085482"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2RouteTable00C2699C"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2RouteTableAssociation8C612EF0"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2DefaultRoute7A665758"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2EIP7E94030C"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PublicSubnet2/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPublicSubnet2NATGatewayFEDABEA0"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet1Subnet3F4D1470"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet1RouteTable39D6EC0D"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet1RouteTableAssociationCBB1F790"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet1DefaultRouteB5A27252"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet2Subnet8BFC7CC7"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet2RouteTable2A38B679"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet2RouteTableAssociationAB390E9B"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/PrivateSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcPrivateSubnet2DefaultRouteE33A54BD"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/IGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcIGWE4753ADA"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusVpc/VPCGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusVpcVPCGW0D196583"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusCluster/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusClusterF16F44A9"
+          }
+        ],
+        "/PulsePlusStack/FrontendRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendRepoF80FCC01"
+          }
+        ],
+        "/PulsePlusStack/BackendRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendRepo7FFBAD06"
+          }
+        ],
+        "/PulsePlusStack/DBRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DBRepoBF10D354"
+          }
+        ],
+        "/PulsePlusStack/DBSecret/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DBSecretD58955BC"
+          }
+        ],
+        "/PulsePlusStack/DBSecret/Attachment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DBSecretAttachmentC565A14F"
+          }
+        ],
+        "/PulsePlusStack/Database/SubnetGroup/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DatabaseSubnetGroup7D60F180"
+          }
+        ],
+        "/PulsePlusStack/Database/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DatabaseSecurityGroup5C91FDCB"
+          }
+        ],
+        "/PulsePlusStack/Database/SecurityGroup/from PulsePlusStackBackendServiceSecurityGroup973B7D26:5432": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DatabaseSecurityGroupfromPulsePlusStackBackendServiceSecurityGroup973B7D2654328CD9D310"
+          }
+        ],
+        "/PulsePlusStack/Database/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DatabaseB269D8BB"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALB1A0B0D4B"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBSecurityGroup2EE5691E"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/SecurityGroup/to PulsePlusStackFrontendServiceSecurityGroupFB7A40D5:3000": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBSecurityGrouptoPulsePlusStackFrontendServiceSecurityGroupFB7A40D53000E92C1AE0"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/SecurityGroup/to PulsePlusStackBackendServiceSecurityGroup973B7D26:3001": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBSecurityGrouptoPulsePlusStackBackendServiceSecurityGroup973B7D263001BCCB2333"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/FrontendListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBFrontendListener923F49C4"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/FrontendListener/FrontendTargetGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBFrontendListenerFrontendTargetGroup193FA06B"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/BackendListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBBackendListenerC1BC9744"
+          }
+        ],
+        "/PulsePlusStack/PulsePlusALB/BackendListener/BackendTargetGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PulsePlusALBBackendListenerBackendTargetGroup9D7C6524"
+          }
+        ],
+        "/PulsePlusStack/FrontendTaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendTaskDefTaskRoleDA0FD037"
+          }
+        ],
+        "/PulsePlusStack/FrontendTaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendTaskDef7D3FD156"
+          }
+        ],
+        "/PulsePlusStack/FrontendTaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendTaskDefExecutionRoleE7329A09"
+          }
+        ],
+        "/PulsePlusStack/FrontendTaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendTaskDefExecutionRoleDefaultPolicy48DF7F3B"
+          }
+        ],
+        "/PulsePlusStack/FrontendService/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendServiceBC94BA93"
+          }
+        ],
+        "/PulsePlusStack/FrontendService/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendServiceSecurityGroup85470DEC"
+          }
+        ],
+        "/PulsePlusStack/FrontendService/SecurityGroup/from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3000": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendServiceSecurityGroupfromPulsePlusStackPulsePlusALBSecurityGroup89C2ECFD30000B7D4DED"
+          }
+        ],
+        "/PulsePlusStack/BackendTaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendTaskDefTaskRoleBA953A3B"
+          }
+        ],
+        "/PulsePlusStack/BackendTaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendTaskDef6ECE986E"
+          }
+        ],
+        "/PulsePlusStack/BackendTaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendTaskDefExecutionRoleC5A001DB"
+          }
+        ],
+        "/PulsePlusStack/BackendTaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendTaskDefExecutionRoleDefaultPolicyAA625660"
+          }
+        ],
+        "/PulsePlusStack/BackendService/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendService7A4224EE"
+          }
+        ],
+        "/PulsePlusStack/BackendService/SecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendServiceSecurityGroup0865F57D"
+          }
+        ],
+        "/PulsePlusStack/BackendService/SecurityGroup/from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3001": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BackendServiceSecurityGroupfromPulsePlusStackPulsePlusALBSecurityGroup89C2ECFD3001C7A41A3E"
+          }
+        ],
+        "/PulsePlusStack/LoadBalancerDNS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LoadBalancerDNS"
+          }
+        ],
+        "/PulsePlusStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/PulsePlusStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/PulsePlusStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "PulsePlusStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

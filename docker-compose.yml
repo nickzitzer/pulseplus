@@ -64,7 +64,10 @@ services:
 
   db:
     container_name: pulseplus-db
-    image: postgres:13
+    image: ${DB_IMAGE}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.db
     environment:
       - POSTGRES_USER=pulseplus-admin
       - POSTGRES_PASSWORD=Work4PulsePlus1

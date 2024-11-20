@@ -1,0 +1,2187 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "PulsePlusStack": {
+        "id": "PulsePlusStack",
+        "path": "PulsePlusStack",
+        "children": {
+          "PulsePlusVpc": {
+            "id": "PulsePlusVpc",
+            "path": "PulsePlusStack/PulsePlusVpc",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/PulsePlusVpc/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::VPC",
+                  "aws:cdk:cloudformation:props": {
+                    "cidrBlock": "10.0.0.0/16",
+                    "enableDnsHostnames": true,
+                    "enableDnsSupport": true,
+                    "instanceTenancy": "default",
+                    "tags": [
+                      {
+                        "key": "Name",
+                        "value": "PulsePlusStack/PulsePlusVpc"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnVPC",
+                  "version": "2.155.0"
+                }
+              },
+              "PublicSubnet1": {
+                "id": "PublicSubnet1",
+                "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1a",
+                        "cidrBlock": "10.0.0.0/18",
+                        "mapPublicIpOnLaunch": true,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPublicSubnet1RouteTable1A8D746A"
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPublicSubnet1Subnet894121E7"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "gatewayId": {
+                          "Ref": "PulsePlusVpcIGWE4753ADA"
+                        },
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPublicSubnet1RouteTable1A8D746A"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "EIP": {
+                    "id": "EIP",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/EIP",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::EIP",
+                      "aws:cdk:cloudformation:props": {
+                        "domain": "vpc",
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet1"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnEIP",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "NATGateway": {
+                    "id": "NATGateway",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet1/NATGateway",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::NatGateway",
+                      "aws:cdk:cloudformation:props": {
+                        "allocationId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusVpcPublicSubnet1EIPC2825D1D",
+                            "AllocationId"
+                          ]
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPublicSubnet1Subnet894121E7"
+                        },
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet1"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnNatGateway",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PublicSubnet",
+                  "version": "2.155.0"
+                }
+              },
+              "PublicSubnet2": {
+                "id": "PublicSubnet2",
+                "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1b",
+                        "cidrBlock": "10.0.64.0/18",
+                        "mapPublicIpOnLaunch": true,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPublicSubnet2RouteTable00C2699C"
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPublicSubnet2Subnet1E085482"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "gatewayId": {
+                          "Ref": "PulsePlusVpcIGWE4753ADA"
+                        },
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPublicSubnet2RouteTable00C2699C"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "EIP": {
+                    "id": "EIP",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/EIP",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::EIP",
+                      "aws:cdk:cloudformation:props": {
+                        "domain": "vpc",
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet2"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnEIP",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "NATGateway": {
+                    "id": "NATGateway",
+                    "path": "PulsePlusStack/PulsePlusVpc/PublicSubnet2/NATGateway",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::NatGateway",
+                      "aws:cdk:cloudformation:props": {
+                        "allocationId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusVpcPublicSubnet2EIP7E94030C",
+                            "AllocationId"
+                          ]
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPublicSubnet2Subnet1E085482"
+                        },
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PublicSubnet2"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnNatGateway",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PublicSubnet",
+                  "version": "2.155.0"
+                }
+              },
+              "PrivateSubnet1": {
+                "id": "PrivateSubnet1",
+                "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1a",
+                        "cidrBlock": "10.0.128.0/18",
+                        "mapPublicIpOnLaunch": false,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet1RouteTable39D6EC0D"
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet1Subnet3F4D1470"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet1/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "natGatewayId": {
+                          "Ref": "PulsePlusVpcPublicSubnet1NATGateway8FA5F7B9"
+                        },
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet1RouteTable39D6EC0D"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PrivateSubnet",
+                  "version": "2.155.0"
+                }
+              },
+              "PrivateSubnet2": {
+                "id": "PrivateSubnet2",
+                "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1b",
+                        "cidrBlock": "10.0.192.0/18",
+                        "mapPublicIpOnLaunch": false,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet2RouteTable2A38B679"
+                        },
+                        "subnetId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet2Subnet8BFC7CC7"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "PulsePlusStack/PulsePlusVpc/PrivateSubnet2/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "natGatewayId": {
+                          "Ref": "PulsePlusVpcPublicSubnet2NATGatewayFEDABEA0"
+                        },
+                        "routeTableId": {
+                          "Ref": "PulsePlusVpcPrivateSubnet2RouteTable2A38B679"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PrivateSubnet",
+                  "version": "2.155.0"
+                }
+              },
+              "IGW": {
+                "id": "IGW",
+                "path": "PulsePlusStack/PulsePlusVpc/IGW",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::InternetGateway",
+                  "aws:cdk:cloudformation:props": {
+                    "tags": [
+                      {
+                        "key": "Name",
+                        "value": "PulsePlusStack/PulsePlusVpc"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnInternetGateway",
+                  "version": "2.155.0"
+                }
+              },
+              "VPCGW": {
+                "id": "VPCGW",
+                "path": "PulsePlusStack/PulsePlusVpc/VPCGW",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::VPCGatewayAttachment",
+                  "aws:cdk:cloudformation:props": {
+                    "internetGatewayId": {
+                      "Ref": "PulsePlusVpcIGWE4753ADA"
+                    },
+                    "vpcId": {
+                      "Ref": "PulsePlusVpc9FBAFCBB"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnVPCGatewayAttachment",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.Vpc",
+              "version": "2.155.0"
+            }
+          },
+          "PulsePlusCluster": {
+            "id": "PulsePlusCluster",
+            "path": "PulsePlusStack/PulsePlusCluster",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/PulsePlusCluster/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Cluster",
+                  "aws:cdk:cloudformation:props": {}
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnCluster",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.Cluster",
+              "version": "2.155.0"
+            }
+          },
+          "FrontendRepo": {
+            "id": "FrontendRepo",
+            "path": "PulsePlusStack/FrontendRepo",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/FrontendRepo/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECR::Repository",
+                  "aws:cdk:cloudformation:props": {}
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecr.CfnRepository",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecr.Repository",
+              "version": "2.155.0"
+            }
+          },
+          "BackendRepo": {
+            "id": "BackendRepo",
+            "path": "PulsePlusStack/BackendRepo",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/BackendRepo/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECR::Repository",
+                  "aws:cdk:cloudformation:props": {}
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecr.CfnRepository",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecr.Repository",
+              "version": "2.155.0"
+            }
+          },
+          "DBRepo": {
+            "id": "DBRepo",
+            "path": "PulsePlusStack/DBRepo",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/DBRepo/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECR::Repository",
+                  "aws:cdk:cloudformation:props": {}
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecr.CfnRepository",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecr.Repository",
+              "version": "2.155.0"
+            }
+          },
+          "DBSecret": {
+            "id": "DBSecret",
+            "path": "PulsePlusStack/DBSecret",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/DBSecret/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::SecretsManager::Secret",
+                  "aws:cdk:cloudformation:props": {
+                    "generateSecretString": {
+                      "secretStringTemplate": "{\"username\":\"pulseplus-admin\"}",
+                      "generateStringKey": "password",
+                      "excludePunctuation": true
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecret",
+                  "version": "2.155.0"
+                }
+              },
+              "Attachment": {
+                "id": "Attachment",
+                "path": "PulsePlusStack/DBSecret/Attachment",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/DBSecret/Attachment/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::SecretsManager::SecretTargetAttachment",
+                      "aws:cdk:cloudformation:props": {
+                        "secretId": {
+                          "Ref": "DBSecretD58955BC"
+                        },
+                        "targetId": {
+                          "Ref": "DatabaseB269D8BB"
+                        },
+                        "targetType": "AWS::RDS::DBInstance"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecretTargetAttachment",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_secretsmanager.SecretTargetAttachment",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_secretsmanager.Secret",
+              "version": "2.155.0"
+            }
+          },
+          "Database": {
+            "id": "Database",
+            "path": "PulsePlusStack/Database",
+            "children": {
+              "SubnetGroup": {
+                "id": "SubnetGroup",
+                "path": "PulsePlusStack/Database/SubnetGroup",
+                "children": {
+                  "Default": {
+                    "id": "Default",
+                    "path": "PulsePlusStack/Database/SubnetGroup/Default",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::RDS::DBSubnetGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "dbSubnetGroupDescription": "Subnet group for Database database",
+                        "subnetIds": [
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet1Subnet3F4D1470"
+                          },
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet2Subnet8BFC7CC7"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_rds.CfnDBSubnetGroup",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_rds.SubnetGroup",
+                  "version": "2.155.0"
+                }
+              },
+              "SecurityGroup": {
+                "id": "SecurityGroup",
+                "path": "PulsePlusStack/Database/SecurityGroup",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/Database/SecurityGroup/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "groupDescription": "Security group for Database database",
+                        "securityGroupEgress": [
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "description": "Allow all outbound traffic by default",
+                            "ipProtocol": "-1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "from PulsePlusStackBackendServiceSecurityGroup973B7D26:5432": {
+                    "id": "from PulsePlusStackBackendServiceSecurityGroup973B7D26:5432",
+                    "path": "PulsePlusStack/Database/SecurityGroup/from PulsePlusStackBackendServiceSecurityGroup973B7D26:5432",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                      "aws:cdk:cloudformation:props": {
+                        "description": "from PulsePlusStackBackendServiceSecurityGroup973B7D26:5432",
+                        "fromPort": 5432,
+                        "groupId": {
+                          "Fn::GetAtt": [
+                            "DatabaseSecurityGroup5C91FDCB",
+                            "GroupId"
+                          ]
+                        },
+                        "ipProtocol": "tcp",
+                        "sourceSecurityGroupId": {
+                          "Fn::GetAtt": [
+                            "BackendServiceSecurityGroup0865F57D",
+                            "GroupId"
+                          ]
+                        },
+                        "toPort": 5432
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+                  "version": "2.155.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/Database/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::RDS::DBInstance",
+                  "aws:cdk:cloudformation:props": {
+                    "allocatedStorage": "100",
+                    "copyTagsToSnapshot": true,
+                    "dbInstanceClass": "db.t3.micro",
+                    "dbName": "pulseplus_db",
+                    "dbSubnetGroupName": {
+                      "Ref": "DatabaseSubnetGroup7D60F180"
+                    },
+                    "engine": "postgres",
+                    "engineVersion": "13",
+                    "masterUsername": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "{{resolve:secretsmanager:",
+                          {
+                            "Ref": "DBSecretD58955BC"
+                          },
+                          ":SecretString:username::}}"
+                        ]
+                      ]
+                    },
+                    "masterUserPassword": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "{{resolve:secretsmanager:",
+                          {
+                            "Ref": "DBSecretD58955BC"
+                          },
+                          ":SecretString:password::}}"
+                        ]
+                      ]
+                    },
+                    "publiclyAccessible": false,
+                    "storageType": "gp2",
+                    "vpcSecurityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "DatabaseSecurityGroup5C91FDCB",
+                          "GroupId"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_rds.CfnDBInstance",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_rds.DatabaseInstance",
+              "version": "2.155.0"
+            }
+          },
+          "PulsePlusALB": {
+            "id": "PulsePlusALB",
+            "path": "PulsePlusStack/PulsePlusALB",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/PulsePlusALB/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+                  "aws:cdk:cloudformation:props": {
+                    "loadBalancerAttributes": [
+                      {
+                        "key": "deletion_protection.enabled",
+                        "value": "false"
+                      }
+                    ],
+                    "scheme": "internet-facing",
+                    "securityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "PulsePlusALBSecurityGroup2EE5691E",
+                          "GroupId"
+                        ]
+                      }
+                    ],
+                    "subnets": [
+                      {
+                        "Ref": "PulsePlusVpcPublicSubnet1Subnet894121E7"
+                      },
+                      {
+                        "Ref": "PulsePlusVpcPublicSubnet2Subnet1E085482"
+                      }
+                    ],
+                    "type": "application"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnLoadBalancer",
+                  "version": "2.155.0"
+                }
+              },
+              "SecurityGroup": {
+                "id": "SecurityGroup",
+                "path": "PulsePlusStack/PulsePlusALB/SecurityGroup",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/PulsePlusALB/SecurityGroup/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "groupDescription": "Automatically created Security Group for ELB PulsePlusStackPulsePlusALB9A2A955D",
+                        "securityGroupIngress": [
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "ipProtocol": "tcp",
+                            "fromPort": 80,
+                            "toPort": 80,
+                            "description": "Allow from anyone on port 80"
+                          },
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "ipProtocol": "tcp",
+                            "fromPort": 3001,
+                            "toPort": 3001,
+                            "description": "Allow from anyone on port 3001"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "to PulsePlusStackFrontendServiceSecurityGroupFB7A40D5:3000": {
+                    "id": "to PulsePlusStackFrontendServiceSecurityGroupFB7A40D5:3000",
+                    "path": "PulsePlusStack/PulsePlusALB/SecurityGroup/to PulsePlusStackFrontendServiceSecurityGroupFB7A40D5:3000",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupEgress",
+                      "aws:cdk:cloudformation:props": {
+                        "description": "Load balancer to target",
+                        "destinationSecurityGroupId": {
+                          "Fn::GetAtt": [
+                            "FrontendServiceSecurityGroup85470DEC",
+                            "GroupId"
+                          ]
+                        },
+                        "fromPort": 3000,
+                        "groupId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusALBSecurityGroup2EE5691E",
+                            "GroupId"
+                          ]
+                        },
+                        "ipProtocol": "tcp",
+                        "toPort": 3000
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupEgress",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "to PulsePlusStackBackendServiceSecurityGroup973B7D26:3001": {
+                    "id": "to PulsePlusStackBackendServiceSecurityGroup973B7D26:3001",
+                    "path": "PulsePlusStack/PulsePlusALB/SecurityGroup/to PulsePlusStackBackendServiceSecurityGroup973B7D26:3001",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupEgress",
+                      "aws:cdk:cloudformation:props": {
+                        "description": "Load balancer to target",
+                        "destinationSecurityGroupId": {
+                          "Fn::GetAtt": [
+                            "BackendServiceSecurityGroup0865F57D",
+                            "GroupId"
+                          ]
+                        },
+                        "fromPort": 3001,
+                        "groupId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusALBSecurityGroup2EE5691E",
+                            "GroupId"
+                          ]
+                        },
+                        "ipProtocol": "tcp",
+                        "toPort": 3001
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupEgress",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+                  "version": "2.155.0"
+                }
+              },
+              "FrontendListener": {
+                "id": "FrontendListener",
+                "path": "PulsePlusStack/PulsePlusALB/FrontendListener",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/PulsePlusALB/FrontendListener/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::Listener",
+                      "aws:cdk:cloudformation:props": {
+                        "defaultActions": [
+                          {
+                            "type": "forward",
+                            "targetGroupArn": {
+                              "Ref": "PulsePlusALBFrontendListenerFrontendTargetGroup193FA06B"
+                            }
+                          }
+                        ],
+                        "loadBalancerArn": {
+                          "Ref": "PulsePlusALB1A0B0D4B"
+                        },
+                        "port": 80,
+                        "protocol": "HTTP"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnListener",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "FrontendTargetGroup": {
+                    "id": "FrontendTargetGroup",
+                    "path": "PulsePlusStack/PulsePlusALB/FrontendListener/FrontendTargetGroup",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "PulsePlusStack/PulsePlusALB/FrontendListener/FrontendTargetGroup/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+                          "aws:cdk:cloudformation:props": {
+                            "healthCheckPath": "/",
+                            "port": 3000,
+                            "protocol": "HTTP",
+                            "targetGroupAttributes": [
+                              {
+                                "key": "stickiness.enabled",
+                                "value": "false"
+                              }
+                            ],
+                            "targetType": "ip",
+                            "vpcId": {
+                              "Ref": "PulsePlusVpc9FBAFCBB"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnTargetGroup",
+                          "version": "2.155.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationTargetGroup",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationListener",
+                  "version": "2.155.0"
+                }
+              },
+              "BackendListener": {
+                "id": "BackendListener",
+                "path": "PulsePlusStack/PulsePlusALB/BackendListener",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/PulsePlusALB/BackendListener/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::Listener",
+                      "aws:cdk:cloudformation:props": {
+                        "defaultActions": [
+                          {
+                            "type": "forward",
+                            "targetGroupArn": {
+                              "Ref": "PulsePlusALBBackendListenerBackendTargetGroup9D7C6524"
+                            }
+                          }
+                        ],
+                        "loadBalancerArn": {
+                          "Ref": "PulsePlusALB1A0B0D4B"
+                        },
+                        "port": 3001,
+                        "protocol": "HTTP"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnListener",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "BackendTargetGroup": {
+                    "id": "BackendTargetGroup",
+                    "path": "PulsePlusStack/PulsePlusALB/BackendListener/BackendTargetGroup",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "PulsePlusStack/PulsePlusALB/BackendListener/BackendTargetGroup/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+                          "aws:cdk:cloudformation:props": {
+                            "healthCheckPath": "/health",
+                            "port": 3001,
+                            "protocol": "HTTP",
+                            "targetGroupAttributes": [
+                              {
+                                "key": "stickiness.enabled",
+                                "value": "false"
+                              }
+                            ],
+                            "targetType": "ip",
+                            "vpcId": {
+                              "Ref": "PulsePlusVpc9FBAFCBB"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnTargetGroup",
+                          "version": "2.155.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationTargetGroup",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationListener",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationLoadBalancer",
+              "version": "2.155.0"
+            }
+          },
+          "FrontendTaskDef": {
+            "id": "FrontendTaskDef",
+            "path": "PulsePlusStack/FrontendTaskDef",
+            "children": {
+              "TaskRole": {
+                "id": "TaskRole",
+                "path": "PulsePlusStack/FrontendTaskDef/TaskRole",
+                "children": {
+                  "ImportTaskRole": {
+                    "id": "ImportTaskRole",
+                    "path": "PulsePlusStack/FrontendTaskDef/TaskRole/ImportTaskRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/FrontendTaskDef/TaskRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.155.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/FrontendTaskDef/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::TaskDefinition",
+                  "aws:cdk:cloudformation:props": {
+                    "containerDefinitions": [
+                      {
+                        "essential": true,
+                        "image": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::Select": [
+                                  4,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "FrontendRepoF80FCC01",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".dkr.ecr.",
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "FrontendRepoF80FCC01",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".",
+                              {
+                                "Ref": "AWS::URLSuffix"
+                              },
+                              "/",
+                              {
+                                "Ref": "FrontendRepoF80FCC01"
+                              },
+                              ":latest"
+                            ]
+                          ]
+                        },
+                        "name": "FrontendContainer",
+                        "portMappings": [
+                          {
+                            "containerPort": 3000,
+                            "protocol": "tcp"
+                          }
+                        ],
+                        "environment": [
+                          {
+                            "name": "FRONTEND_PORT",
+                            "value": "3000"
+                          },
+                          {
+                            "name": "NEXT_PUBLIC_FRONTEND_URL",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "http://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "PulsePlusALB1A0B0D4B",
+                                      "DNSName"
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "NEXT_PUBLIC_BACKEND_URL",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "http://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "PulsePlusALB1A0B0D4B",
+                                      "DNSName"
+                                    ]
+                                  },
+                                  ":3001"
+                                ]
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "cpu": "256",
+                    "executionRoleArn": {
+                      "Fn::GetAtt": [
+                        "FrontendTaskDefExecutionRoleE7329A09",
+                        "Arn"
+                      ]
+                    },
+                    "family": "PulsePlusStackFrontendTaskDef917B0BEB",
+                    "memory": "512",
+                    "networkMode": "awsvpc",
+                    "requiresCompatibilities": [
+                      "FARGATE"
+                    ],
+                    "taskRoleArn": {
+                      "Fn::GetAtt": [
+                        "FrontendTaskDefTaskRoleDA0FD037",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnTaskDefinition",
+                  "version": "2.155.0"
+                }
+              },
+              "FrontendContainer": {
+                "id": "FrontendContainer",
+                "path": "PulsePlusStack/FrontendTaskDef/FrontendContainer",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.ContainerDefinition",
+                  "version": "2.155.0"
+                }
+              },
+              "ExecutionRole": {
+                "id": "ExecutionRole",
+                "path": "PulsePlusStack/FrontendTaskDef/ExecutionRole",
+                "children": {
+                  "ImportExecutionRole": {
+                    "id": "ImportExecutionRole",
+                    "path": "PulsePlusStack/FrontendTaskDef/ExecutionRole/ImportExecutionRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/FrontendTaskDef/ExecutionRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "PulsePlusStack/FrontendTaskDef/ExecutionRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "PulsePlusStack/FrontendTaskDef/ExecutionRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "ecr:BatchCheckLayerAvailability",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "FrontendRepoF80FCC01",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": "ecr:GetAuthorizationToken",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "FrontendTaskDefExecutionRoleDefaultPolicy48DF7F3B",
+                            "roles": [
+                              {
+                                "Ref": "FrontendTaskDefExecutionRoleE7329A09"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.155.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateTaskDefinition",
+              "version": "2.155.0"
+            }
+          },
+          "FrontendService": {
+            "id": "FrontendService",
+            "path": "PulsePlusStack/FrontendService",
+            "children": {
+              "Service": {
+                "id": "Service",
+                "path": "PulsePlusStack/FrontendService/Service",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Service",
+                  "aws:cdk:cloudformation:props": {
+                    "cluster": {
+                      "Ref": "PulsePlusClusterF16F44A9"
+                    },
+                    "deploymentConfiguration": {
+                      "maximumPercent": 200,
+                      "minimumHealthyPercent": 50,
+                      "alarms": {
+                        "alarmNames": [],
+                        "enable": false,
+                        "rollback": false
+                      }
+                    },
+                    "desiredCount": 1,
+                    "enableEcsManagedTags": false,
+                    "healthCheckGracePeriodSeconds": 60,
+                    "launchType": "FARGATE",
+                    "loadBalancers": [
+                      {
+                        "targetGroupArn": {
+                          "Ref": "PulsePlusALBFrontendListenerFrontendTargetGroup193FA06B"
+                        },
+                        "containerName": "FrontendContainer",
+                        "containerPort": 3000
+                      }
+                    ],
+                    "networkConfiguration": {
+                      "awsvpcConfiguration": {
+                        "assignPublicIp": "DISABLED",
+                        "subnets": [
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet1Subnet3F4D1470"
+                          },
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet2Subnet8BFC7CC7"
+                          }
+                        ],
+                        "securityGroups": [
+                          {
+                            "Fn::GetAtt": [
+                              "FrontendServiceSecurityGroup85470DEC",
+                              "GroupId"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "taskDefinition": {
+                      "Ref": "FrontendTaskDef7D3FD156"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnService",
+                  "version": "2.155.0"
+                }
+              },
+              "SecurityGroup": {
+                "id": "SecurityGroup",
+                "path": "PulsePlusStack/FrontendService/SecurityGroup",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/FrontendService/SecurityGroup/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "groupDescription": "PulsePlusStack/FrontendService/SecurityGroup",
+                        "securityGroupEgress": [
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "description": "Allow all outbound traffic by default",
+                            "ipProtocol": "-1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3000": {
+                    "id": "from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3000",
+                    "path": "PulsePlusStack/FrontendService/SecurityGroup/from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3000",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                      "aws:cdk:cloudformation:props": {
+                        "description": "Load balancer to target",
+                        "fromPort": 3000,
+                        "groupId": {
+                          "Fn::GetAtt": [
+                            "FrontendServiceSecurityGroup85470DEC",
+                            "GroupId"
+                          ]
+                        },
+                        "ipProtocol": "tcp",
+                        "sourceSecurityGroupId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusALBSecurityGroup2EE5691E",
+                            "GroupId"
+                          ]
+                        },
+                        "toPort": 3000
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateService",
+              "version": "2.155.0"
+            }
+          },
+          "BackendTaskDef": {
+            "id": "BackendTaskDef",
+            "path": "PulsePlusStack/BackendTaskDef",
+            "children": {
+              "TaskRole": {
+                "id": "TaskRole",
+                "path": "PulsePlusStack/BackendTaskDef/TaskRole",
+                "children": {
+                  "ImportTaskRole": {
+                    "id": "ImportTaskRole",
+                    "path": "PulsePlusStack/BackendTaskDef/TaskRole/ImportTaskRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/BackendTaskDef/TaskRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.155.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "PulsePlusStack/BackendTaskDef/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::TaskDefinition",
+                  "aws:cdk:cloudformation:props": {
+                    "containerDefinitions": [
+                      {
+                        "essential": true,
+                        "image": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::Select": [
+                                  4,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "BackendRepo7FFBAD06",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".dkr.ecr.",
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "BackendRepo7FFBAD06",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".",
+                              {
+                                "Ref": "AWS::URLSuffix"
+                              },
+                              "/",
+                              {
+                                "Ref": "BackendRepo7FFBAD06"
+                              },
+                              ":latest"
+                            ]
+                          ]
+                        },
+                        "name": "BackendContainer",
+                        "portMappings": [
+                          {
+                            "containerPort": 3001,
+                            "protocol": "tcp"
+                          }
+                        ],
+                        "environment": [
+                          {
+                            "name": "BACKEND_PORT",
+                            "value": "3001"
+                          },
+                          {
+                            "name": "NODE_ENV",
+                            "value": "production"
+                          },
+                          {
+                            "name": "POSTGRES_URL",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "postgres://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "DatabaseB269D8BB",
+                                      "Endpoint.Address"
+                                    ]
+                                  },
+                                  ":",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "DatabaseB269D8BB",
+                                      "Endpoint.Port"
+                                    ]
+                                  },
+                                  "/pulseplus_db"
+                                ]
+                              ]
+                            }
+                          }
+                        ],
+                        "secrets": [
+                          {
+                            "name": "JWT_SECRET",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "DBSecretD58955BC"
+                                  },
+                                  ":jwt_secret::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "SESSION_SECRET",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "DBSecretD58955BC"
+                                  },
+                                  ":session_secret::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_PASSWORD",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "DBSecretD58955BC"
+                                  },
+                                  ":password::"
+                                ]
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "cpu": "256",
+                    "executionRoleArn": {
+                      "Fn::GetAtt": [
+                        "BackendTaskDefExecutionRoleC5A001DB",
+                        "Arn"
+                      ]
+                    },
+                    "family": "PulsePlusStackBackendTaskDef5CDCC19F",
+                    "memory": "512",
+                    "networkMode": "awsvpc",
+                    "requiresCompatibilities": [
+                      "FARGATE"
+                    ],
+                    "taskRoleArn": {
+                      "Fn::GetAtt": [
+                        "BackendTaskDefTaskRoleBA953A3B",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnTaskDefinition",
+                  "version": "2.155.0"
+                }
+              },
+              "BackendContainer": {
+                "id": "BackendContainer",
+                "path": "PulsePlusStack/BackendTaskDef/BackendContainer",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.ContainerDefinition",
+                  "version": "2.155.0"
+                }
+              },
+              "ExecutionRole": {
+                "id": "ExecutionRole",
+                "path": "PulsePlusStack/BackendTaskDef/ExecutionRole",
+                "children": {
+                  "ImportExecutionRole": {
+                    "id": "ImportExecutionRole",
+                    "path": "PulsePlusStack/BackendTaskDef/ExecutionRole/ImportExecutionRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/BackendTaskDef/ExecutionRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "PulsePlusStack/BackendTaskDef/ExecutionRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "PulsePlusStack/BackendTaskDef/ExecutionRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "ecr:BatchCheckLayerAvailability",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "BackendRepo7FFBAD06",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": "ecr:GetAuthorizationToken",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:GetSecretValue",
+                                    "secretsmanager:DescribeSecret"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "DBSecretD58955BC"
+                                  }
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "BackendTaskDefExecutionRoleDefaultPolicyAA625660",
+                            "roles": [
+                              {
+                                "Ref": "BackendTaskDefExecutionRoleC5A001DB"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.155.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateTaskDefinition",
+              "version": "2.155.0"
+            }
+          },
+          "BackendService": {
+            "id": "BackendService",
+            "path": "PulsePlusStack/BackendService",
+            "children": {
+              "Service": {
+                "id": "Service",
+                "path": "PulsePlusStack/BackendService/Service",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Service",
+                  "aws:cdk:cloudformation:props": {
+                    "cluster": {
+                      "Ref": "PulsePlusClusterF16F44A9"
+                    },
+                    "deploymentConfiguration": {
+                      "maximumPercent": 200,
+                      "minimumHealthyPercent": 50,
+                      "alarms": {
+                        "alarmNames": [],
+                        "enable": false,
+                        "rollback": false
+                      }
+                    },
+                    "desiredCount": 1,
+                    "enableEcsManagedTags": false,
+                    "healthCheckGracePeriodSeconds": 60,
+                    "launchType": "FARGATE",
+                    "loadBalancers": [
+                      {
+                        "targetGroupArn": {
+                          "Ref": "PulsePlusALBBackendListenerBackendTargetGroup9D7C6524"
+                        },
+                        "containerName": "BackendContainer",
+                        "containerPort": 3001
+                      }
+                    ],
+                    "networkConfiguration": {
+                      "awsvpcConfiguration": {
+                        "assignPublicIp": "DISABLED",
+                        "subnets": [
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet1Subnet3F4D1470"
+                          },
+                          {
+                            "Ref": "PulsePlusVpcPrivateSubnet2Subnet8BFC7CC7"
+                          }
+                        ],
+                        "securityGroups": [
+                          {
+                            "Fn::GetAtt": [
+                              "BackendServiceSecurityGroup0865F57D",
+                              "GroupId"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "taskDefinition": {
+                      "Ref": "BackendTaskDef6ECE986E"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnService",
+                  "version": "2.155.0"
+                }
+              },
+              "SecurityGroup": {
+                "id": "SecurityGroup",
+                "path": "PulsePlusStack/BackendService/SecurityGroup",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "PulsePlusStack/BackendService/SecurityGroup/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "groupDescription": "PulsePlusStack/BackendService/SecurityGroup",
+                        "securityGroupEgress": [
+                          {
+                            "cidrIp": "0.0.0.0/0",
+                            "description": "Allow all outbound traffic by default",
+                            "ipProtocol": "-1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "PulsePlusVpc9FBAFCBB"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                      "version": "2.155.0"
+                    }
+                  },
+                  "from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3001": {
+                    "id": "from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3001",
+                    "path": "PulsePlusStack/BackendService/SecurityGroup/from PulsePlusStackPulsePlusALBSecurityGroup89C2ECFD:3001",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                      "aws:cdk:cloudformation:props": {
+                        "description": "Load balancer to target",
+                        "fromPort": 3001,
+                        "groupId": {
+                          "Fn::GetAtt": [
+                            "BackendServiceSecurityGroup0865F57D",
+                            "GroupId"
+                          ]
+                        },
+                        "ipProtocol": "tcp",
+                        "sourceSecurityGroupId": {
+                          "Fn::GetAtt": [
+                            "PulsePlusALBSecurityGroup2EE5691E",
+                            "GroupId"
+                          ]
+                        },
+                        "toPort": 3001
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                      "version": "2.155.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateService",
+              "version": "2.155.0"
+            }
+          },
+          "LoadBalancerDNS": {
+            "id": "LoadBalancerDNS",
+            "path": "PulsePlusStack/LoadBalancerDNS",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.155.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "PulsePlusStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "PulsePlusStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.155.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.3.0"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "PulsePlusStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.155.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "PulsePlusStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.155.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.155.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.3.0"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.155.0"
+    }
+  }
+}

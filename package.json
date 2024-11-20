@@ -7,12 +7,21 @@
     "start:backend": "cd backend && npm start",
     "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
     "rebuild-db": "docker-compose run --rm db-rebuild",
-    "generate-env": "node scripts/generate-env.js"
+    "generate-env": "node scripts/generate-env.js",
+    "deploy": "cdk deploy --app 'npx ts-node --prefer-ts-exts bin/pulseplus.ts'",
+    "push-images": "bash scripts/push-images.sh",
+    "bootstrap": "cdk bootstrap aws://211125677151/us-east-1",
+    "deploy:all": "npm run push-images && npm run deploy"
   },
   "devDependencies": {
-    "concurrently": "^6.2.0"
+    "@types/node": "^22.5.2",
+    "concurrently": "^6.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@react-awesome-query-builder/ui": "^6.6.3"
+    "aws-cdk": "^2.155.0",
+    "aws-cdk-lib": "^2.155.0",
+    "constructs": "^10.3.0"
   }
 }
