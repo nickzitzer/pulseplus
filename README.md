@@ -318,3 +318,203 @@ Errors follow the format:
   "status": 400
 }
 ```
+
+# PulsePlus Infrastructure
+
+This repository contains the infrastructure as code (IaC) for the PulsePlus application using AWS CDK. The infrastructure is designed for production-grade deployment with high availability, security, and scalability.
+
+## Architecture Overview
+
+The infrastructure consists of:
+
+- **VPC Configuration**
+  - Multi-AZ deployment (2 AZs)
+  - Public, Private, and Isolated subnets
+  - NAT Gateways for outbound traffic
+
+- **Compute (ECS Fargate)**
+  - Frontend Service (Next.js)
+  - Backend Service (API)
+  - Auto-scaling configuration
+  - Container insights enabled
+
+- **Database**
+  - Amazon RDS PostgreSQL 13
+  - Automated backups
+  - Encrypted storage
+  - Private subnet deployment
+
+- **Security**
+  - HTTPS/TLS encryption
+  - WAF with rate limiting
+  - Security groups for network isolation
+  - Secrets management for sensitive data
+  - HTTP to HTTPS redirection
+
+- **Monitoring**
+  - CloudWatch alarms for CPU and error rates
+  - Container insights
+  - Access and application logging
+
+## Prerequisites
+
+1. AWS CLI installed and configured
+2. Node.js 14.x or later
+3. AWS CDK CLI installed (`npm install -g aws-cdk`)
+4. Domain name registered in Route53
+5. Docker installed (for building container images)
+
+## Deployment Instructions
+
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Configure Domain**
+   - Ensure your domain is registered in Route53
+   - Note the hosted zone ID
+
+3. **Build Docker Images**
+   ```bash
+   # Build frontend image
+   docker build -t pulseplus-frontend ./frontend
+   
+   # Build backend image
+   docker build -t pulseplus-backend ./backend
+   ```
+
+4. **Deploy Infrastructure**
+   ```bash
+   # Bootstrap CDK (first time only)
+   cdk bootstrap
+
+   # Deploy the stack
+   cdk deploy --parameters domainName=your-domain.com --parameters environment=production
+   ```
+
+5. **Push Docker Images**
+   ```bash
+   # Login to ECR
+   aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com
+
+   # Tag and push frontend
+   docker tag pulseplus-frontend:latest <frontend-repo-uri>:latest
+   docker push <frontend-repo-uri>:latest
+
+   # Tag and push backend
+   docker tag pulseplus-backend:latest <backend-repo-uri>:latest
+   docker push <backend-repo-uri>:latest
+   ```
+
+## Infrastructure Details
+
+### Networking
+- VPC with 3 subnet tiers (Public, Private, Isolated)
+- 2 NAT Gateways for high availability
+- Application Load Balancer in public subnets
+- Services and database in private/isolated subnets
+
+### Compute
+- Frontend Service:
+  - Memory: 1024 MiB
+  - CPU: 512 units
+  - Auto-scaling: 2-10 tasks
+  - Scale on 70% CPU utilization
+
+- Backend Service:
+  - Memory: 1024 MiB
+  - CPU: 512 units
+  - Auto-scaling: 2-10 tasks
+  - Scale on 70% CPU utilization
+
+### Database
+- Instance: t3.small
+- Multi-AZ: No (upgrade for production if needed)
+- Backup retention: 7 days
+- Storage: Encrypted at rest
+- Automated backups enabled
+
+### Security
+- WAF Rules:
+  - Rate limiting: 2000 requests per IP
+  - Customizable rule sets available
+
+- SSL/TLS:
+  - ACM-managed certificates
+  - Automatic HTTPS redirection
+  - Modern security protocols
+
+### Monitoring
+- CloudWatch Alarms:
+  - High CPU utilization (90% threshold)
+  - HTTP 5xx errors (10 errors threshold)
+  - Custom metrics available through Container Insights
+
+## Environment Variables
+
+### Frontend
+- `FRONTEND_PORT`: Port for the frontend service (default: 3000)
+- `NEXT_PUBLIC_FRONTEND_URL`: Frontend URL
+- `NEXT_PUBLIC_BACKEND_URL`: Backend API URL
+- `NODE_ENV`: Environment name
+
+### Backend
+- `BACKEND_PORT`: Port for the backend service (default: 3001)
+- `NODE_ENV`: Environment name
+- `POSTGRES_HOST`: Database host (auto-configured)
+- `POSTGRES_PORT`: Database port (auto-configured)
+- `POSTGRES_DB`: Database name
+- `JWT_SECRET`: JWT signing secret (from Secrets Manager)
+- `SESSION_SECRET`: Session secret (from Secrets Manager)
+- `DB_PASSWORD`: Database password (from Secrets Manager)
+
+## Cost Optimization
+
+Consider the following for cost optimization:
+- NAT Gateway count can be reduced to 1 for non-production environments
+- RDS instance size can be adjusted based on workload
+- Auto-scaling parameters can be tuned based on usage patterns
+- Reserved instances can be purchased for predictable workloads
+
+## Troubleshooting
+
+1. **Certificate Validation**
+   - Ensure DNS validation records are created
+   - Wait for certificate validation (can take up to 30 minutes)
+
+2. **Database Connectivity**
+   - Check security group rules
+   - Verify subnet connectivity
+   - Check credentials in Secrets Manager
+
+3. **Service Health**
+   - Monitor ECS service events
+   - Check container logs in CloudWatch
+   - Verify health check endpoints
+
+## Support
+
+For issues and support:
+1. Check CloudWatch logs
+2. Review ECS service events
+3. Check security group configurations
+4. Verify DNS records
+5. Monitor ALB target group health
+
+## Security Considerations
+
+1. Rotate database credentials regularly
+2. Monitor WAF rules and adjust as needed
+3. Review security group rules periodically
+4. Keep container images updated
+5. Monitor CloudWatch logs for suspicious activity
+
+## Future Enhancements
+
+Consider these potential improvements:
+1. Multi-AZ RDS deployment
+2. Additional WAF rules
+3. Enhanced monitoring and alerting
+4. Disaster recovery configuration
+5. Blue/Green deployment setup
