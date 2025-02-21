@@ -17,14 +17,14 @@
       "inlineSources": true,
       "experimentalDecorators": true,
       "strictPropertyInitialization": false,
-      "typeRoots": ["./node_modules/@types"],
+      "typeRoots": ["../../node_modules/@types"],
       "types": ["node"],
       "moduleResolution": "node",
       "esModuleInterop": true,
       "resolveJsonModule": true,
       "baseUrl": ".",
       "paths": {
-        "*": ["node_modules/*"]
+        "*": ["../../node_modules/*"]
       },
       "jsx": "react"
     },

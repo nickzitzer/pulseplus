@@ -6,13 +6,13 @@
     "start:frontend": "cd frontend && npm run dev",
     "start:backend": "cd backend && npm start",
     "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
-    "rebuild-db": "docker-compose run --rm db-rebuild",
+    "rebuild-db": "docker-compose -f deployment/docker/compose/docker-compose.yml run --rm db-rebuild",
     "generate-env": "node scripts/generate-env.js",
-    "deploy": "cdk deploy --app 'npx ts-node --prefer-ts-exts bin/pulseplus.ts'",
-    "push-images": "bash scripts/push-images.sh",
-    "bootstrap": "cdk bootstrap aws://211125677151/us-east-1",
+    "deploy": "cd deployment/aws && cdk deploy --app 'npx ts-node --prefer-ts-exts bin/pulseplus.ts'",
+    "push-images": "bash deployment/scripts/push-images.sh",
+    "bootstrap": "cd deployment/aws && cdk bootstrap aws://211125677151/us-east-1",
     "deploy:all": "npm run push-images && npm run deploy",
-    "docs:generate": "jsdoc -c jsdoc.config.json",
+    "docs:generate": "jsdoc -c documentation/jsdoc/jsdoc.config.json",
     "docs:dev": "npm run docs:generate && next dev"
   },
   "devDependencies": {

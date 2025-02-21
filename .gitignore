@@ -42,3 +42,6 @@ frontend/node_modules/
 !.env.example
 .ebextensions/env.config
 task-definition.*.json
+
+# AWS CDK
+deployment/aws/cdk.out/

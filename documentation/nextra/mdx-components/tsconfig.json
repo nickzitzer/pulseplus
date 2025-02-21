@@ -15,9 +15,9 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["*"]
     },
     "types": ["react", "react-dom"]
   },
