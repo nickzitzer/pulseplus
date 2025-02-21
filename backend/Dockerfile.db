@@ -1,5 +1,0 @@
-FROM postgres:13
-
-# Add any custom configurations or initializations here if needed
-# For example:
-# COPY ./init-scripts /docker-entrypoint-initdb.d/

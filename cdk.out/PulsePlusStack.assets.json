@@ -1,17 +1,16 @@
 {
   "version": "36.0.24",
   "files": {
-    "6f9580eac5c7ca3df62d617d2427fbcbb2ae2af7a79ec63e53232a361c570408": {
+    "6cff7b7c6b107c14ba7b7a75ad53a787de3bb4fbf59467520ca42a706138aad0": {
       "source": {
         "path": "PulsePlusStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "211125677151-us-east-1": {
-          "bucketName": "cdk-hnb659fds-assets-211125677151-us-east-1",
-          "objectKey": "6f9580eac5c7ca3df62d617d2427fbcbb2ae2af7a79ec63e53232a361c570408.json",
-          "region": "us-east-1",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-file-publishing-role-211125677151-us-east-1"
+        "current_account-current_region": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
+          "objectKey": "6cff7b7c6b107c14ba7b7a75ad53a787de3bb4fbf59467520ca42a706138aad0.json",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
         }
       }
     }

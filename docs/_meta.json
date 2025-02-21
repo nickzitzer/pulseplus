@@ -1,0 +1,25 @@
+{
+  "index": "Introduction",
+  "getting-started": "Getting Started",
+  "database": "Database",
+  "architecture": "Architecture",
+  "api": "API Reference",
+  "frontend": "Frontend",
+  "backend": "Backend",
+  "deployment": "Deployment",
+  "development": {
+    "title": "Development",
+    "type": "separator"
+  },
+  "contributing": "Contributing",
+  "testing": "Testing",
+  "security": "Security",
+  "maintenance": "Maintenance",
+  "reference": {
+    "title": "Reference",
+    "type": "separator"
+  },
+  "changelog": "Changelog",
+  "troubleshooting": "Troubleshooting",
+  "faq": "FAQ"
+} 

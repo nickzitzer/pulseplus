@@ -11,21 +11,21 @@
     },
     "PulsePlusStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://211125677151/us-east-1",
+      "environment": "aws://unknown-account/unknown-region",
       "properties": {
         "templateFile": "PulsePlusStack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-deploy-role-211125677151-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-cfn-exec-role-211125677151-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-211125677151-us-east-1/6f9580eac5c7ca3df62d617d2427fbcbb2ae2af7a79ec63e53232a361c570408.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6cff7b7c6b107c14ba7b7a75ad53a787de3bb4fbf59467520ca42a706138aad0.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "PulsePlusStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::211125677151:role/cdk-hnb659fds-lookup-role-211125677151-us-east-1",
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -374,6 +374,12 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadata"
+          }
+        ],
+        "/PulsePlusStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
           }
         ],
         "/PulsePlusStack/BootstrapVersion": [

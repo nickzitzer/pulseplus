@@ -1,0 +1,98 @@
+# Database Overview
+
+PulsePlus uses a PostgreSQL database with a comprehensive schema design that supports all aspects of the gamification platform. The database is organized into several logical systems, each handling specific functionality of the platform.
+
+## Database Systems
+
+Our database architecture is divided into the following main systems:
+
+1. **User Management**
+   - Core user data and authentication
+   - Department management
+   - SSO integration
+
+2. **Game Core System**
+   - Game configuration and management
+   - Season management
+   - Battle pass functionality
+
+3. **Virtual Economy**
+   - Currency management
+   - Shop system
+   - Transaction tracking
+
+4. **Competition System**
+   - Competition management
+   - Tournament structures
+   - Participant tracking
+
+5. **Achievement and Badge System**
+   - Achievement tracking
+   - Badge management
+   - Progress monitoring
+
+6. **Quest System**
+   - Quest chains
+   - Objectives
+   - Progress tracking
+
+7. **Player Progress System**
+   - Competitor profiles
+   - Experience tracking
+   - Performance metrics
+
+8. **Team System**
+   - Team management
+   - Member roles
+   - Team activities
+
+9. **Social Features**
+   - Friend relationships
+   - Social feed
+   - Activity tracking
+
+10. **Additional Systems**
+    - Trading system
+    - Customization
+    - Chat functionality
+    - Daily challenges
+
+## Database Conventions
+
+### Primary Keys
+- All tables use UUID type for primary keys (sys_id)
+- Foreign keys maintain referential integrity
+- Consistent naming convention with `sys_id` for primary keys
+
+### Timestamps
+- `sys_created_at`: Record creation timestamp
+- `sys_updated_at`: Last update timestamp
+- All timestamps use TIMESTAMPTZ type for timezone awareness
+
+### Naming Conventions
+- Table names: singular, lowercase with underscores
+- Column names: lowercase with underscores
+- Foreign keys: referenced_table_id format
+
+### Data Types
+- Appropriate use of PostgreSQL data types
+- JSONB for flexible data structures
+- Enums for fixed value sets
+
+## Schema Navigation
+
+Use the sidebar to navigate through detailed documentation for each system. Each section includes:
+- Table structures
+- Relationships
+- Constraints
+- Common queries
+- Best practices
+
+## Maintenance
+
+The database includes a maintenance schema for:
+- Index statistics tracking
+- Maintenance logging
+- Performance monitoring
+
+For detailed information about specific systems, please navigate through the sidebar sections. 

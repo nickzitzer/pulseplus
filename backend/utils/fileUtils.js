@@ -1,94 +1,110 @@
-const fs = require('fs').promises;
+/**
+ * @module fileUtils
+ * @description File handling utilities for upload, storage, and retrieval
+ * @requires fs
+ * @requires path
+ * @requires multer
+ */
+
+const fs = require('fs');
 const path = require('path');
-const { pool } = require('../db');
+const multer = require('multer');
 
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
-
-// Ensure the upload directory exists
-async function ensureUploadDir() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (error) {
-    console.error('Error creating upload directory:', error);
-  }
-}
-
-// Write file to the server
-async function writeFile(fileName, fileBuffer) {
-  await ensureUploadDir();
-  const filePath = path.join(UPLOAD_DIR, fileName);
-  await fs.writeFile(filePath, fileBuffer);
-  return filePath;
-}
-
-// Read file from the server
-async function readFile(fileName) {
-  const filePath = path.join(UPLOAD_DIR, fileName);
-  return await fs.readFile(filePath);
-}
-
-// Delete file from the server
-async function deleteFile(filePath) {
-  try {
-    await fs.unlink(filePath);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      console.warn(`File ${filePath} does not exist, skipping deletion.`);
-    } else {
-      console.error(`Error deleting file ${filePath}:`, err);
+/**
+ * @constant {Object} storage
+ * @description Multer disk storage configuration
+ * @private
+ */
+const storage = multer.diskStorage({
+  /**
+   * @function destination
+   * @description Determines the upload directory for files
+   * @param {Object} req - Express request object
+   * @param {Object} file - File object
+   * @param {Function} cb - Callback function
+   */
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
+    cb(null, uploadDir);
+  },
+  /**
+   * @function filename
+   * @description Generates a unique filename for uploaded files
+   * @param {Object} req - Express request object
+   * @param {Object} file - File object
+   * @param {Function} cb - Callback function
+   */
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
-}
+});
 
-async function processImageUpload(file, fieldName, entityId = null, tableName = 'competitor') {
-  let imageData = {};
-  let oldImageUrl = null;
-
-  if (entityId) {
-    // Get the old image URL before updating
-    const { rows } = await pool.query(`SELECT ${fieldName} FROM ${tableName} WHERE sys_id = $1`, [entityId]);
-    if (rows.length > 0) {
-      oldImageUrl = rows[0][fieldName];
-    }
-
-  }
-
-  if (file) {
-    console.log('File', file);
-    const fileName = `${tableName}_${fieldName}_${entityId}_${Date.now()}_${file.originalname}`;
-    const filePath = await writeFile(fileName, file.buffer);
-    console.log('File saved successfully');
-    imageData[fieldName] = `/uploads/${fileName}`;
+/**
+ * @function fileFilter
+ * @description Filters uploaded files based on allowed types
+ * @param {Object} req - Express request object
+ * @param {Object} file - File object
+ * @param {Function} cb - Callback function
+ * @throws {Error} If file type is not allowed
+ */
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
   } else {
-    imageData[fieldName] = oldImageUrl || null;
+    cb(new Error('Invalid file type. Only JPEG, PNG, GIF and PDF files are allowed.'), false);
   }
+};
 
-  console.log
-
-  imageData.oldImageUrl = oldImageUrl;
-  return imageData;
-}
-
-async function handleFileUpdate(file, fieldName, entityId, tableName) {
-  const imageData = await processImageUpload(file, fieldName, entityId, tableName);
-  
-  let result = {
-    [fieldName]: imageData[fieldName]
-  };
-
-  if (imageData.oldImageUrl && imageData.oldImageUrl !== imageData[fieldName]) {
-    const oldFilePath = path.join(__dirname, '..', imageData.oldImageUrl);
-    await deleteFile(oldFilePath);
-    result.oldFileDeleted = true;
+/**
+ * @constant {Object} upload
+ * @description Configured multer instance for file uploads
+ * @property {Object} storage - Storage configuration
+ * @property {Function} fileFilter - File type filter
+ * @property {Object} limits - Upload limits configuration
+ */
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
+});
 
-  return result;
-}
+/**
+ * @async
+ * @function deleteFile
+ * @description Deletes a file from the filesystem
+ * @param {string} filePath - Path to the file to delete
+ * @returns {Promise<boolean>} True if file was deleted successfully
+ * @throws {Error} If file deletion fails
+ */
+const deleteFile = async (filePath) => {
+  try {
+    await fs.promises.unlink(filePath);
+    return true;
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    return false;
+  }
+};
+
+/**
+ * @function getFileUrl
+ * @description Generates a public URL for accessing a file
+ * @param {string} filename - Name of the file
+ * @returns {string} Public URL path to the file
+ */
+const getFileUrl = (filename) => {
+  return `/uploads/${filename}`;
+};
 
 module.exports = {
-  writeFile,
-  readFile,
+  upload,
   deleteFile,
-  processImageUpload,
-  handleFileUpdate, // Add this new function to the exports
-};
+  getFileUrl
+}; 
