@@ -154,6 +154,9 @@ Password: U@2mH9#rJ7sN5$xQ
 ## Overview
 This is the API documentation for the PulsePlus gaming and engagement platform. The API provides endpoints for managing game mechanics, user interactions, and social features.
 
+## Base URL
+All API endpoints are prefixed with `/api`
+
 ## Authentication
 All endpoints require Bearer token authentication:
 ```
@@ -169,155 +172,96 @@ Authorization: Bearer <token>
 - `POST /auth/refresh` - Refresh access token
 - `GET /users/me` - Get current user profile
 - `PUT /users/me` - Update user profile
-- `POST /sso/login` - SSO login
-- `GET /sso/callback` - SSO callback handler
+- `GET /users/preferences` - Get user preferences
+- `PUT /users/preferences` - Update user preferences
+- `GET /users/sessions` - Get user sessions
 
-### Game Core Features
+### Game Management
 - `POST /games` - Create game
-- `GET /games/:id` - Get game details
-- `PUT /games/:id` - Update game
-- `PATCH /games/:id/status` - Update game status
-- `GET /games/:id/stats` - Get game statistics
-- `GET /games/:id/leaderboard` - Get game leaderboard
-- `POST /games/:id/join` - Join game
-- `PATCH /games/:id/config` - Update game configuration
-
-### Teams & Competition
-- `POST /teams` - Create team
-- `GET /teams/:id` - Get team details
-- `PUT /teams/:id` - Update team
-- `POST /teams/:id/members` - Add team member
-- `DELETE /teams/:id/members/:userId` - Remove team member
-- `PUT /teams/:id/members/:userId` - Update member role
-- `GET /teams/:id/performance` - Get team performance metrics
-
-### Leaderboards & Rankings
-- `POST /leaderboards` - Create leaderboard
-- `GET /leaderboards/:id` - Get leaderboard details
-- `GET /leaderboards/:id/entries` - Get leaderboard entries
-- `PUT /leaderboards/:id` - Update leaderboard
-- `POST /leaderboards/:id/reset` - Reset leaderboard
-
-### Seasons & Battle Pass
-- `POST /seasons` - Create season
-- `GET /seasons/:id` - Get season details
-- `PUT /seasons/:id` - Update season
-- `POST /seasons/:id/end` - End season
-- `POST /seasons/tiers` - Create season tier
-- `GET /seasons/:id/progress/:competitorId` - Get season progress
-- `POST /seasons/:id/battlepass/purchase` - Purchase battle pass
-- `POST /seasons/:id/xp` - Add season XP
-- `POST /seasons/:id/tiers/:tierId/claim` - Claim tier reward
-
-### Player Progression
-- `GET /progression/competitor/:competitorId` - Get competitor progress
-- `GET /progression/milestones/:gameId/:competitorId` - Get competitor milestones
-- `POST /progression/milestones` - Create milestone
-- `PUT /progression/milestones/:id` - Update milestone
-- `GET /progression/stats/:gameId` - Get progression stats
-- `GET /progression/history/:competitorId` - Get competitor history
-
-### Economy & Trading
-- `GET /economy/balance/:competitorId` - Get currency balance
-- `POST /economy/transfer` - Transfer currency
-- `GET /economy/history/:competitorId` - Get currency history
-- `POST /economy/shops` - Create shop
-- `GET /economy/shops/:id` - Get shop details
-- `POST /economy/shops/:id/items` - Add shop item
-- `POST /economy/items/:id/purchase` - Purchase item
-- `GET /economy/inventory/:competitorId` - Get inventory
-- `POST /economy/inventory/:itemId/use` - Use inventory item
-
-### Trading System
-- `POST /trading/offers` - Create trade offer
-- `GET /trading/offers/:id` - Get trade offer details
-- `GET /trading/offers` - Get user's trades
-- `POST /trading/offers/:id/respond` - Respond to trade offer
-- `POST /trading/offers/:id/cancel` - Cancel trade offer
-- `GET /trading/history` - Get trade history
-
-### Customization
-- `GET /customization/profile` - Get profile customization
-- `PUT /customization/profile` - Update profile customization
-- `POST /customization/avatar` - Update avatar
-- `POST /customization/banner` - Update banner
-- `GET /customization/available` - Get available customizations
-- `POST /customization/purchase` - Purchase customization
+- `GET /games/{gameId}` - Get game details
+- `PUT /games/{gameId}` - Update game
+- `GET /games/{gameId}/stats` - Get game statistics
+- `GET /games/{gameId}/settings` - Get game settings
+- `PUT /games/{gameId}/settings` - Update game settings
 
 ### Social Features
-- `GET /social/friends` - List friends
-- `POST /social/friends/requests` - Send friend request
-- `POST /social/friends/requests/:id/respond` - Respond to friend request
-- `DELETE /social/friends/:id` - Remove friend
-- `POST /social/feed` - Create social feed post
-- `GET /social/feed` - Get social feed
+- `GET /social/feed` - Get user's social feed
+- `POST /social/feeds` - Create a new social feed post
+- `POST /social/feeds/{feedId}/interact` - Interact with a feed post
+- `POST /social/chat/groups` - Create chat group
+- `GET /social/chat/groups/{groupId}/messages` - Get chat messages
+- `POST /social/chat/groups/{groupId}/messages` - Send chat message
 
-### Chat System
-- `POST /chat/groups` - Create chat group
-- `GET /chat/groups` - Get user's chat groups
-- `GET /chat/groups/:id` - Get group details
-- `POST /chat/groups/:id/messages` - Send message
-- `GET /chat/groups/:id/messages` - Get messages
-- `POST /chat/groups/:id/members` - Add member
-- `DELETE /chat/groups/:id/members/:userId` - Remove member
-- `PUT /chat/groups/:id/members/:userId` - Update member role
-- `POST /chat/groups/:id/read` - Mark messages as read
-- `POST /chat/messages/:id/react` - React to message
+### Season Management
+- `POST /seasons` - Create season
+- `GET /seasons/{seasonId}` - Get season details
+- `PUT /seasons/{seasonId}` - Update season details
+- `POST /seasons/{seasonId}/end` - End season and process final rankings
+- `POST /seasons/tiers` - Create season tier
 
-### Notifications
-- `GET /notifications` - Get notifications
-- `GET /notifications/unread/count` - Get unread count
-- `POST /notifications/:id/read` - Mark as read
-- `POST /notifications/read/all` - Mark all as read
-- `DELETE /notifications/:id` - Delete notification
-- `GET /notifications/preferences` - Get notification preferences
-- `PUT /notifications/preferences` - Update notification preferences
+### Economy & Trading
+- `GET /economy/balance` - Get user's currency balance
+- `GET /economy/transactions` - Get user's transaction history
+- `GET /economy/shop` - Get shop items
+- `POST /economy/shop/{itemId}/purchase` - Purchase shop item
+- `GET /economy/balance/{competitorId}` - Get competitor's currency balance
+- `POST /economy/transfer` - Transfer currency between competitors
+- `GET /economy/history/{competitorId}` - Get competitor's transaction history
+- `POST /economy/shops` - Create shop
+- `GET /economy/shops/{shopId}` - Get shop details
 
-### Analytics & Management
-- `GET /analytics/performance/:gameId` - Get performance metrics
-- `GET /analytics/engagement/:gameId` - Get engagement metrics
-- `GET /analytics/progression/:gameId` - Get progression metrics
-- `GET /analytics/revenue/:gameId` - Get revenue metrics
-- `GET /analytics/social/:gameId` - Get social metrics
-- `GET /analytics/games/:gameId` - Get game analytics
-- `GET /analytics/competitors/:competitorId` - Get competitor analytics
-- `GET /analytics/system` - Get system metrics (admin only)
-- `POST /analytics/reports/games/:gameId` - Generate analytics report
+### Analytics
+- `GET /analytics/performance/{gameId}` - Get game performance metrics
+- `GET /analytics/engagement/{gameId}` - Get game engagement metrics
+- `GET /analytics/revenue/{gameId}` - Get game revenue metrics
+- `GET /analytics/progression/{gameId}` - Get game progression metrics
+- `GET /analytics/competitors/{competitorId}` - Get competitor analytics
+- `POST /analytics/reports/games/{gameId}` - Generate analytics report
 
 ### Surveys & Feedback
 - `POST /surveys` - Create survey
-- `GET /surveys/:id` - Get survey details
-- `POST /surveys/:id/responses` - Submit survey response
-- `GET /surveys/:id/results` - Get survey results
+- `GET /surveys/{surveyId}` - Get survey details
+- `PUT /surveys/{surveyId}` - Update survey
+- `POST /surveys/{surveyId}/questions` - Add questions to survey
+- `PUT /surveys/{surveyId}/questions/{questionId}` - Update survey question
+- `DELETE /surveys/{surveyId}/questions/{questionId}` - Delete survey question
+- `POST /surveys/{surveyId}/responses` - Submit survey responses
+- `GET /surveys/{surveyId}/responses/summary` - Get survey response summary
 
-## Query Parameters
+### Notifications
+- `GET /notifications` - Get notifications
+- `POST /notifications/mark-read` - Mark notifications as read
+- `GET /notifications/settings` - Get notification settings
+- `PUT /notifications/settings` - Update notification settings
+
+## Common Query Parameters
 Most list endpoints support the following query parameters:
 - `page` (integer): Page number for pagination
-- `limit` (integer): Number of items per page
-- `sort` (string): Field to sort by
-- `order` (string): Sort order (asc/desc)
-- `filter` (object): Filter criteria
-- `include` (array): Related resources to include
+- `limit` (integer): Number of items per page (default: 20, max: 50)
+- `offset` (integer): Offset for pagination
+- `timeframe` (string): Time range for analytics (7d, 30d, 90d, ALL)
 
 ## Response Format
 All responses follow the format:
 ```json
 {
-  "data": <response_data>,
-  "message": "Success message",
-  "status": 200
+  "success": boolean,
+  "data": object,
+  "error": {
+    "code": string,
+    "message": string,
+    "details": object
+  }
 }
 ```
 
-## Error Handling
-Errors follow the format:
-```json
-{
-  "message": "Error description",
-  "code": "ERROR_CODE",
-  "status": 400
-}
-```
+## Error Responses
+Common error responses include:
+- `400 Bad Request` - Invalid request parameters
+- `401 Unauthorized` - Missing or invalid authentication
+- `403 Forbidden` - Insufficient permissions
+- `404 Not Found` - Resource not found
+- `429 Too Many Requests` - Rate limit exceeded
 
 # PulsePlus Infrastructure
 
