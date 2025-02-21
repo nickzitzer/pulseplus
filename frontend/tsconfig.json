@@ -18,9 +18,20 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@mdx-components/*": ["../mdx-components/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/context/auth.tsx", "src/utils/api.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/context/auth.tsx",
+    "src/utils/api.ts",
+    "../mdx-components/**/*.ts",
+    "../mdx-components/**/*.tsx",
+    "../mdx-components/**/*.jsx"
+  ],
   "exclude": ["node_modules"]
 }

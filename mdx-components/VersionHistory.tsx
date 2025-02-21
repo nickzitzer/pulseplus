@@ -1,5 +1,16 @@
-// TODO: Implement version history component
-export const VersionHistory = ({ versions }) => (
+import React from 'react';
+
+interface Version {
+  version: string;
+  date: string;
+  changes: string[];
+}
+
+interface VersionHistoryProps {
+  versions: Version[];
+}
+
+export const VersionHistory: React.FC<VersionHistoryProps> = ({ versions }) => (
   <div className="version-history">
     <h2>Version History</h2>
     {versions.map(version => (

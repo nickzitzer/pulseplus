@@ -25,7 +25,8 @@
       "baseUrl": ".",
       "paths": {
         "*": ["node_modules/*"]
-      }
+      },
+      "jsx": "react"
     },
     "exclude": ["cdk.out"]
   }
