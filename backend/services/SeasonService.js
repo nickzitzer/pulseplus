@@ -1,4 +1,4 @@
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 const AppError = require('../utils/appError');
 
 /**

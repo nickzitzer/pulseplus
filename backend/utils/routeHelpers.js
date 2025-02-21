@@ -1,7 +1,7 @@
 /**
  * @module routeHelpers
  * @description Common utilities for route handling and database operations
- * @requires ../db
+ * @requires ../database/connection
  * @requires ./appError
  * @requires ./logger
  * @requires multer
@@ -9,12 +9,13 @@
  * @requires fs.promises
  */
 
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 const AppError = require('./appError');
 const logger = require('./logger');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
+const auditLog = require('./auditLog');
 
 /**
  * @typedef {Object} AuditDetails

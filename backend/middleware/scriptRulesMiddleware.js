@@ -2,11 +2,11 @@
  * @module scriptRulesMiddleware
  * @description Middleware for executing dynamic script rules and validations
  * @requires ../utils/scriptRulesUtils
- * @requires ../db
+ * @requires ../database/connection
  */
 
 const { executeScriptRule } = require('../utils/scriptRulesUtils');
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 
 /**
  * @typedef {Object} OperationMap

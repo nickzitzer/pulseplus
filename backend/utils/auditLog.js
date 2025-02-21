@@ -1,10 +1,10 @@
 /**
  * @module auditLog
- * @description Audit logging utility for tracking user actions and system events
- * @requires ../db
+ * @description Audit logging functionality for tracking system changes
+ * @requires ../database/connection
  */
 
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 
 /**
  * @typedef {Object} User

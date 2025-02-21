@@ -1,10 +1,10 @@
 /**
  * @module permissionService
  * @description Permission and role management service for access control
- * @requires ../db
+ * @requires ../database/connection
  */
 
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 
 /**
  * @constant {Object} ROLES

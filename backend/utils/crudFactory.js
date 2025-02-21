@@ -1,10 +1,10 @@
 /**
  * @module crudFactory
  * @description Factory for creating standardized CRUD operations for database tables
- * @requires ../db
+ * @requires ../database/connection
  */
 
-const { pool } = require('../db');
+const { pool } = require('../database/connection');
 
 /**
  * @typedef {Object} CrudOptions
