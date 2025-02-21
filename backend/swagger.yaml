@@ -40,6 +40,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
   schemas:
     Error:
@@ -61,6 +67,170 @@ components:
           type: object
         error:
           $ref: '#/components/schemas/Error'
+
+    UserPreferences:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [LIGHT, DARK, SYSTEM]
+        notifications:
+          type: object
+          properties:
+            email:
+              type: boolean
+            push:
+              type: boolean
+            in_app:
+              type: boolean
+        language:
+          type: string
+        timezone:
+          type: string
+
+    UserSession:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        device_info:
+          type: object
+          properties:
+            type:
+              type: string
+            os:
+              type: string
+            browser:
+              type: string
+        ip_address:
+          type: string
+        last_active:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    ChatGroup:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        creator_id:
+          type: string
+          format: uuid
+        members:
+          type: array
+          items:
+            type: string
+            format: uuid
+        type:
+          type: string
+          enum: [DIRECT, GROUP]
+        created_at:
+          type: string
+          format: date-time
+
+    ChatMessage:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        group_id:
+          type: string
+          format: uuid
+        sender_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              url:
+                type: string
+        created_at:
+          type: string
+          format: date-time
+
+    GameSettings:
+      type: object
+      properties:
+        allow_team_creation:
+          type: boolean
+        max_team_size:
+          type: integer
+        enable_leaderboard:
+          type: boolean
+        enable_achievements:
+          type: boolean
+        enable_badges:
+          type: boolean
+        enable_shop:
+          type: boolean
+        custom_rules:
+          type: object
+
+    SocialFeed:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        creator_id:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              url:
+                type: string
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    FeedInteraction:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        feed_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [LIKE, COMMENT, SHARE]
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
 
     # Authentication & User Management
     LoginRequest:
@@ -149,24 +319,14 @@ components:
           type: string
           format: date-time
         settings:
-          type: object
-          properties:
-            allow_team_creation:
-              type: boolean
-            max_team_size:
-              type: integer
-            enable_leaderboard:
-              type: boolean
-            enable_achievements:
-              type: boolean
-            enable_badges:
-              type: boolean
-            enable_shop:
-              type: boolean
-        sys_created_at:
+          $ref: '#/components/schemas/GameSettings'
+        creator_id:
+          type: string
+          format: uuid
+        created_at:
           type: string
           format: date-time
-        sys_updated_at:
+        updated_at:
           type: string
           format: date-time
       required:
@@ -632,6 +792,138 @@ components:
               revenue:
                 type: number
 
+    Season:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        game_id:
+          type: string
+          format: uuid
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        banner_url:
+          type: string
+        status:
+          type: string
+          enum: [UPCOMING, ACTIVE, ENDED]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SeasonTier:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        season_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        level:
+          type: integer
+        xp_required:
+          type: integer
+        reward_image:
+          type: string
+        rewards:
+          type: object
+
+    CurrencyBalance:
+      type: object
+      properties:
+        coins:
+          type: integer
+        gems:
+          type: integer
+        points:
+          type: integer
+
+    CurrencyTransfer:
+      type: object
+      properties:
+        to_competitor_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          minimum: 1
+        currency_type:
+          type: string
+          enum: [COINS, GEMS, POINTS]
+        reason:
+          type: string
+
+    TransactionHistory:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        competitor_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [TRANSFER, PURCHASE, REWARD, REFUND]
+        amount:
+          type: integer
+        currency_type:
+          type: string
+          enum: [COINS, GEMS, POINTS]
+        balance_after:
+          type: integer
+        reference_id:
+          type: string
+          format: uuid
+        reference_type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Shop:
+      type: object
+      properties:
+        sys_id:
+          type: string
+          format: uuid
+        game_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        icon_url:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        currency_type:
+          type: string
+          enum: [COINS, GEMS, POINTS]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
 paths:
   /auth/login:
     post:
@@ -862,6 +1154,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /games/{gameId}:
     get:
@@ -879,7 +1173,7 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Game details
+          description: Game details retrieved successfully
           content:
             application/json:
               schema:
@@ -1808,14 +2102,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  coins:
-                    type: integer
-                  gems:
-                    type: integer
-                  points:
-                    type: integer
+                $ref: '#/components/schemas/CurrencyBalance'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -1856,18 +2143,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Transaction'
-                  total:
-                    type: integer
-                  page:
-                    type: integer
-                  pages:
-                    type: integer
+                $ref: '#/components/schemas/TransactionHistory'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -2525,6 +2801,630 @@ paths:
           $ref: '#/components/responses/NotFound'
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  # User Management
+  /users/preferences:
+    get:
+      tags:
+        - User Management
+      summary: Get user preferences
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - User Management
+      summary: Update user preferences
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/sessions:
+    get:
+      tags:
+        - User Management
+      summary: Get user sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: User sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSession'
+                  total:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Game Management
+  /games/{gameId}/settings:
+    get:
+      tags:
+        - Game Management
+      summary: Get game settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Game settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameSettings'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Game Management
+      summary: Update game settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameSettings'
+      responses:
+        '200':
+          description: Game settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Social Features
+  /social/feeds:
+    post:
+      tags:
+        - Social
+      summary: Create a new social feed post
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialFeed'
+      responses:
+        '201':
+          description: Feed post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialFeed'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /social/feeds/{feedId}/interact:
+    post:
+      tags:
+        - Social
+      summary: Interact with a feed post
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedInteraction'
+      responses:
+        '200':
+          description: Interaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedInteraction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /social/chat/groups:
+    post:
+      tags:
+        - Social
+      summary: Create a new chat group
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatGroup'
+      responses:
+        '201':
+          description: Chat group created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatGroup'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /social/chat/groups/{groupId}/messages:
+    post:
+      tags:
+        - Social
+      summary: Send a chat message
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessage'
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+    get:
+      tags:
+        - Social
+      summary: Get chat messages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: before
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Season Management
+  /seasons:
+    post:
+      tags:
+        - Season Management
+      summary: Create a new season
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Season'
+      responses:
+        '201':
+          description: Season created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /seasons/{seasonId}:
+    get:
+      tags:
+        - Season Management
+      summary: Get season details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seasonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Season details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Season Management
+      summary: Update season details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seasonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Season'
+      responses:
+        '200':
+          description: Season updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /seasons/{seasonId}/end:
+    post:
+      tags:
+        - Season Management
+      summary: End a season and process final rankings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: seasonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Season ended successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Season'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /seasons/tiers:
+    post:
+      tags:
+        - Season Management
+      summary: Create a new season tier
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeasonTier'
+      responses:
+        '201':
+          description: Season tier created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeasonTier'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  # Economy Management
+  /economy/balance/{competitorId}:
+    get:
+      tags:
+        - Economy
+      summary: Get competitor's currency balance
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: competitorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyBalance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /economy/transfer:
+    post:
+      tags:
+        - Economy
+      summary: Transfer currency between competitors
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrencyTransfer'
+      responses:
+        '200':
+          description: Transfer completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistory'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /economy/history/{competitorId}:
+    get:
+      tags:
+        - Economy
+      summary: Get competitor's transaction history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: competitorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Transaction history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransactionHistory'
+                  total:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /economy/shops:
+    post:
+      tags:
+        - Economy
+      summary: Create a new shop
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shop'
+      responses:
+        '201':
+          description: Shop created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shop'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /economy/shops/{shopId}:
+    get:
+      tags:
+        - Economy
+      summary: Get shop details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: shopId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Shop details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shop'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
 security:
   - BearerAuth: [] 
