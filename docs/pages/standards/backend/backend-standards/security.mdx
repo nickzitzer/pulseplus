@@ -1,0 +1,60 @@
+import { Callout, Tabs, Tab } from 'nextra/components';
+
+# Security Standards
+
+## Middleware Order
+
+<Tabs items={['Requirement', 'Example']}>
+  <Tab>
+```javascript
+// Mandatory middleware order
+router.method('/path',
+  rateLimiter,      // First line of defense
+  verifyToken,      // Authentication
+  validateRequest,  // Input validation
+  checkPermissions, // Authorization
+  businessLogic     // Core functionality
+);
+```
+  </Tab>
+  <Tab>
+```javascript
+// Example user route
+router.post('/users',
+  rateLimitPresets.SENSITIVE_OPERATION,
+  verifyToken,
+  validateRequest(userCreateSchema),
+  checkPermission(PERMISSIONS.USER_WRITE),
+  async (req, res) => {
+    // Create user logic
+  }
+);
+```
+  </Tab>
+</Tabs>
+
+## Headers Configuration
+
+```javascript
+import helmet from 'helmet';
+
+// Mandatory security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "trusted.cdn.com"],
+      objectSrc: ["'none'"]
+    }
+  },
+  hsts: { 
+    maxAge: 63072000, 
+    includeSubDomains: true, 
+    preload: true 
+  }
+}));
+```
+
+<Callout type="error" emoji="🚨">
+  Never disable security headers for convenience. If you need CSP exceptions, file a security ticket.
+</Callout> 

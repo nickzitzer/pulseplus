@@ -1,0 +1,23 @@
+import { Callout } from 'nextra/components';
+
+# Observability Standards
+
+## Logging Format
+
+```javascript
+// Mandatory log structure
+{
+  "timestamp": "2023-01-01T00:00:00Z",
+  "level": "info",
+  "message": "User created",
+  "service": "backend",
+  "version": "1.2.3",
+  "traceId": "trace_123",
+  "userId": "usr_123",
+  "durationMs": 150
+}
+```
+
+<Callout type="info" emoji="💡">
+  All logs must be structured JSON. Never use plain text logging in production.
+</Callout> 

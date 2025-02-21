@@ -1,0 +1,45 @@
+import { Tabs, Tab } from 'nextra/components';
+
+# Infrastructure Standards
+
+<Tabs items={['Docker', 'CI/CD']}>
+  <Tab>
+```yaml:docker-compose.yml
+services:
+  backend:
+    healthcheck:
+      test: ["CMD", "curl", -f, "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    secrets:
+      - source: db_password
+        target: DB_PASSWORD
+```
+  </Tab>
+  <Tab>
+```typescript
+const pipeline = new Pipeline({
+  stages: [
+    {
+      name: 'SecurityScan',
+      actions: [SASTScan, DASTScan]
+    },
+    {
+      name: 'Build',
+      actions: [DockerBuild]
+    },
+    {
+      name: 'Test',
+      actions: [UnitTests, IntegrationTests]
+    }
+  ]
+});
+```
+  </Tab>
+</Tabs> 

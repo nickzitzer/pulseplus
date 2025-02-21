@@ -1,0 +1,16 @@
+# REST API Reference
+
+## Authentication
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "user@example.com",
+  "password": "••••••••"
+}
+```
+
+## Error Codes
+<ErrorExample code="401" description="Missing authentication token" />
+<ErrorExample code="429" description="Rate limit exceeded" /> 

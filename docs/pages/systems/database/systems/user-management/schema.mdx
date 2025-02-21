@@ -1,0 +1,30 @@
+import { Tabs, Tab } from 'nextra/components';
+
+# User Management Schema
+
+<Tabs items={['SQL', 'Diagram', 'Relationships']}>
+  <Tab>
+```sql
+CREATE TABLE department (
+    sys_id UUID PRIMARY KEY,
+    name VARCHAR(255) UNIQUE
+);
+```
+  </Tab>
+  
+  <Tab>
+```mermaid
+erDiagram
+    department ||--o{ sys_user : contains
+```
+  </Tab>
+
+  <Tab>
+```json
+{
+  "department": ["sys_user"],
+  "sso_provider": ["sys_user"]
+}
+```
+  </Tab>
+</Tabs> 

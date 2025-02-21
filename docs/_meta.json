@@ -1,12 +1,93 @@
 {
   "index": "Introduction",
   "getting-started": "Getting Started",
-  "database": "Database",
   "architecture": "Architecture",
-  "api": "API Reference",
-  "frontend": "Frontend",
-  "backend": "Backend",
-  "deployment": "Deployment",
+  "systems": {
+    "title": "Core Systems",
+    "type": "menu",
+    "items": {
+      "database": {
+        "title": "Database System",
+        "type": "page",
+        "children": {
+          "index": "Overview",
+          "systems": {
+            "title": "Subsystems",
+            "type": "menu",
+            "items": {
+              "user-management": "User Management",
+              "game-system": "Game System",
+              "virtual-economy": "Virtual Economy"
+            }
+          },
+          "guides": {
+            "title": "Guides",
+            "type": "menu",
+            "items": {
+              "migrations": "Migrations",
+              "optimization": "Optimization"
+            }
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "menu",
+            "items": {
+              "data-types": "Data Types",
+              "naming-conventions": "Naming"
+            }
+          }
+        }
+      },
+      "frontend": "Frontend System",
+      "backend": "Backend System"
+    }
+  },
+  "standards": {
+    "title": "Development Standards",
+    "type": "menu",
+    "items": {
+      "backend-standards": {
+        "title": "Backend Standards",
+        "type": "page",
+        "children": {
+          "security": "Security",
+          "api-design": "API Design",
+          "infrastructure": "Infrastructure",
+          "observability": "Observability",
+          "code-quality": "Code Quality",
+          "compliance": "Compliance"
+        }
+      },
+      "frontend-standards": "Frontend Standards"
+    }
+  },
+  "operations": {
+    "title": "Operations",
+    "type": "menu",
+    "items": {
+      "deployment": "Deployment",
+      "monitoring": "Monitoring",
+      "maintenance": "Maintenance"
+    }
+  },
+  "api": {
+    "title": "API Reference",
+    "type": "page",
+    "children": {
+      "rest-api": "REST API",
+      "graphql": "GraphQL",
+      "websockets": "WebSockets"
+    }
+  },
+  "resources": {
+    "title": "Resources",
+    "type": "menu",
+    "items": {
+      "changelog": "Changelog",
+      "troubleshooting": "Troubleshooting",
+      "faq": "FAQ"
+    }
+  },
   "development": {
     "title": "Development",
     "type": "separator"
@@ -19,7 +100,22 @@
     "title": "Reference",
     "type": "separator"
   },
-  "changelog": "Changelog",
-  "troubleshooting": "Troubleshooting",
-  "faq": "FAQ"
+  "pages": {
+    "index": "Home",
+    "api-reference": "API Reference",
+    "backend-standards": {
+      "title": "Backend Standards",
+      "type": "page",
+      "children": {
+        "security": "Security",
+        "api-design": "API Design",
+        "infrastructure": "Infrastructure",
+        "observability": "Observability",
+        "code-quality": "Code Quality",
+        "compliance": "Compliance"
+      }
+    },
+    "database-migrations": "Database Migrations",
+    "deployment-playbook": "Deployment Guide"
+  }
 } 
