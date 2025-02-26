@@ -1,0 +1,287 @@
+# Service Patterns
+
+This document outlines the standardized patterns for implementing services in the PulsePlus backend.
+
+## Overview
+
+Services in PulsePlus follow a consistent pattern to ensure maintainability, readability, and proper transaction handling. Each service is responsible for a specific domain of the application and provides methods for interacting with that domain.
+
+## Service Structure
+
+### Imports
+
+All services should include the following standard imports:
+
+```javascript
+const AppError = require('../utils/appError');
+const { createCrudService, withTransaction } = require('../utils/serviceFactory');
+const logger = require('../utils/logger');
+const { clearResourceCache } = require('../utils/cacheConfig');
+const { cacheManager, CACHE_NAMES } = require('../utils/cacheService');
+const { pool } = require('../database/connection');
+```
+
+Additional domain-specific imports should be added as needed.
+
+### Module Documentation
+
+Each service should include JSDoc module documentation:
+
+```javascript
+/**
+ * @module ServiceName
+ * @description Brief description of the service's responsibilities
+ * @requires ../utils/serviceFactory
+ * @requires ../utils/appError
+ * @requires ../utils/logger
+ * @requires ../utils/cacheConfig
+ * @requires ../utils/cacheService
+ * @requires ../database/connection
+ * @requires [other-dependencies]
+ */
+```
+
+### Base CRUD Service
+
+Each service should create a base CRUD service using the `createCrudService` factory:
+
+```javascript
+const baseCrudService = createCrudService('table_name', {
+  idField: 'sys_id',
+  searchFields: ['field1', 'field2', 'field3'],
+  allowedFields: ['field1', 'field2', 'field3', 'field4'],
+  hooks: {
+    beforeCreate: async (data) => {
+      // Pre-processing logic
+    },
+    afterCreate: async (entity, currentUser, client) => {
+      // Clear cache
+      clearResourceCache(cacheManager, CACHE_NAMES.DOMAIN, 'ENTITY', 'CREATE');
+      
+      // Log creation
+      logger.info(`Entity created: ${entity.name}`, {
+        entityId: entity.sys_id,
+        createdBy: currentUser?.id
+      });
+    },
+    beforeUpdate: async (id, data) => {
+      // Pre-update logic
+    },
+    afterUpdate: async (entity, oldData, currentUser) => {
+      // Clear cache
+      clearResourceCache(cacheManager, CACHE_NAMES.DOMAIN, 'ENTITY', 'UPDATE', entity.sys_id);
+      
+      // Log update
+      logger.info(`Entity updated: ${entity.name}`, {
+        entityId: entity.sys_id,
+        updatedBy: currentUser?.id
+      });
+    },
+    afterDelete: async (entity, currentUser) => {
+      // Clear cache
+      clearResourceCache(cacheManager, CACHE_NAMES.DOMAIN, 'ENTITY', 'DELETE', entity.sys_id);
+      
+      // Log deletion
+      logger.info(`Entity deleted: ${entity.name}`, {
+        entityId: entity.sys_id,
+        deletedBy: currentUser?.id
+      });
+    }
+  }
+});
+```
+
+## Custom Methods
+
+### Method Structure
+
+All custom methods should follow this standard pattern:
+
+```javascript
+/**
+ * @function methodName
+ * @description Brief description of what the method does
+ * @param {Type} param1 - Description of param1
+ * @param {Type} param2 - Description of param2
+ * @param {Object} [client=null] - Optional database client for transaction
+ * @returns {Promise<ReturnType>} Description of return value
+ * @throws {AppError} Description of potential errors
+ */
+const methodName = async (param1, param2, client = null) => {
+  return withTransaction(async (txClient) => {
+    const dbClient = client || txClient;
+    
+    // Method implementation using dbClient for all database operations
+    
+    // Clear cache if needed
+    clearResourceCache(cacheManager, CACHE_NAMES.DOMAIN, 'ENTITY', 'ACTION');
+    
+    // Log important actions
+    logger.info(`Action performed: ${param1}`, {
+      param1,
+      param2
+    });
+    
+    return result;
+  }, client);
+};
+```
+
+### Transaction Handling
+
+All methods should:
+
+1. Accept an optional `client` parameter
+2. Use `withTransaction` to handle transactions
+3. Use the pattern `const dbClient = client || txClient;` to support nested transactions
+4. Pass the client to the `withTransaction` function
+
+### Error Handling
+
+Use `AppError` for all error cases with appropriate status codes and error types:
+
+```javascript
+if (condition) {
+  throw new AppError('User-friendly error message', statusCode, 'ERROR_TYPE');
+}
+```
+
+### Caching
+
+Clear relevant caches after modifying data:
+
+```javascript
+clearResourceCache(cacheManager, CACHE_NAMES.DOMAIN, 'ENTITY', 'ACTION', entityId);
+```
+
+### Logging
+
+Log important actions with structured data:
+
+```javascript
+logger.info(`Action description: ${entityName}`, {
+  entityId,
+  userId,
+  additionalData
+});
+```
+
+## Service Export
+
+Export the service with a consistent pattern:
+
+```javascript
+const ServiceName = {
+  // Base CRUD operations
+  ...baseCrudService,
+  
+  // Custom methods
+  method1,
+  method2,
+  method3
+};
+
+module.exports = ServiceName;
+```
+
+## Example Service
+
+Here's a complete example of a standardized service:
+
+```javascript
+const AppError = require('../utils/appError');
+const { createCrudService, withTransaction } = require('../utils/serviceFactory');
+const logger = require('../utils/logger');
+const { clearResourceCache } = require('../utils/cacheConfig');
+const { cacheManager, CACHE_NAMES } = require('../utils/cacheService');
+const { pool } = require('../database/connection');
+
+/**
+ * @module UserService
+ * @description Service for user management operations
+ * @requires ../utils/serviceFactory
+ * @requires ../utils/appError
+ * @requires ../utils/logger
+ * @requires ../utils/cacheConfig
+ * @requires ../utils/cacheService
+ * @requires ../database/connection
+ */
+
+// Create base CRUD service
+const baseCrudService = createCrudService('users', {
+  idField: 'sys_id',
+  searchFields: ['username', 'email', 'first_name', 'last_name'],
+  allowedFields: ['username', 'email', 'password', 'first_name', 'last_name', 'role', 'status'],
+  hooks: {
+    afterCreate: async (user, currentUser, client) => {
+      // Clear cache
+      clearResourceCache(cacheManager, CACHE_NAMES.USER, 'USER', 'CREATE');
+      
+      // Log creation
+      logger.info(`User created: ${user.username}`, {
+        userId: user.sys_id,
+        createdBy: currentUser?.id
+      });
+    }
+  }
+});
+
+/**
+ * @function authenticate
+ * @description Authenticate a user with username/email and password
+ * @param {string} usernameOrEmail - Username or email
+ * @param {string} password - User password
+ * @param {Object} [client=null] - Optional database client for transaction
+ * @returns {Promise<Object>} Authentication result with token
+ * @throws {AppError} If authentication fails
+ */
+const authenticate = async (usernameOrEmail, password, client = null) => {
+  return withTransaction(async (txClient) => {
+    const dbClient = client || txClient;
+    
+    // Find user by username or email
+    const { rows } = await dbClient.query(
+      'SELECT * FROM users WHERE username = $1 OR email = $1',
+      [usernameOrEmail]
+    );
+    
+    if (rows.length === 0) {
+      throw new AppError('Invalid username or password', 401, 'AUTHENTICATION_FAILED');
+    }
+    
+    // Implementation details...
+    
+    return {
+      user: {
+        id: user.sys_id,
+        username: user.username
+      },
+      token
+    };
+  }, client);
+};
+
+// Export service with all methods
+const UserService = {
+  // Base CRUD operations
+  ...baseCrudService,
+  
+  // Custom methods
+  authenticate
+};
+
+module.exports = UserService;
+```
+
+## Best Practices
+
+1. **Consistent Naming**: Use clear, descriptive names for methods and variables
+2. **Single Responsibility**: Each method should do one thing well
+3. **Transaction Support**: All methods should support being part of a larger transaction
+4. **Proper Documentation**: Document all methods with JSDoc comments
+5. **Error Handling**: Use AppError with appropriate status codes and error types
+6. **Caching**: Clear relevant caches after modifying data
+7. **Logging**: Log important actions with structured data
+8. **Parameter Validation**: Validate parameters at the beginning of methods
+9. **Default Values**: Use default parameter values where appropriate
+10. **Consistent Returns**: Return consistent data structures from similar methods 

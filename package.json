@@ -13,7 +13,17 @@
     "bootstrap": "cd deployment/aws && cdk bootstrap aws://211125677151/us-east-1",
     "deploy:all": "npm run push-images && npm run deploy",
     "docs:generate": "jsdoc -c documentation/jsdoc/jsdoc.config.json",
-    "docs:dev": "npm run docs:generate && next dev"
+    "docs:dev": "npm run docs:generate && next dev",
+    "generate-master-key": "node scripts/generate-master-key.js",
+    "encrypt-config": "node scripts/encrypt-config.js",
+    "config:history": "node scripts/view-config-history.js",
+    "config:compare": "node scripts/view-config-history.js compare",
+    "security:scan": "node scripts/security-scan.js --all",
+    "security:scan:snyk": "node scripts/security-scan.js --snyk",
+    "security:scan:zap": "node scripts/security-scan.js --zap",
+    "security:scan:sonarqube": "node scripts/security-scan.js --sonarqube",
+    "security:scan:report-only": "node scripts/security-scan.js --all --report-only",
+    "precommit": "npm run lint && npm run security:scan:snyk --report-only"
   },
   "devDependencies": {
     "@types/node": "^22.5.2",
@@ -21,13 +31,17 @@
     "concurrently": "^6.2.0",
     "jsdoc": "^4.0.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "snyk": "^1.1130.0"
   },
   "dependencies": {
     "aws-cdk": "^2.155.0",
     "aws-cdk-lib": "^2.155.0",
     "constructs": "^10.3.0",
+    "dotenv": "^16.3.1",
     "ioredis": "^5.5.0",
-    "nextra": "^4.2.13"
+    "joi": "^17.12.2",
+    "nextra": "^4.2.13",
+    "aws-sdk": "^2.1450.0"
   }
 }

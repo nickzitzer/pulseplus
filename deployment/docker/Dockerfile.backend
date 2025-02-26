@@ -1,12 +1,44 @@
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY backend/package*.json ./
-RUN npm install
+RUN npm ci --only=production
 
+# Copy application code
 COPY backend/ .
 
+# Build the application if needed
+RUN npm run build --if-present
+
+# Production image
+FROM node:18-alpine
+
+# Set up non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy from builder stage
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app ./
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose the application port
 EXPOSE 3001
 
-CMD ["npm", "start"] 
+# Switch to non-root user
+USER nodejs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:3001/api/health || exit 1
+
+# Start the application
+CMD ["node", "server.js"] 

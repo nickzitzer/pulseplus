@@ -1,53 +1,85 @@
 /**
  * @module redisConfig
  * @description Redis client configuration and connection management
- * @requires redis
+ * @requires ioredis
+ * @requires ../utils/configFactory
+ * @requires ../utils/logger
  */
 
-const Redis = require('redis');
+const Redis = require('ioredis');
+const ConfigFactory = require('../utils/configFactory');
+const { logger } = require('../utils/logger');
 
-/**
- * @typedef {Object} RetryOptions
- * @property {Error} [error] - Connection error if any
- * @property {number} total_retry_time - Total time spent retrying
- * @property {number} attempt - Current attempt number
- */
-
-/**
- * @constant {Object} redisConfig
- * @description Redis connection configuration object
- * @property {string} url - Redis connection URL
- * @property {Function} retry_strategy - Function to handle connection retries
- * @private
- */
-const redisConfig = {
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-  /**
-   * @function retry_strategy
-   * @description Determines retry behavior for failed connections
-   * @param {RetryOptions} options - Retry attempt information
-   * @returns {Error|number} Error to stop retrying, or number of ms to wait
-   * @private
-   */
-  retry_strategy: function(options) {
-    if (options.error && options.error.code === 'ECONNREFUSED') {
-      return new Error('Redis server refused connection');
-    }
-    if (options.total_retry_time > 1000 * 60 * 60) {
-      return new Error('Redis retry time exhausted');
-    }
-    return Math.min(options.attempt * 100, 3000);
-  }
-};
+// Create standardized Redis configuration
+const redisConfig = ConfigFactory.createRedisConfig({
+  // Additional Redis options
+  maxRetriesPerRequest: 3,
+  enableReadyCheck: true,
+  autoResubscribe: true,
+  autoResendUnfulfilledCommands: true,
+  lazyConnect: false
+});
 
 /**
  * @constant {Redis.RedisClient} redisClient
  * @description Configured Redis client instance
  * @throws {Error} If Redis connection fails
  */
-const redisClient = Redis.createClient(redisConfig);
+const redisClient = new Redis(redisConfig);
 
-redisClient.on('error', (err) => console.error('Redis Client Error:', err));
-redisClient.on('connect', () => console.log('Redis Client Connected'));
+// Add event listeners for connection management
+redisClient.on('connect', () => {
+  logger.info('Redis client connected');
+});
+
+redisClient.on('ready', () => {
+  logger.info('Redis client ready');
+});
+
+redisClient.on('error', (err) => {
+  logger.error(`Redis client error: ${err.message}`, { error: err });
+});
+
+redisClient.on('close', () => {
+  logger.warn('Redis client connection closed');
+});
+
+redisClient.on('reconnecting', (delay) => {
+  logger.info(`Redis client reconnecting in ${delay}ms`);
+});
+
+// Add health check method
+redisClient.healthCheck = async () => {
+  try {
+    const result = await redisClient.ping();
+    return { healthy: result === 'PONG' };
+  } catch (error) {
+    logger.error(`Redis health check failed: ${error.message}`, { error });
+    return { healthy: false, error: error.message };
+  }
+};
+
+// Add metrics collection
+setInterval(async () => {
+  try {
+    const info = await redisClient.info();
+    const metrics = {};
+    
+    // Parse Redis INFO command output
+    info.split('\r\n').forEach(line => {
+      const parts = line.split(':');
+      if (parts.length === 2) {
+        metrics[parts[0]] = parts[1];
+      }
+    });
+    
+    logger.debug('Redis metrics collected', { metrics });
+    
+    // Here you could send metrics to a monitoring system
+    // e.g., prometheus.gauge('redis_connected_clients').set(metrics.connected_clients);
+  } catch (error) {
+    logger.error(`Failed to collect Redis metrics: ${error.message}`);
+  }
+}, 60000); // Collect metrics every minute
 
 module.exports = redisClient; 

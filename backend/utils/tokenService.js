@@ -8,6 +8,12 @@
 const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
 
+// Import config as a promise
+const configPromise = require('../config');
+
+// Cache for JWT secret to avoid repeated async lookups
+let jwtSecretCache = null;
+
 /**
  * @constant {string} ACCESS_TOKEN_EXPIRY
  * @description Access token expiration time (default: 30 minutes)
@@ -19,6 +25,23 @@ const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '30m';
  * @description Refresh token expiration time (default: 7 days)
  */
 const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
+
+/**
+ * @function getJwtSecret
+ * @description Get the JWT secret from config
+ * @returns {Promise<string>} The JWT secret
+ */
+const getJwtSecret = async () => {
+  // Return cached value if available
+  if (jwtSecretCache) {
+    return jwtSecretCache;
+  }
+  
+  // Wait for config to be initialized
+  const config = await configPromise;
+  jwtSecretCache = config.jwt.secret;
+  return jwtSecretCache;
+};
 
 /**
  * @class TokenService
@@ -37,13 +60,15 @@ class TokenService {
    * @throws {Error} If token generation fails
    */
   static async generateTokens(user) {
+    const jwtSecret = await getJwtSecret();
+    
     const accessToken = jwt.sign(
       {
         id: user.sys_id,
         role: user.role,
         type: 'access'
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 
@@ -52,7 +77,7 @@ class TokenService {
         id: user.sys_id,
         type: 'refresh'
       },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 
@@ -82,7 +107,8 @@ class TokenService {
    */
   static async verifyAccessToken(token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const jwtSecret = await getJwtSecret();
+      const decoded = jwt.verify(token, jwtSecret);
       if (decoded.type !== 'access') {
         throw new Error('Invalid token type');
       }
@@ -103,7 +129,8 @@ class TokenService {
    */
   static async verifyRefreshToken(token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const jwtSecret = await getJwtSecret();
+      const decoded = jwt.verify(token, jwtSecret);
       if (decoded.type !== 'refresh') {
         throw new Error('Invalid token type');
       }

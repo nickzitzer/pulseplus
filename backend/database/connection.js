@@ -1,55 +1,89 @@
 const { Pool } = require('pg');
-const config = require('../config');
+const ConfigFactory = require('../utils/configFactory');
+const { logger } = require('../utils/logger');
 
-const pool = new Pool({
-  host: config.db.host,
-  port: config.db.port,
-  database: config.db.database,
-  user: config.db.user,
-  password: config.db.password,
-  max: 20,
-  min: 2,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  allowExitOnIdle: true
+// Create standardized database configuration
+const dbConfig = ConfigFactory.createDatabaseConfig({
+  // Additional pool configuration
+  maxConnections: 20,
+  minConnections: 2,
+  idleTimeout: 30000,
+  connectionTimeout: 2000
 });
+
+// Create connection pool
+const pool = new Pool(dbConfig);
 
 // Add connection lifecycle logging
 pool.on('connect', (client) => {
-  console.log(`Acquired connection (total: ${pool.totalCount})`);
+  logger.debug(`Database connection acquired (total: ${pool.totalCount})`);
 });
 
-pool.on('remove', (client) => {
-  console.log(`Released connection (total: ${pool.totalCount})`);
+pool.on('error', (err, client) => {
+  logger.error(`Unexpected database error: ${err.message}`, { error: err });
 });
 
-// Add health check endpoint
-pool.healthCheck = async () => {
+// Add connection validation
+pool.on('acquire', (client) => {
+  // Validate connection before use
+  client.query('SELECT 1')
+    .catch(err => {
+      logger.error(`Connection validation failed: ${err.message}`);
+      client.release(true); // Force release with error
+    });
+});
+
+// Add connection metrics collection
+setInterval(() => {
+  const metrics = {
+    total: pool.totalCount,
+    idle: pool.idleCount,
+    waiting: pool.waitingCount
+  };
+  
+  logger.debug('Database connection pool metrics', { metrics });
+  
+  // Here you could send metrics to a monitoring system
+  // e.g., prometheus.gauge('db_connections_total').set(metrics.total);
+}, 60000); // Collect metrics every minute
+
+/**
+ * @function withTransaction
+ * @description Execute a function within a database transaction
+ * @param {Function} callback - Function to execute within transaction
+ * @param {Object} options - Transaction options
+ * @param {string} options.isolationLevel - Transaction isolation level
+ * @returns {Promise<*>} Result of the callback function
+ */
+async function withTransaction(callback, options = {}) {
+  const client = await pool.connect();
+  
   try {
-    const { rows } = await pool.query('SELECT 1');
-    return { healthy: true };
-  } catch (error) {
-    return { healthy: false, error: error.message };
-  }
-};
-
-function parseFilterQuery(query) {
-  const filters = [];
-  for (const [key, value] of Object.entries(query)) {
-    if (key.includes('STARTSWITH')) {
-      const [field] = key.split('STARTSWITH');
-      filters.push(`${field} LIKE '${value}%'`);
-    } else if (key.includes('ENDSWITH')) {
-      const [field] = key.split('ENDSWITH');
-      filters.push(`${field} LIKE '%${value}'`);
-    } else if (key.includes('CONTAINS')) {
-      const [field] = key.split('CONTAINS');
-      filters.push(`${field} LIKE '%${value}%'`);
+    // Start transaction with optional isolation level
+    if (options.isolationLevel) {
+      await client.query(`BEGIN ISOLATION LEVEL ${options.isolationLevel}`);
     } else {
-      filters.push(`${key} = '${value}'`);
+      await client.query('BEGIN');
     }
+    
+    // Execute callback with transaction client
+    const result = await callback(client);
+    
+    // Commit transaction
+    await client.query('COMMIT');
+    
+    return result;
+  } catch (error) {
+    // Rollback transaction on error
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    // Release client back to pool
+    client.release();
   }
-  return filters.join(' AND ');
 }
 
-module.exports = { pool, parseFilterQuery };
+module.exports = {
+  pool,
+  withTransaction
+};

@@ -1,17 +1,15 @@
 /**
  * @module fileStorage
- * @description File storage service with support for local and Google Cloud Storage
+ * @description Mock file storage service for development
  * @requires path
  * @requires fs.promises
  * @requires uuid
- * @requires @google-cloud/storage
  * @requires ./appError
  */
 
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
-const { Storage } = require('@google-cloud/storage');
 const { AppError } = require('./appError');
 
 /**
@@ -33,7 +31,7 @@ const { AppError } = require('./appError');
 
 /**
  * @class FileStorage
- * @description Manages file storage operations with support for local and cloud storage
+ * @description Mock implementation of file storage operations
  */
 class FileStorage {
   /**
@@ -47,22 +45,11 @@ class FileStorage {
      * @description Absolute path to the base directory
      */
     this.baseDir = path.join(process.cwd(), baseDir);
-
-    /**
-     * @private
-     * @type {Storage}
-     * @description Google Cloud Storage instance
-     */
-    this.storage = new Storage();
-
-    /**
-     * @private
-     * @type {string}
-     * @description Google Cloud Storage bucket name
-     */
-    this.bucketName = process.env.GCS_BUCKET;
-
+    
+    // Create directory if it doesn't exist
     this.ensureDirectory();
+    
+    console.log('Using mock file storage implementation');
   }
 
   /**
@@ -83,24 +70,18 @@ class FileStorage {
   /**
    * @async
    * @function saveFile
-   * @description Saves a file to local storage
+   * @description Mock implementation that pretends to save a file
    * @param {Object} file - File object to save
    * @param {Buffer} file.buffer - File contents
    * @param {string} file.originalname - Original filename
    * @param {string} [customFileName] - Optional custom filename
    * @returns {Promise<SavedFileInfo>} Information about the saved file
-   * 
-   * @example
-   * const fileInfo = await storage.saveFile({
-   *   buffer: fileBuffer,
-   *   originalname: 'document.pdf'
-   * });
    */
   async saveFile(file, customFileName = null) {
-    const fileName = customFileName || `${uuidv4()}${path.extname(file.originalname)}`;
+    const fileName = customFileName || `${uuidv4()}${path.extname(file?.originalname || '.txt')}`;
     const filePath = path.join(this.baseDir, fileName);
     
-    await fs.writeFile(filePath, file.buffer);
+    // In mock mode, we don't actually write the file
     return {
       fileName,
       filePath,
@@ -111,64 +92,35 @@ class FileStorage {
   /**
    * @async
    * @function deleteFile
-   * @description Deletes a file from local storage
+   * @description Mock implementation that pretends to delete a file
    * @param {string} fileName - Name of the file to delete
-   * @returns {Promise<boolean>} True if file was deleted, false if not found
-   * @throws {Error} If deletion fails for reasons other than file not found
-   * 
-   * @example
-   * const wasDeleted = await storage.deleteFile('document.pdf');
+   * @returns {Promise<boolean>} Always returns true in mock mode
    */
   async deleteFile(fileName) {
-    const filePath = path.join(this.baseDir, fileName);
-    try {
-      await fs.unlink(filePath);
-      return true;
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        return false;
-      }
-      throw error;
-    }
+    return true;
   }
 
   /**
    * @async
    * @function getFileInfo
-   * @description Gets information about a file in local storage
+   * @description Mock implementation that returns fake file info
    * @param {string} fileName - Name of the file
-   * @returns {Promise<FileInfo|null>} File information or null if not found
-   * @throws {Error} If stat operation fails for reasons other than file not found
-   * 
-   * @example
-   * const info = await storage.getFileInfo('document.pdf');
-   * if (info) {
-   *   console.log(`File size: ${info.size} bytes`);
-   * }
+   * @returns {Promise<FileInfo>} Mock file information
    */
   async getFileInfo(fileName) {
-    const filePath = path.join(this.baseDir, fileName);
-    try {
-      const stats = await fs.stat(filePath);
-      return {
-        fileName,
-        filePath,
-        url: `/uploads/${fileName}`,
-        size: stats.size,
-        createdAt: stats.birthtime,
-        modifiedAt: stats.mtime
-      };
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        return null;
-      }
-      throw error;
-    }
+    return {
+      fileName,
+      filePath: path.join(this.baseDir, fileName),
+      url: `/uploads/${fileName}`,
+      size: 1024,
+      createdAt: new Date(),
+      modifiedAt: new Date()
+    };
   }
 
   /**
    * @function getFilePath
-   * @description Gets the full path to a file in local storage
+   * @description Gets the full path to a file
    * @param {string} fileName - Name of the file
    * @returns {string} Full path to the file
    */
@@ -189,45 +141,24 @@ class FileStorage {
   /**
    * @async
    * @function save
-   * @description Saves a file to Google Cloud Storage
+   * @description Mock implementation that pretends to save to cloud storage
    * @param {string} filePath - Target path in the bucket
    * @param {Buffer} buffer - File contents
    * @returns {Promise<string>} Path to the saved file
-   * @throws {AppError} If save operation fails
-   * 
-   * @example
-   * const path = await storage.save('images/profile.jpg', imageBuffer);
    */
   async save(filePath, buffer) {
-    try {
-      const bucket = this.storage.bucket(this.bucketName);
-      const file = bucket.file(filePath);
-      await file.save(buffer);
-      return filePath;
-    } catch (error) {
-      throw new AppError(`File save failed: ${error.message}`, 500);
-    }
+    return filePath;
   }
 
   /**
    * @async
    * @function delete
-   * @description Deletes a file from Google Cloud Storage
+   * @description Mock implementation that pretends to delete from cloud storage
    * @param {string} filePath - Path to the file in the bucket
-   * @returns {Promise<boolean>} True if deletion was successful
-   * @throws {AppError} If deletion fails
-   * 
-   * @example
-   * await storage.delete('images/profile.jpg');
+   * @returns {Promise<boolean>} Always returns true in mock mode
    */
   async delete(filePath) {
-    try {
-      const bucket = this.storage.bucket(this.bucketName);
-      await bucket.file(filePath).delete();
-      return true;
-    } catch (error) {
-      throw new AppError(`File deletion failed: ${error.message}`, 500);
-    }
+    return true;
   }
 }
 

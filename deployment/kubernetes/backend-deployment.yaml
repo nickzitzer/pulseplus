@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pulseplus-backend
+  labels:
+    app: pulseplus
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pulseplus
+      tier: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: pulseplus
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: ${BACKEND_IMAGE}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: postgres-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: jwt-secret
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: session-secret
+        - name: REDIS_HOST
+          value: "pulseplus-redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: redis-password
+        - name: SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: smtp-host
+        - name: SMTP_PORT
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: smtp-port
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: smtp-user
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: smtp-password
+        - name: SMTP_FROM
+          valueFrom:
+            secretKeyRef:
+              name: pulseplus-secrets
+              key: smtp-from
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: pulseplus-config
+              key: LOG_LEVEL
+        - name: ENABLE_STRUCTURED_LOGGING
+          valueFrom:
+            configMapKeyRef:
+              name: pulseplus-config
+              key: ENABLE_STRUCTURED_LOGGING
+        - name: ENABLE_REQUEST_LOGGING
+          valueFrom:
+            configMapKeyRef:
+              name: pulseplus-config
+              key: ENABLE_REQUEST_LOGGING
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: logs
+        emptyDir: {} 

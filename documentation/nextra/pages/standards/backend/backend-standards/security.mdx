@@ -4,16 +4,20 @@ import { Callout, Tabs, Tab } from 'nextra/components';
 
 ## Middleware Order
 
+<Callout type="error" emoji="🚨">
+  This middleware order is critical and must be followed exactly as specified.
+</Callout>
+
 <Tabs items={['Requirement', 'Example']}>
   <Tab>
 ```javascript
 // Mandatory middleware order
 router.method('/path',
-  rateLimiter,      // First line of defense
-  verifyToken,      // Authentication
-  validateRequest,  // Input validation
-  checkPermissions, // Authorization
-  businessLogic     // Core functionality
+  rateLimiter,      // Rate limiting first
+  verifyToken,      // Authentication second
+  validateRequest,  // Validation third
+  checkPermissions, // Authorization fourth
+  businessLogic     // Core functionality last
 );
 ```
   </Tab>
@@ -35,26 +39,177 @@ router.post('/users',
 
 ## Headers Configuration
 
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+- All responses must include security headers via Helmet
+- CORS must be explicitly configured
+- Content Security Policy (CSP) must be enabled
+  </Tab>
+  <Tab>
 ```javascript
-import helmet from 'helmet';
+// Use the centralized security configuration
+const { securityMiddleware } = require('../config/security');
 
-// Mandatory security headers
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "trusted.cdn.com"],
-      objectSrc: ["'none'"]
-    }
-  },
-  hsts: { 
-    maxAge: 63072000, 
-    includeSubDomains: true, 
-    preload: true 
-  }
-}));
+// Apply security middleware
+app.use(securityMiddleware.helmet);
+app.use(securityMiddleware.cors);
+app.use(securityMiddleware.rateLimit);
 ```
+  </Tab>
+</Tabs>
 
 <Callout type="error" emoji="🚨">
   Never disable security headers for convenience. If you need CSP exceptions, file a security ticket.
-</Callout> 
+</Callout>
+
+## Secrets Management
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+- Store sensitive secrets in AWS Secrets Manager for production/staging
+- Use environment variables only for development environments
+- Implement proper secret rotation mechanisms
+- Never hardcode secrets in the codebase
+  </Tab>
+  <Tab>
+```javascript
+// Retrieve JWT secret based on environment
+const getJwtSecret = async () => {
+  // In production or staging, retrieve from Secrets Manager
+  if (['production', 'staging'].includes(process.env.NODE_ENV)) {
+    const secretId = process.env.JWT_SECRET_ID || process.env.DB_SECRET_ID;
+    return await getSecretFromSecretsManager(secretId, 'jwt_secret');
+  }
+  
+  // In development, use environment variable
+  return process.env.JWT_SECRET;
+};
+
+// Use the secret in authentication
+const verifyToken = async (token) => {
+  const jwtSecret = await getJwtSecret();
+  return jwt.verify(token, jwtSecret);
+};
+```
+  </Tab>
+</Tabs>
+
+<Callout type="warning" emoji="⚠️">
+  JWT secrets and API keys must be stored in AWS Secrets Manager in production environments. No exceptions.
+</Callout>
+
+## Password Policy
+
+The PulsePlus application implements a comprehensive password policy to ensure user account security:
+
+### Password Requirements
+
+- Minimum length: 12 characters
+- Must contain at least one uppercase letter
+- Must contain at least one lowercase letter
+- Must contain at least one number
+- Must contain at least one special character
+- Cannot contain repeating characters (3 or more of the same character in sequence)
+- Cannot contain common sequential patterns (e.g., "abc", "123")
+
+### Password Expiration and History
+
+- Passwords expire after 90 days
+- Users cannot reuse any of their 5 previous passwords
+- Users are prompted to change their password upon expiration
+- New passwords must be different from the previous ones
+
+### Account Lockout
+
+- Accounts are locked after 5 consecutive failed login attempts
+- Lockout duration is 30 minutes
+- Administrators can manually unlock accounts if needed
+- Failed login attempts are reset after a successful login
+
+### Implementation Details
+
+The password policy is enforced at multiple levels:
+
+1. **Database Level**: The database schema includes fields for tracking password updates, failed login attempts, and account lockout status.
+
+2. **Service Level**: The `UserService` validates password strength, manages password history, and handles account lockout.
+
+3. **Middleware Level**: The `passwordPolicyMiddleware` enforces password expiration and validates password strength for all relevant endpoints.
+
+4. **API Level**: All authentication endpoints implement the password policy rules.
+
+## Authentication
+
+Authentication in PulsePlus is handled through JWT (JSON Web Tokens) with the following security measures:
+
+- Tokens are signed with a secure algorithm (HS256)
+- Access tokens have a short expiration time (15 minutes)
+- Refresh tokens are used for obtaining new access tokens
+- Tokens can be revoked in case of security concerns
+- All authentication attempts are logged for security auditing
+
+## Authorization
+
+PulsePlus implements a role-based access control (RBAC) system:
+
+- Each user is assigned a role (e.g., user, admin, gamemaster)
+- Roles have specific permissions
+- Middleware checks permissions before allowing access to protected resources
+- API endpoints are protected based on required permissions
+
+## Data Protection
+
+Sensitive data is protected through:
+
+- Encryption of sensitive data at rest
+- Secure transmission over HTTPS
+- Input validation to prevent injection attacks
+- Output encoding to prevent XSS attacks
+- Parameterized queries to prevent SQL injection
+
+## Security Headers
+
+The application sets the following security headers:
+
+- Content-Security-Policy
+- X-Content-Type-Options
+- X-Frame-Options
+- X-XSS-Protection
+- Strict-Transport-Security
+- Referrer-Policy
+
+## CSRF Protection
+
+Cross-Site Request Forgery protection is implemented through:
+
+- CSRF tokens for all state-changing operations
+- Same-site cookie attributes
+- Origin validation
+
+## Rate Limiting
+
+Rate limiting is applied to prevent abuse:
+
+- Global rate limiting for all API endpoints
+- Stricter rate limiting for authentication endpoints
+- IP-based and user-based rate limiting
+- WebSocket connection rate limiting
+
+## Security Logging and Monitoring
+
+Security events are logged and monitored:
+
+- Failed login attempts
+- Password changes
+- Account lockouts
+- Permission changes
+- Administrative actions
+
+## Regular Security Audits
+
+The application undergoes regular security audits:
+
+- Automated vulnerability scanning
+- Dependency vulnerability checks
+- Code reviews focused on security
+- Penetration testing 

@@ -15,7 +15,33 @@ const path = require('path');
  * @description Loaded Swagger/OpenAPI specification from YAML file
  * @private
  */
-const swaggerDocument = YAML.load(path.join(__dirname, '../docs/swagger.yaml'));
+// Try to load from docs directory first, then fallback to a simple definition if not found
+let swaggerDocument;
+try {
+  swaggerDocument = YAML.load(path.join(__dirname, '../docs/swagger.yaml'));
+} catch (error) {
+  console.warn('Swagger YAML file not found, using default definition');
+  swaggerDocument = {
+    openapi: '3.0.0',
+    info: {
+      title: 'PulsePlus API',
+      version: '1.0.0',
+      description: 'API documentation for PulsePlus'
+    },
+    paths: {
+      '/health': {
+        get: {
+          summary: 'Health check endpoint',
+          responses: {
+            '200': {
+              description: 'API is healthy'
+            }
+          }
+        }
+      }
+    }
+  };
+}
 
 /**
  * @constant {Object} options

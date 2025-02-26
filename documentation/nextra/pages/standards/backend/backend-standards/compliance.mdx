@@ -1,21 +1,46 @@
+import { Callout, Steps } from 'nextra/components';
+
 # Compliance Checklist
 
-```markdown
+<Callout type="info" emoji="ℹ️">
+  Use this checklist to verify compliance with backend development standards before submitting for review.
+</Callout>
+
 ## Security Compliance
-- [ ] Middleware order verified
-- [ ] No secrets in code
-- [ ] CSP headers validated
 
-## API Compliance  
-- [ ] Versioning implemented
-- [ ] Error formats tested
-- [ ] Rate limiting configured
+- [ ] All routes implement standard middleware order
+- [ ] No credentials in version control
+- [ ] CSP headers properly configured
+- [ ] Sensitive configuration values encrypted
+- [ ] Rate limiting implemented for all endpoints
 
-## Infrastructure
-- [ ] Resource limits set
-- [ ] Health checks passing
-- [ ] Secret rotation enabled
-```
+## Middleware Compliance
+
+- [ ] All middleware wrapped with performance metrics
+- [ ] Middleware version tracking implemented
+- [ ] Error boundaries applied to all middleware
+- [ ] Health check endpoints implemented
+- [ ] Middleware order standardized
+
+## API Compliance
+
+- [ ] All endpoints versioned (v1/, v2/)
+- [ ] Response formats validated
+- [ ] Error codes standardized
+
+## Configuration Compliance
+
+- [ ] ConfigFactory used for all component configurations
+- [ ] Configuration versioning enabled
+- [ ] Environment-specific validation implemented
+- [ ] Centralized security configuration used
+- [ ] Standardized logging configuration applied
+
+## Related Documents
+
+- [API Documentation Standards](/standards/backend/backend-standards/api-design)
+- [Security Standards](/standards/backend/backend-standards/security)
+- [Infrastructure Standards](/standards/backend/backend-standards/infrastructure)
 
 <Callout type="warning" emoji="📅">
   Compliance checks must be completed before each production deployment.

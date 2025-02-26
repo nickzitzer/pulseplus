@@ -61,7 +61,7 @@ const commonSchemas = {
  */
 const validateRequest = (schemas) => {
   // Convert single schema to standardized object format
-  if (schemas instanceof Joi.Schema) {
+  if (schemas && typeof schemas.validate === 'function') {
     schemas = { body: schemas };
   }
 

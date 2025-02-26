@@ -2,22 +2,31 @@
  * @module emailUtils
  * @description Email service utilities for sending system emails
  * @requires nodemailer
+ * @requires ../utils/configFactory
  */
 
 const nodemailer = require('nodemailer');
+const ConfigFactory = require('./configFactory');
+const { logger } = require('./logger');
 
 /**
  * @constant {Object} transporter
  * @description Configured nodemailer transport instance
  * @private
  */
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+const transporter = nodemailer.createTransport(
+  ConfigFactory.createEmailConfig({
+    // Additional email options can be specified here
+    secure: process.env.SMTP_SECURE === 'true'
+  })
+);
+
+// Verify transporter configuration on startup
+transporter.verify((error) => {
+  if (error) {
+    logger.error(`Email configuration error: ${error.message}`, { error });
+  } else {
+    logger.info('Email service is ready to send messages');
   }
 });
 
@@ -50,7 +59,13 @@ async function sendVerificationEmail(to, verificationUrl) {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`Verification email sent to ${to}`);
+  } catch (error) {
+    logger.error(`Failed to send verification email to ${to}: ${error.message}`, { error });
+    throw error;
+  }
 }
 
 /**
@@ -82,7 +97,13 @@ async function sendPasswordResetEmail(to, resetUrl) {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`Password reset email sent to ${to}`);
+  } catch (error) {
+    logger.error(`Failed to send password reset email to ${to}: ${error.message}`, { error });
+    throw error;
+  }
 }
 
 module.exports = {

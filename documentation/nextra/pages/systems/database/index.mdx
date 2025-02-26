@@ -57,6 +57,34 @@ Our database architecture is divided into the following main systems:
     - Chat functionality
     - Daily challenges
 
+## Database Security and Reliability
+
+PulsePlus implements robust security and reliability features for the database:
+
+1. **SSL/TLS Encryption**
+   - All database connections are secured with SSL/TLS
+   - Certificate validation and management
+   - See [Security and Connections](/systems/database/guides/security-and-connections#ssltls-configuration) for details
+
+2. **Connection Pool Monitoring**
+   - Prometheus metrics for connection pool health
+   - Query duration tracking
+   - See [Connection Pool Monitoring](/systems/database/guides/security-and-connections#connection-pool-monitoring) for details
+
+3. **Transaction Management**
+   - Robust transaction utilities
+   - Support for different isolation levels
+   - See [Transaction Management](/systems/database/guides/security-and-connections#transaction-management) for details
+
+4. **Backup and Recovery**
+   - Automated daily, weekly, and monthly backups
+   - Point-in-time recovery capabilities
+   - See [Backup and Recovery](/systems/database/guides/security-and-connections#backup-and-recovery) for details
+
+5. **SQL Injection Prevention**
+   - Parameterized queries throughout the codebase
+   - See [SQL Injection Prevention](/systems/database/guides/security-and-connections#sql-injection-prevention) for details
+
 ## Database Conventions
 
 ### Primary Keys

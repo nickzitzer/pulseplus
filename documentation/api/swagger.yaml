@@ -3426,5 +3426,141 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /health:
+    get:
+      tags:
+        - System
+      summary: Get system health status
+      description: Returns the health status of the system and its components
+      responses:
+        '200':
+          description: System is healthy or degraded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                    description: Overall health status
+                  components:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            enum: [healthy, degraded, unhealthy]
+                          responseTime:
+                            type: string
+                          connections:
+                            type: object
+                      redis:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            enum: [healthy, degraded, unhealthy, disabled]
+                          responseTime:
+                            type: string
+                      system:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            enum: [healthy, degraded, unhealthy]
+                          cpu:
+                            type: object
+                          memory:
+                            type: object
+                  uptime:
+                    type: object
+                    properties:
+                      server:
+                        type: string
+                      system:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  responseTime:
+                    type: string
+        '503':
+          description: System is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  components:
+                    type: object
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /health/middleware:
+    get:
+      tags:
+        - System
+      summary: Get middleware health status
+      description: Returns the health status of middleware components
+      responses:
+        '200':
+          description: Middleware health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  middlewareCount:
+                    type: integer
+                  versions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        version:
+                          type: string
+                        lastUpdated:
+                          type: string
+                          format: date-time
+                        description:
+                          type: string
+                  metrics:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      metrics:
+                        type: object
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Error retrieving middleware health
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  error:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
 security:
   - BearerAuth: [] 

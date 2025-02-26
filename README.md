@@ -409,9 +409,30 @@ The infrastructure consists of:
 - `POSTGRES_HOST`: Database host (auto-configured)
 - `POSTGRES_PORT`: Database port (auto-configured)
 - `POSTGRES_DB`: Database name
-- `JWT_SECRET`: JWT signing secret (from Secrets Manager)
-- `SESSION_SECRET`: Session secret (from Secrets Manager)
-- `DB_PASSWORD`: Database password (from Secrets Manager)
+- `JWT_SECRET`: JWT signing secret (for development/test environments only)
+- `JWT_SECRET_ID`: ARN of the AWS Secrets Manager secret containing the JWT secret (REQUIRED for production/staging)
+- `DB_SECRET_ID`: ARN of the AWS Secrets Manager secret containing database credentials (for production/staging)
+- `SESSION_SECRET`: Session secret (from Secrets Manager in production)
+- `DB_PASSWORD`: Database password (from Secrets Manager in production)
+
+### Secrets Management
+
+In production and staging environments, sensitive configuration values like JWT secrets and database credentials are stored in AWS Secrets Manager. The application will automatically retrieve these secrets at startup.
+
+For local development, you can use the `.env` file with plaintext values. In production, the following environment variables should be set:
+
+- `JWT_SECRET_ID`: ARN of the secret containing the JWT signing key (REQUIRED in production/staging)
+- `DB_SECRET_ID`: ARN of the secret containing database credentials
+
+The secrets should be structured as JSON objects with the following keys:
+```json
+{
+  "username": "db-username",
+  "password": "db-password",
+  "jwt_secret": "jwt-signing-secret",
+  "session_secret": "session-secret"
+}
+```
 
 ## Cost Optimization
 
@@ -453,6 +474,37 @@ For issues and support:
 3. Review security group rules periodically
 4. Keep container images updated
 5. Monitor CloudWatch logs for suspicious activity
+6. Rotate API keys for external services regularly using the built-in API key rotation mechanism
+
+## API Key Management
+
+PulsePlus includes a secure API key management system that handles storage and rotation of API keys for external services:
+
+1. **Secure Storage**: All API keys are stored in AWS Secrets Manager in production/staging environments
+2. **Automatic Rotation**: API keys are automatically rotated based on configurable intervals (default: 30 days)
+3. **Fallback Mechanism**: During rotation, both current and previous keys are maintained to ensure service continuity
+4. **Admin Interface**: Administrators can manage API keys through the admin interface
+
+### API Key Rotation Configuration
+
+Configure API key rotation in your environment:
+
+```
+# API Key Rotation Configuration
+API_KEY_ROTATION_ENABLED=true
+API_KEY_ROTATION_INTERVAL=30 # days
+API_KEY_SECRET_PREFIX=pulseplus/api-keys
+```
+
+### Managing API Keys
+
+Administrators can manage API keys through the following endpoints:
+
+- `GET /api/admin/api-keys` - List all API keys
+- `GET /api/admin/api-keys/:serviceName` - Get API key metadata for a specific service
+- `POST /api/admin/api-keys/rotate` - Rotate an API key
+- `POST /api/admin/api-keys/register` - Register a service for API key rotation
+- `POST /api/admin/api-keys/rotate-all` - Force rotation of all registered API keys
 
 ## Future Enhancements
 

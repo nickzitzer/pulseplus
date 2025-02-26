@@ -6,7 +6,7 @@
  */
 
 const { responseHandler } = require('../utils/responseHandler');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 /**
  * @typedef {Object} ErrorResponse

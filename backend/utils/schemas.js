@@ -140,7 +140,6 @@ const gameValidationSchemas = {
  * @property {Joi.Schema} metricsQuery - Metrics query parameters validation
  * @property {Joi.Schema} exchangeRateQuery - Exchange rate query validation
  * @property {Joi.Schema} marketQuery - Market query parameters validation
- * @property {Joi.Schema} bulkItems - Bulk item creation validation
  */
 const economyValidationSchemas = {
   shop: Joi.object({
@@ -227,12 +226,13 @@ const economyValidationSchemas = {
     max_price: Joi.number().min(0),
     limit: commonSchemas.pagination.limit,
     offset: commonSchemas.pagination.offset
-  }),
-
-  bulkItems: Joi.array().items(
-    economyValidationSchemas.shopItem
-  ).min(1)
+  })
 };
+
+// Move bulkItems schema here, after economyValidationSchemas is fully defined
+economyValidationSchemas.bulkItems = Joi.array().items(
+  economyValidationSchemas.shopItem
+).min(1);
 
 /**
  * @constant {Object} seasonValidationSchemas
@@ -484,8 +484,8 @@ const gameSchema = Joi.object({
   name: Joi.string().max(255).required(),
   description: Joi.string().required(),
   gamemaster: commonSchemas.uuid.required(),
-  primary_color: enums.hexColor.default('#1F8476'),
-  secondary_color: enums.hexColor.default('#6ABECF'),
+  primary_color: commonSchemas.hexColor.default('#1F8476'),
+  secondary_color: commonSchemas.hexColor.default('#6ABECF'),
   image_url: commonSchemas.url.allow(null),
   background_url: commonSchemas.url.allow(null),
   currency_name: Joi.string().max(50).default('Points'),
@@ -1033,5 +1033,9 @@ module.exports = {
   experimentSchema,
   experimentVariantSchema,
   experimentParticipationSchema,
-  userValidationSchemas
+  userValidationSchemas,
+  schemas: {
+    commonSchemas,
+    department: departmentSchema
+  }
 }; 

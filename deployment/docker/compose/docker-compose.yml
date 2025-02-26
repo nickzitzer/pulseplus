@@ -3,33 +3,68 @@ version: '3.8'
 services:
   nginx:
     build:
-      context: .
-      dockerfile: Dockerfile.nginx
+      context: ../../..
+      dockerfile: deployment/docker/compose/Dockerfile.nginx
     ports:
       - "${FRONTEND_PORT}:80"
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - pulseplus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ../../..
+      dockerfile: deployment/docker/compose/Dockerfile.frontend
     image: ${FRONTEND_IMAGE}
     environment:
       - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+      - NODE_ENV=${NODE_ENV:-production}
     networks:
       - pulseplus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ../../..
+      dockerfile: deployment/docker/compose/Dockerfile.backend
     image: ${BACKEND_IMAGE}
     environment:
-      - NODE_ENV=${NODE_ENV}
+      - NODE_ENV=${NODE_ENV:-production}
       - POSTGRES_URL=${POSTGRES_URL}
       - JWT_SECRET=${JWT_SECRET}
       - SESSION_SECRET=${SESSION_SECRET}
@@ -42,16 +77,39 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
+      - DB_NAME=pulseplus_db
+      - DB_USER=pulseplus-admin
+      - DB_PASSWORD=Work4PulsePlus1
+      - DB_HOST=db
+      - CONFIG_ENCRYPTION_ENABLED=false
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - pulseplus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   db:
     build:
-      context: .
-      dockerfile: Dockerfile.db
+      context: ../../..
+      dockerfile: deployment/docker/compose/Dockerfile.db
     environment:
       - POSTGRES_USER=pulseplus-admin
       - POSTGRES_PASSWORD=Work4PulsePlus1
@@ -60,6 +118,22 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - pulseplus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulseplus-admin -d pulseplus_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   redis:
     image: redis:alpine
@@ -68,6 +142,22 @@ services:
       - redis_data:/data
     networks:
       - pulseplus-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
 volumes:
   postgres_data:

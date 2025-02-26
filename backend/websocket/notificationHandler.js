@@ -3,10 +3,12 @@
  * @description WebSocket-based real-time notification system with Redis pub/sub integration
  * @requires ../services/notificationService
  * @requires ../middleware/auth
+ * @requires ../utils/websocketRateLimiter
  */
 
 const NotificationService = require('../services/notificationService');
 const { verifyToken } = require('../middleware/auth');
+const websocketRateLimiter = require('../utils/websocketRateLimiter');
 
 /**
  * @typedef {Object} Notification
@@ -50,6 +52,10 @@ class NotificationHandler {
    * @description Sets up WebSocket connection handlers and authentication middleware
    */
   setupSocketHandlers() {
+    // Apply connection rate limiting middleware
+    this.io.of('/notifications').use(websocketRateLimiter.createConnectionLimiter());
+    
+    // Apply authentication middleware
     this.io.of('/notifications').use(async (socket, next) => {
       try {
         const token = socket.handshake.auth.token;
@@ -103,6 +109,61 @@ class NotificationHandler {
       console.error(`Socket Error for user ${userId}:`, error);
       socket.disconnect();
     });
+    
+    // Apply message rate limiting to custom events
+    this.setupRateLimitedEvents(socket);
+  }
+  
+  /**
+   * @private
+   * @function setupRateLimitedEvents
+   * @description Sets up rate-limited event handlers for the socket
+   * @param {Object} socket - Socket.IO socket instance
+   */
+  setupRateLimitedEvents(socket) {
+    // Create a wrapper for rate-limited event handlers
+    const wrapWithRateLimit = (handler) => {
+      return async (data, callback) => {
+        try {
+          // Check message rate limit
+          const allowed = await websocketRateLimiter.checkMessageLimit(socket.id);
+          
+          if (!allowed) {
+            if (typeof callback === 'function') {
+              callback({ error: 'Message rate limit exceeded' });
+            }
+            return;
+          }
+          
+          // Call the original handler
+          await handler(data, callback);
+        } catch (error) {
+          console.error(`Error in rate-limited event handler: ${error.message}`);
+          if (typeof callback === 'function') {
+            callback({ error: 'Internal server error' });
+          }
+        }
+      };
+    };
+    
+    // Apply rate limiting to custom events
+    socket.on('subscribe', wrapWithRateLimit(async (data, callback) => {
+      // Handle subscribe event
+      // Implementation details...
+      if (typeof callback === 'function') {
+        callback({ success: true });
+      }
+    }));
+    
+    socket.on('unsubscribe', wrapWithRateLimit(async (data, callback) => {
+      // Handle unsubscribe event
+      // Implementation details...
+      if (typeof callback === 'function') {
+        callback({ success: true });
+      }
+    }));
+    
+    // Add other custom events with rate limiting as needed
   }
 
   /**

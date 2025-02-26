@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pulseplus-frontend
+  labels:
+    app: pulseplus
+    tier: frontend
+spec:
+  selector:
+    app: pulseplus
+    tier: frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+    name: http
+  type: ClusterIP 

@@ -4,10 +4,13 @@
  */
 
 const { verifyToken, checkPermissions } = require('./auth');
-const { rateLimitPresets } = require('../utils/rateLimiter');
+const { rateLimitPresets } = require('../utils/rateLimits');
 const { validateRequest } = require('../utils/validation');
 const { responseHandler } = require('../utils/responseHandler');
-const { cacheManager } = require('../utils/cacheManager');
+const { cacheManager } = require('../utils/cacheService');
+const { measureMiddleware, wrapAllMiddleware } = require('../utils/middlewareMetrics');
+const { registerMiddleware } = require('../utils/middlewareVersioning');
+const { createErrorBoundary } = require('../utils/middlewareErrorBoundary');
 
 /**
  * @typedef {Object} MiddlewareConfig
@@ -60,42 +63,92 @@ const composeMiddleware = (config = {}) => {
 
   // 1. Rate Limiting
   if (config.useRateLimit !== false) {
-    middleware.push(rateLimitPresets.STANDARD);
+    const rateLimitMiddleware = registerMiddleware(
+      rateLimitPresets.STANDARD,
+      'rateLimit',
+      { description: 'Standard rate limiting middleware' }
+    );
+    middleware.push(
+      measureMiddleware(
+        createErrorBoundary(rateLimitMiddleware, { name: 'rateLimit' }),
+        'rateLimit'
+      )
+    );
   }
 
   // 2. Authentication
   if (config.useAuth !== false) {
-    middleware.push(verifyToken);
+    const authMiddleware = registerMiddleware(
+      verifyToken,
+      'authentication',
+      { description: 'JWT authentication middleware' }
+    );
+    middleware.push(
+      measureMiddleware(
+        createErrorBoundary(authMiddleware, { name: 'authentication' }),
+        'authentication'
+      )
+    );
   }
 
   // 3. Validation
   if (config.validation) {
-    middleware.push(validateRequest(config.validation));
+    const validationMiddleware = registerMiddleware(
+      validateRequest(config.validation),
+      'validation',
+      { description: 'Request validation middleware' }
+    );
+    middleware.push(
+      measureMiddleware(
+        createErrorBoundary(validationMiddleware, { name: 'validation' }),
+        'validation'
+      )
+    );
   }
 
   // 4. Permission Check
   if (config.permissions?.length) {
-    middleware.push(checkPermissions(config.permissions));
+    const permissionsMiddleware = registerMiddleware(
+      checkPermissions(config.permissions),
+      'permissions',
+      { description: `Permission check for: ${config.permissions.join(', ')}` }
+    );
+    middleware.push(
+      measureMiddleware(
+        createErrorBoundary(permissionsMiddleware, { name: 'permissions' }),
+        'permissions'
+      )
+    );
   }
 
   // 5. Caching
   if (config.useCache) {
-    middleware.push(async (req, res, next) => {
-      const cacheKey = req.originalUrl;
-      try {
-        const cachedData = await cacheManager.get(cacheKey);
-        if (cachedData) {
-          return responseHandler.sendSuccess(res, cachedData);
+    const cachingMiddleware = registerMiddleware(
+      async (req, res, next) => {
+        const cacheKey = req.originalUrl;
+        try {
+          const cachedData = await cacheManager.get(cacheKey);
+          if (cachedData) {
+            return responseHandler.sendSuccess(res, cachedData);
+          }
+          // Attach cache function to res.locals for use in route handler
+          res.locals.cache = (data) => {
+            return cacheManager.set(cacheKey, data, config.cacheDuration);
+          };
+          next();
+        } catch (error) {
+          next(error);
         }
-        // Attach cache function to res.locals for use in route handler
-        res.locals.cache = (data) => {
-          return cacheManager.set(cacheKey, data, config.cacheDuration);
-        };
-        next();
-      } catch (error) {
-        next(error);
-      }
-    });
+      },
+      'caching',
+      { description: `Response caching with ${config.cacheDuration}ms TTL` }
+    );
+    middleware.push(
+      measureMiddleware(
+        createErrorBoundary(cachingMiddleware, { name: 'caching' }),
+        'caching'
+      )
+    );
   }
 
   return middleware;

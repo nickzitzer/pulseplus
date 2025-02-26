@@ -16,7 +16,7 @@ const { v4: uuidv4 } = require('uuid');
 const Sharp = require('sharp');
 const { AppError } = require('./appError');
 const { storage } = require('./fileStorage');
-const { virusScanner } = require('./virusScanner');
+const virusScanner = require('./virusScanner');
 
 /**
  * @typedef {Object} UploadStrategy
@@ -60,6 +60,14 @@ const uploadStrategies = {
     allowedTypes: null,
     maxSize: 20 * 1024 * 1024,
     isArray: true
+  },
+  rewards: {
+    fieldName: 'rewardImage',
+    allowedTypes: ['image/jpeg', 'image/png', 'image/svg+xml'],
+    maxSize: 5 * 1024 * 1024, // 5MB
+    isArray: false,
+    processImage: true,
+    resizeOptions: { width: 512, height: 512, fit: 'contain' }
   }
 };
 
@@ -172,10 +180,6 @@ const uploadService = {
       await storage.save(filePath, processedBuffer);
       return path.join('/uploads', directory, filename);
     } catch (error) {
-      // Cleanup if virus found
-      if (error.message.includes('Infected file detected')) {
-        await storage.delete(filePath).catch(() => {});
-      }
       throw new AppError(`File processing failed: ${error.message}`, 500);
     }
   },

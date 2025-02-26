@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run linting
+npm run lint
+
+# Run security scanning (Snyk only, report-only mode)
+npm run security:scan:snyk -- --report-only
+
+# If there are any staged changes to package.json or package-lock.json, run a full Snyk scan
+if git diff --cached --name-only | grep -q "package.json\|package-lock.json"; then
+  echo "Changes to package files detected. Running full Snyk scan..."
+  npm run security:scan:snyk
+fi 

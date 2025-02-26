@@ -1,26 +1,50 @@
-import { Cards, Card } from 'nextra/components';
+import { Cards, Card, Callout, Tabs, Tab } from 'nextra/components';
 
 # API Design Standards
 
-## Response Formats
+## Route Architecture
 
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+- Use CRUD factory pattern for consistency
+- Group related routes in dedicated files
+- Version all API endpoints
+  </Tab>
+  <Tab>
+```javascript
+// routes/v1/user-routes.js
+module.exports = crudFactory({
+  resourceName: 'users',
+  schema: userSchema,
+  middleware: [verifyToken],
+  validations: {
+    create: {
+      body: userCreateSchema,
+      permissions: [PERMISSIONS.USER_MGMT]
+    }
+  }
+});
+```
+  </Tab>
+</Tabs>
+
+## Response Format
+
+<Tabs items={['Standard Response', 'Error Response']}>
+  <Tab>
 ```json
-// Success Response
 {
   "success": true,
-  "data": {
-    "user": {
-      "id": "usr_123",
-      "name": "John Doe"
-    }
-  },
+  "data": {},
   "meta": {
-    "timestamp": 1689984000,
-    "traceId": "trace_123"
+    "timestamp": 1620000000,
+    "traceId": "abc123"
   }
 }
-
-// Error Response
+```
+  </Tab>
+  <Tab>
+```json
 {
   "error": {
     "code": "VALIDATION_ERROR",
@@ -34,6 +58,12 @@ import { Cards, Card } from 'nextra/components';
   }
 }
 ```
+  </Tab>
+</Tabs>
+
+<Callout type="warning" emoji="⚠️">
+  All API responses must follow these exact formats. Deviations require architectural approval.
+</Callout>
 
 ## Versioning Strategy
 

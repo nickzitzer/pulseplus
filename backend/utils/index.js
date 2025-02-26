@@ -11,7 +11,7 @@
 
 // Core utilities
 const AppError = require('./appError');
-const logger = require('./logger');
+const { logger } = require('./logger');
 const { withTransaction, auditLog, handleImageUpload, validatePermissions } = require('./routeHelpers');
 const TokenService = require('./tokenService');
 const emailUtils = require('./emailUtils');

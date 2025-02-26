@@ -1,14 +1,16 @@
 const express = require('express');
-const router = express.Router();
 const Joi = require('joi');
 const { pool } = require('../database/connection');
 const { verifyToken, checkPermissions } = require('../middleware/auth');
-const { withTransaction, auditLog } = require('../utils/routeHelpers');
+const { withTransaction } = require('../utils/routeHelpers');
 const { departmentSchema } = require('../utils/schemas');
 const AppError = require('../utils/appError');
 const crudFactory = require('../utils/crudFactory');
-const { schemas } = require('../utils/validation');
+const { commonSchemas } = require('../utils/validation');
 const permissionService = require('../utils/permissionService');
+const { validateRequest } = require('../utils/validation');
+const { asyncHandler } = require('../utils/errorHandler');
+const { sendSuccess } = require('../utils/responseHandler');
 
 // Helper function to log audit events
 async function logAuditEvent(client, userId, action, entityType, entityId, details) {
@@ -19,49 +21,90 @@ async function logAuditEvent(client, userId, action, entityType, entityId, detai
   await client.query(query, [userId, action, entityType, entityId, details]);
 }
 
-// Create a new department
-router.post('/', verifyToken, async (req, res, next) => {
-  try {
-    await withTransaction(async (client) => {
-      const { error } = departmentSchema.validate(req.body);
-      if (error) throw new AppError(error.details[0].message, 400);
-
-      const { rows } = await client.query(
-        `INSERT INTO department 
-        (name, description, parent_department_id, manager_id)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *`,
-        [req.body.name, req.body.description, 
-         req.body.parent_department_id, req.body.manager_id]
-      );
-
-      await auditLog(client, req.user, 'CREATE', {
-        table: 'department',
-        id: rows[0].sys_id,
-        new: rows[0]
-      });
-
-      res.status(201).json(rows[0]);
-    });
-  } catch (err) {
-    next(err);
+// Create the base router using crudFactory
+const router = crudFactory({
+  resourceName: 'department',
+  schema: departmentSchema,
+  middleware: [verifyToken],
+  permissions: {
+    create: ['ADMIN', 'HR_MANAGER'],
+    read: ['ADMIN', 'HR_MANAGER', 'DEPARTMENT_VIEWER'],
+    update: ['ADMIN', 'HR_MANAGER'],
+    delete: ['ADMIN', 'HR_MANAGER']
+  },
+  auditEnabled: true,
+  auditConfig: {
+    table: 'department',
+    relations: {
+      manager: 'sys_user',
+      parent: 'department'
+    }
+  },
+  validations: {
+    create: {
+      body: Joi.object({
+        name: Joi.string().max(255).required(),
+        description: Joi.string().max(1000),
+        manager_id: commonSchemas.uuid.required(),
+        parent_department_id: commonSchemas.uuid.allow(null),
+        settings: Joi.object({
+          can_have_subdepartments: Joi.boolean().default(true),
+          requires_manager_approval: Joi.boolean().default(false),
+          budget_limit: Joi.number().min(0),
+          notification_preferences: Joi.object({
+            email: Joi.boolean().default(true),
+            slack: Joi.boolean().default(false),
+            teams: Joi.boolean().default(false)
+          }).default()
+        }).default()
+      })
+    },
+    update: {
+      body: Joi.object({
+        name: Joi.string().max(255),
+        description: Joi.string().max(1000),
+        manager_id: commonSchemas.uuid,
+        parent_department_id: commonSchemas.uuid.allow(null),
+        settings: Joi.object({
+          can_have_subdepartments: Joi.boolean().default(true),
+          requires_manager_approval: Joi.boolean().default(false),
+          budget_limit: Joi.number().min(0),
+          notification_preferences: Joi.object({
+            email: Joi.boolean().default(true),
+            slack: Joi.boolean().default(false),
+            teams: Joi.boolean().default(false)
+          })
+        })
+      }).min(1)
+    },
+    list: {
+      query: Joi.object({
+        parent_department_id: commonSchemas.uuid,
+        is_active: Joi.boolean(),
+        search: Joi.string(),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(100).default(20),
+        sort_by: Joi.string().valid('name', 'created_at', 'updated_at').default('name'),
+        sort_order: Joi.string().valid('ASC', 'DESC').default('ASC')
+      })
+    }
   }
 });
 
 // Get all departments with filtering and pagination
-router.get('/', verifyToken, async (req, res) => {
+router.get('/', verifyToken, asyncHandler(async (req, res) => {
+  const {
+    parent_department_id,
+    is_active,
+    search,
+    page = 1,
+    limit = 20,
+    sort_by = 'name',
+    sort_order = 'ASC'
+  } = req.query;
+
   const client = await pool.connect();
   try {
-    const {
-      parent_department_id,
-      is_active,
-      search,
-      page = 1,
-      limit = 20,
-      sort_by = 'name',
-      sort_order = 'ASC'
-    } = req.query;
-
     let conditions = ['1=1'];
     const params = [];
     let paramCount = 1;
@@ -163,16 +206,13 @@ router.get('/', verifyToken, async (req, res) => {
         total_pages: Math.ceil(totalCount / limit)
       }
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
   } finally {
     client.release();
   }
-});
+}));
 
 // Get a specific department
-router.get('/:id', verifyToken, async (req, res) => {
+router.get('/:id', verifyToken, asyncHandler(async (req, res) => {
   const client = await pool.connect();
   try {
     const { rows } = await client.query(`
@@ -247,406 +287,107 @@ router.get('/:id', verifyToken, async (req, res) => {
     }
 
     res.json(rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
   } finally {
     client.release();
   }
-});
+}));
 
-// Update a department
-router.put('/:id', verifyToken, async (req, res) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
+// Add department hierarchy endpoint
+router.get('/:id/hierarchy', verifyToken, asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `WITH RECURSIVE dept_tree AS (
+      SELECT sys_id, name, parent_department_id, 1 as depth
+      FROM department
+      WHERE sys_id = $1
+      UNION ALL
+      SELECT d.sys_id, d.name, d.parent_department_id, dt.depth + 1
+      FROM department d
+      INNER JOIN dept_tree dt ON d.parent_department_id = dt.sys_id
+    )
+    SELECT * FROM dept_tree ORDER BY depth`,
+    [req.params.id]
+  );
+  
+  res.json(rows);
+}));
 
-    // Get current department state
-    const { rows: currentDept } = await client.query(
+// Get department members
+router.get('/:id/members', verifyToken, asyncHandler(async (req, res) => {
+  const result = await withTransaction(async (client) => {
+    const department = await client.query(
       'SELECT * FROM department WHERE sys_id = $1',
       [req.params.id]
     );
 
-    if (currentDept.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Department not found' });
+    if (!department.rows.length) {
+      throw new AppError('Department not found', 404);
     }
 
-    // Check permissions
-    const hasPermission = await checkPermissions(
+    await permissionService.checkPermissions(
       client,
       req.user.sys_id,
-      null,
-      ['ADMIN', 'HR_MANAGER']
-    );
-
-    const isManager = currentDept[0].manager_id === req.user.sys_id;
-
-    if (!hasPermission && !isManager) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Insufficient permissions' });
-    }
-
-    // Validate request body
-    const { error, value } = departmentSchema.validate(req.body);
-    if (error) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: error.details[0].message });
-    }
-
-    // Check for circular reference in parent department
-    if (value.parent_department_id) {
-      const { rows: circularCheck } = await client.query(`
-        WITH RECURSIVE department_tree AS (
-          SELECT sys_id, parent_department_id
-          FROM department
-          WHERE sys_id = $1
-          
-          UNION ALL
-          
-          SELECT d.sys_id, d.parent_department_id
-          FROM department d
-          JOIN department_tree dt ON d.sys_id = dt.parent_department_id
-        )
-        SELECT 1 FROM department_tree WHERE sys_id = $2
-      `, [value.parent_department_id, req.params.id]);
-
-      if (circularCheck.length > 0) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'Circular department reference detected' });
-      }
-    }
-
-    // Update department
-    const { rows } = await client.query(`
-      UPDATE department SET
-        name = $1,
-        description = $2,
-        parent_department_id = $3,
-        manager_id = $4,
-        is_active = $5,
-        settings = $6,
-        sys_updated_at = CURRENT_TIMESTAMP
-      WHERE sys_id = $7
-      RETURNING *
-    `, [
-      value.name,
-      value.description,
-      value.parent_department_id,
-      value.manager_id,
-      value.is_active,
-      value.settings,
-      req.params.id
-    ]);
-
-    await logAuditEvent(
-      client,
-      req.user.sys_id,
-      'UPDATE',
       'DEPARTMENT',
-      req.params.id,
-      {
-        previous: currentDept[0],
-        updated: rows[0]
-      }
+      department.rows[0].sys_id,
+      ['VIEW_MEMBERS']
     );
 
-    await client.query('COMMIT');
-    res.json(rows[0]);
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    client.release();
-  }
-});
-
-// Delete a department
-router.delete('/:id', verifyToken, async (req, res) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // Get current department state
-    const { rows: currentDept } = await client.query(`
-      SELECT d.*, 
-      (SELECT COUNT(*) FROM department sub WHERE sub.parent_department_id = d.sys_id) as subdepartment_count,
-      (SELECT COUNT(*) FROM sys_user u WHERE u.department_id = d.sys_id) as employee_count
-      FROM department d
-      WHERE d.sys_id = $1
-    `, [req.params.id]);
-
-    if (currentDept.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Department not found' });
-    }
-
-    // Check permissions
-    const hasPermission = await checkPermissions(
-      client,
-      req.user.sys_id,
-      null,
-      ['ADMIN', 'HR_MANAGER']
-    );
-
-    if (!hasPermission) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Insufficient permissions' });
-    }
-
-    // Check if department can be deleted
-    if (currentDept[0].subdepartment_count > 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ 
-        error: 'Cannot delete department with subdepartments',
-        subdepartment_count: currentDept[0].subdepartment_count
-      });
-    }
-
-    if (currentDept[0].employee_count > 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ 
-        error: 'Cannot delete department with active employees',
-        employee_count: currentDept[0].employee_count
-      });
-    }
-
-    // Delete the department
-    await client.query('DELETE FROM department WHERE sys_id = $1', [req.params.id]);
-
-    await logAuditEvent(
-      client,
-      req.user.sys_id,
-      'DELETE',
-      'DEPARTMENT',
-      req.params.id,
-      {
-        deleted_department: currentDept[0]
-      }
-    );
-
-    await client.query('COMMIT');
-    res.status(204).send();
-  } catch (err) {
-    await client.query('ROLLBACK');
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  } finally {
-    client.release();
-  }
-});
-
-// Add department tree endpoint
-router.get('/:id/hierarchy', async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(
-      `WITH RECURSIVE dept_tree AS (
-        SELECT sys_id, name, parent_department_id, 1 as depth
-        FROM department
-        WHERE sys_id = $1
-        UNION ALL
-        SELECT d.sys_id, d.name, d.parent_department_id, dt.depth + 1
-        FROM department d
-        INNER JOIN dept_tree dt ON d.parent_department_id = dt.sys_id
-      )
-      SELECT * FROM dept_tree ORDER BY depth`,
+    const { rows } = await client.query(
+      `SELECT u.*, d.role 
+      FROM department_member d
+      JOIN sys_user u ON d.user_id = u.sys_id
+      WHERE d.department_id = $1
+      ORDER BY d.joined_at ASC`,
       [req.params.id]
     );
-    
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
-});
 
-module.exports = crudFactory({
-  resourceName: 'department',
-  schema: schemas.department,
-  middleware: [verifyToken],
-  auditConfig: {
-    table: 'department',
-    relations: {
-      manager: 'sys_user',
-      parent: 'department'
+    return rows;
+  });
+
+  sendSuccess(res, result);
+}));
+
+// Update department manager
+router.patch('/:id/manager', verifyToken, asyncHandler(async (req, res) => {
+  const result = await withTransaction(async (client) => {
+    const department = await client.query(
+      'SELECT * FROM department WHERE sys_id = $1',
+      [req.params.id]
+    );
+
+    if (!department.rows.length) {
+      throw new AppError('Department not found', 404);
     }
-  },
-  validations: {
-    create: {
-      body: Joi.object({
-        name: Joi.string().max(255).required(),
-        description: Joi.string().max(1000),
-        manager_id: schemas.commonSchemas.uuid.required(),
-        parent_department_id: schemas.commonSchemas.uuid.allow(null),
-        settings: Joi.object({
-          can_have_subdepartments: Joi.boolean().default(true),
-          requires_manager_approval: Joi.boolean().default(false),
-          budget_limit: Joi.number().min(0),
-          notification_preferences: Joi.object({
-            email: Joi.boolean().default(true),
-            slack: Joi.boolean().default(false),
-            teams: Joi.boolean().default(false)
-          }).default()
-        }).default()
-      })
-    },
-    update: {
-      body: Joi.object({
-        name: Joi.string().max(255),
-        description: Joi.string().max(1000),
-        manager_id: schemas.commonSchemas.uuid,
-        parent_department_id: schemas.commonSchemas.uuid.allow(null),
-        settings: Joi.object({
-          can_have_subdepartments: Joi.boolean().default(true),
-          requires_manager_approval: Joi.boolean().default(false),
-          budget_limit: Joi.number().min(0),
-          notification_preferences: Joi.object({
-            email: Joi.boolean().default(true),
-            slack: Joi.boolean().default(false),
-            teams: Joi.boolean().default(false)
-          })
-        })
-      }).min(1)
+
+    await permissionService.checkPermissions(
+      client,
+      req.user.sys_id,
+      'DEPARTMENT',
+      department.rows[0].sys_id,
+      ['MANAGE_MANAGER']
+    );
+
+    // Verify new manager exists
+    const manager = await client.query(
+      'SELECT 1 FROM sys_user WHERE sys_id = $1',
+      [req.body.manager_id]
+    );
+
+    if (!manager.rows.length) {
+      throw new AppError('Manager not found', 404);
     }
-  },
-  customEndpoints: (router) => {
-    // Get department hierarchy
-    router.get('/:id/hierarchy',
-      validateRequest(schemas.department.getHierarchy),
-      async (req, res, next) => {
-        try {
-          const hierarchy = await withTransaction(async (client) => {
-            const department = await client.query(
-              'SELECT * FROM department WHERE sys_id = $1',
-              [req.params.id]
-            );
 
-            if (!department.rows.length) {
-              throw new AppError('Department not found', 404);
-            }
-
-            await permissionService.checkPermissions(
-              client,
-              req.user.sys_id,
-              'DEPARTMENT',
-              department.rows[0].sys_id,
-              ['VIEW_HIERARCHY']
-            );
-
-            const { rows } = await client.query(
-              `WITH RECURSIVE department_tree AS (
-                SELECT * FROM department WHERE sys_id = $1
-                UNION ALL
-                SELECT d.* FROM department d
-                JOIN department_tree dt ON d.parent_department_id = dt.sys_id
-              )
-              SELECT * FROM department_tree`,
-              [req.params.id]
-            );
-
-            return rows;
-          });
-
-          sendSuccess(res, hierarchy);
-        } catch (error) {
-          next(error);
-        }
-      }
+    const { rows } = await client.query(
+      `UPDATE department 
+      SET manager_id = $1
+      WHERE sys_id = $2
+      RETURNING *`,
+      [req.body.manager_id, req.params.id]
     );
 
-    // Get department members
-    router.get('/:id/members',
-      validateRequest(schemas.department.getMembers),
-      async (req, res, next) => {
-        try {
-          const members = await withTransaction(async (client) => {
-            const department = await client.query(
-              'SELECT * FROM department WHERE sys_id = $1',
-              [req.params.id]
-            );
+    return rows[0];
+  });
 
-            if (!department.rows.length) {
-              throw new AppError('Department not found', 404);
-            }
+  sendSuccess(res, result);
+}));
 
-            await permissionService.checkPermissions(
-              client,
-              req.user.sys_id,
-              'DEPARTMENT',
-              department.rows[0].sys_id,
-              ['VIEW_MEMBERS']
-            );
-
-            const { rows } = await client.query(
-              `SELECT u.*, d.role 
-              FROM department_member d
-              JOIN sys_user u ON d.user_id = u.sys_id
-              WHERE d.department_id = $1
-              ORDER BY d.joined_at ASC`,
-              [req.params.id]
-            );
-
-            return rows;
-          });
-
-          sendSuccess(res, members);
-        } catch (error) {
-          next(error);
-        }
-      }
-    );
-
-    // Update department manager
-    router.patch('/:id/manager',
-      validateRequest(schemas.department.updateManager),
-      async (req, res, next) => {
-        try {
-          const result = await withTransaction(async (client) => {
-            const department = await client.query(
-              'SELECT * FROM department WHERE sys_id = $1',
-              [req.params.id]
-            );
-
-            if (!department.rows.length) {
-              throw new AppError('Department not found', 404);
-            }
-
-            await permissionService.checkPermissions(
-              client,
-              req.user.sys_id,
-              'DEPARTMENT',
-              department.rows[0].sys_id,
-              ['MANAGE_MANAGER']
-            );
-
-            // Verify new manager exists
-            const manager = await client.query(
-              'SELECT 1 FROM sys_user WHERE sys_id = $1',
-              [req.body.manager_id]
-            );
-
-            if (!manager.rows.length) {
-              throw new AppError('Manager not found', 404);
-            }
-
-            const { rows } = await client.query(
-              `UPDATE department 
-              SET manager_id = $1
-              WHERE sys_id = $2
-              RETURNING *`,
-              [req.body.manager_id, req.params.id]
-            );
-
-            return rows[0];
-          });
-
-          sendSuccess(res, result);
-        } catch (error) {
-          next(error);
-        }
-      }
-    );
-
-    return router;
-  }
-});
+module.exports = router;

@@ -51,10 +51,12 @@
         "type": "page",
         "children": {
           "security": "Security",
+          "middleware": "Middleware",
           "api-design": "API Design",
           "infrastructure": "Infrastructure",
           "observability": "Observability",
           "code-quality": "Code Quality",
+          "configuration": "Configuration",
           "compliance": "Compliance"
         }
       },
@@ -108,10 +110,12 @@
       "type": "page",
       "children": {
         "security": "Security",
+        "middleware": "Middleware",
         "api-design": "API Design",
         "infrastructure": "Infrastructure",
         "observability": "Observability",
         "code-quality": "Code Quality",
+        "configuration": "Configuration",
         "compliance": "Compliance"
       }
     },

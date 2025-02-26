@@ -1,0 +1,60 @@
+import { Callout, Tabs, Tab } from 'nextra/components';
+
+# Code Quality Standards
+
+## Validation Rules
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+- Use Joi for schema validation
+- Validate all input sources (body, params, query)
+- Use shared validation schemas
+  </Tab>
+  <Tab>
+```javascript
+// schemas/user.js
+exports.createUser = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required()
+});
+
+// In route definition
+validateRequest({
+  body: schemas.createUser,
+  params: schemas.uuid
+});
+```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+<Tabs items={['Standard Pattern', 'Example']}>
+  <Tab>
+- Use try/catch blocks for async code
+- Use AppError for consistent error handling
+- Include error details for debugging
+  </Tab>
+  <Tab>
+```javascript
+try {
+  await businessLogic();
+} catch (error) {
+  if (error instanceof AppError) {
+    next(error);
+  } else {
+    next(new AppError(
+      'Internal Server Error',
+      500,
+      'SERVER_ERROR',
+      { originalError: error.message }
+    ));
+  }
+}
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info" emoji="ℹ️">
+  Consistent error handling is critical for debugging and monitoring. Always use the standard error patterns.
+</Callout> 

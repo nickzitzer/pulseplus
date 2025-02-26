@@ -1,23 +1,61 @@
-import { Callout } from 'nextra/components';
+import { Callout, Tabs, Tab } from 'nextra/components';
 
 # Observability Standards
 
-## Logging Format
+## Logging Requirements
 
+<Tabs items={['Required Fields', 'Example']}>
+  <Tab>
+- Timestamp in ISO format
+- Trace ID
+- Service version
+- Environment
+- Log level
+- Duration (for operations)
+  </Tab>
+  <Tab>
 ```javascript
-// Mandatory log structure
+// Standard log format
 {
   "timestamp": "2023-01-01T00:00:00Z",
   "level": "info",
-  "message": "User created",
+  "message": "Request completed",
   "service": "backend",
   "version": "1.2.3",
-  "traceId": "trace_123",
-  "userId": "usr_123",
-  "durationMs": 150
+  "traceId": "abc123",
+  "duration": 150
 }
 ```
+  </Tab>
+</Tabs>
 
-<Callout type="info" emoji="💡">
-  All logs must be structured JSON. Never use plain text logging in production.
+## Metrics Collection
+
+<Tabs items={['Required Metrics', 'Example']}>
+  <Tab>
+- HTTP request duration
+- Database operation counts
+- Error rates
+- Resource utilization
+  </Tab>
+  <Tab>
+```javascript
+const httpMetrics = new prometheus.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+  buckets: [0.1, 0.3, 1.5, 5, 10]
+});
+
+const dbMetrics = new prometheus.Counter({
+  name: 'db_operations_total',
+  help: 'Total database operations',
+  labelNames: ['table', 'operation']
+});
+```
+  </Tab>
+</Tabs>
+
+<Callout type="warning" emoji="⚠️">
+  All services must implement these observability standards. Monitoring is not optional.
 </Callout> 

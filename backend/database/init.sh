@@ -38,22 +38,13 @@ if [ ! -f "/docker-entrypoint-initdb.d/.init-db" ]; then
     echo "Creating database pulseplus..."
     execute_sql "$POSTGRES_DB" "CREATE DATABASE pulseplus;"
 
-    # Setup extensions and initial schema
-    echo "Setting up extensions and schema..."
-    execute_sql "pulseplus" "
-        -- Create extensions
-        CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";
-        CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";
-        
-        -- Create schemas
-        CREATE SCHEMA IF NOT EXISTS maintenance;
-        CREATE SCHEMA IF NOT EXISTS cron;
-    "
-
-    # Execute schema file
+    # Execute consolidated schema file
     if [ -f "/docker-entrypoint-initdb.d/02-schema.sql" ]; then
-        echo "Executing schema file..."
+        echo "Executing consolidated schema file..."
         execute_sql "pulseplus" "$(cat /docker-entrypoint-initdb.d/02-schema.sql)"
+    else
+        echo "Error: Schema file not found!"
+        exit 1
     fi
 
     # Execute data file if it exists

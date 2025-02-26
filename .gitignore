@@ -43,5 +43,9 @@ frontend/node_modules/
 .ebextensions/env.config
 task-definition.*.json
 
+# Encryption keys
+keys/
+*.key
+
 # AWS CDK
 deployment/aws/cdk.out/

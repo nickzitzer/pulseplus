@@ -1,159 +1,222 @@
 /**
  * @module cacheConfig
- * @description Configuration for application-wide caching, including durations, patterns, and key generation
+ * @description Standardized cache configuration and invalidation patterns
+ * @requires ./logger
  */
+
+const { logger } = require('./logger');
 
 /**
  * @constant {Object} CACHE_DURATIONS
- * @description Standard cache durations (in milliseconds) for different resource types
- * 
- * @property {number} PROFILE - User profile cache duration (5 minutes)
- * @property {number} SESSIONS - User sessions cache duration (5 minutes)
- * @property {number} PREFERENCES - User preferences cache duration (5 minutes)
- * @property {number} FRIENDS - Friends list cache duration (5 minutes)
- * @property {number} TEAMS - Teams data cache duration (5 minutes)
- * @property {number} CHAT - Chat messages cache duration (2 minutes)
- * @property {number} BALANCE - User balance cache duration (2 minutes)
- * @property {number} SHOP - Shop items cache duration (15 minutes)
- * @property {number} INVENTORY - User inventory cache duration (5 minutes)
- * @property {number} LEADERBOARD - Leaderboard cache duration (5 minutes)
- * @property {number} SEASON - Season data cache duration (10 minutes)
- * @property {number} GAME_STATS - Game statistics cache duration (5 minutes)
+ * @description Standard cache durations for different resource types
  */
 const CACHE_DURATIONS = {
-  // User-related caches
-  PROFILE: 5 * 60 * 1000, // 5 minutes
-  SESSIONS: 5 * 60 * 1000, // 5 minutes
-  PREFERENCES: 5 * 60 * 1000, // 5 minutes
-
-  // Social-related caches
-  FRIENDS: 5 * 60 * 1000, // 5 minutes
-  TEAMS: 5 * 60 * 1000, // 5 minutes
-  CHAT: 2 * 60 * 1000, // 2 minutes (more frequent updates)
-
-  // Economy-related caches
-  BALANCE: 2 * 60 * 1000, // 2 minutes (sensitive data)
-  SHOP: 15 * 60 * 1000, // 15 minutes (less frequent updates)
-  INVENTORY: 5 * 60 * 1000, // 5 minutes
-
-  // Game-related caches
-  LEADERBOARD: 5 * 60 * 1000, // 5 minutes
-  SEASON: 10 * 60 * 1000, // 10 minutes
-  GAME_STATS: 5 * 60 * 1000, // 5 minutes
-};
-
-/**
- * @function generateCacheKey
- * @description Generates a standardized cache key from a type and optional parameters
- * @param {string} type - The resource type (e.g., 'profile', 'friends')
- * @param {Object} [params] - Optional parameters to include in the key
- * @returns {string} The generated cache key
- * 
- * @example
- * // Generate a simple cache key
- * const key1 = generateCacheKey('profile');
- * // Returns: 'profile'
- * 
- * // Generate a cache key with parameters
- * const key2 = generateCacheKey('profile', { userId: '123' });
- * // Returns: 'profile-userId:123'
- */
-const generateCacheKey = (type, params) => {
-  if (!params) return type;
+  // Short-lived caches (1 minute)
+  SHORT: 60 * 1000,
   
-  const sortedParams = Object.keys(params)
-    .sort()
-    .map(key => `${key}:${params[key]}`)
-    .join('-');
+  // Medium-lived caches (5 minutes)
+  MEDIUM: 5 * 60 * 1000,
   
-  return `${type}-${sortedParams}`;
+  // Long-lived caches (15 minutes)
+  LONG: 15 * 60 * 1000,
+  
+  // Very long-lived caches (1 hour)
+  VERY_LONG: 60 * 60 * 1000
 };
 
 /**
  * @constant {Object} CACHE_PATTERNS
- * @description Functions to generate cache keys for different resource types
- * 
- * @property {Function} PROFILE - Generates cache key for user profile
- * @property {Function} FRIENDS - Generates cache key for user's friends list
- * @property {Function} BALANCE - Generates cache key for user's balance
- * @property {Function} SHOP - Generates cache key for shop items with filters
- * @property {Function} LEADERBOARD - Generates cache key for season leaderboard
- * @property {Function} TEAM - Generates cache key for team data
- * @property {Function} CHAT - Generates cache key for chat messages
- * @property {Function} SESSIONS - Generates cache key for user sessions
- * @property {Function} SEASON - Generates cache key for season data
- * @property {Function} GAME_STATS - Generates cache key for game statistics
- * 
- * @example
- * // Generate a profile cache key
- * const profileKey = CACHE_PATTERNS.PROFILE('user123');
- * 
- * // Generate a shop cache key with filters
- * const shopKey = CACHE_PATTERNS.SHOP('shop1', { category: 'weapons' });
+ * @description Standard cache key patterns for different resources
  */
 const CACHE_PATTERNS = {
-  PROFILE: (userId) => generateCacheKey('profile', { userId }),
-  FRIENDS: (userId) => generateCacheKey('friends', { userId }),
-  BALANCE: (userId) => generateCacheKey('balance', { userId }),
-  SHOP: (shopId, filters = {}) => generateCacheKey('shop', { shopId, ...filters }),
-  LEADERBOARD: (seasonId, timeframe) => generateCacheKey('leaderboard', { seasonId, timeframe }),
-  TEAM: (teamId) => generateCacheKey('team', { teamId }),
-  CHAT: (groupId, before) => generateCacheKey('chat', { groupId, before }),
-  SESSIONS: (userId) => generateCacheKey('sessions', { userId }),
-  SEASON: (seasonId) => generateCacheKey('season', { seasonId }),
-  GAME_STATS: (gameId, timeframe) => generateCacheKey('game-stats', { gameId, timeframe })
+  // User resource cache patterns
+  USER: {
+    SINGLE: (id) => `user-${id}`,
+    LIST: (query = {}) => `users-${JSON.stringify(query)}`,
+    PROFILE: (id) => `user-profile-${id}`,
+    SETTINGS: (id) => `user-settings-${id}`
+  },
+  
+  // Game resource cache patterns
+  GAME: {
+    SINGLE: (id) => `game-${id}`,
+    LIST: (query = {}) => `games-${JSON.stringify(query)}`,
+    LEADERBOARD: (timeframe = 'all') => `leaderboard-${timeframe}`
+  },
+  
+  // Season resource cache patterns
+  SEASON: {
+    SINGLE: (id) => `season-${id}`,
+    LIST: (query = {}) => `seasons-${JSON.stringify(query)}`,
+    CURRENT: () => 'current-season',
+    TIERS: (id) => `season-tiers-${id}`
+  },
+  
+  // Social resource cache patterns
+  SOCIAL: {
+    FRIENDS: (userId) => `friends-${userId}`,
+    FRIEND_REQUESTS: (userId) => `friend-requests-${userId}`,
+    TEAMS: (query = {}) => `teams-${JSON.stringify(query)}`,
+    TEAM: (id) => `team-${id}`
+  },
+  
+  // Economy resource cache patterns
+  ECONOMY: {
+    BALANCE: (userId) => `balance-${userId}`,
+    TRANSACTIONS: (userId, query = {}) => `transactions-${userId}-${JSON.stringify(query)}`,
+    SHOP: (id) => `shop-${id}`,
+    SHOPS: () => 'shops'
+  }
 };
 
 /**
  * @constant {Object} CACHE_CLEAR_PATTERNS
- * @description Functions to generate patterns for clearing related cache entries
- * 
- * @property {Function} PROFILE_UPDATE - Clears profile and session cache for a user
- * @property {Function} FRIEND_UPDATE - Clears friends cache for both users
- * @property {Function} BALANCE_UPDATE - Clears balance cache for a user
- * @property {Function} SHOP_UPDATE - Clears all shop-related cache entries
- * @property {Function} TEAM_UPDATE - Clears team cache
- * @property {Function} SEASON_UPDATE - Clears season and related leaderboard cache
- * @property {Function} GAME_UPDATE - Clears all game-related cache entries
- * 
- * @example
- * // Clear cache after profile update
- * const keysToDelete = CACHE_CLEAR_PATTERNS.PROFILE_UPDATE('user123');
- * 
- * // Clear cache after season update
- * const seasonKeys = CACHE_CLEAR_PATTERNS.SEASON_UPDATE('season456');
+ * @description Standard cache invalidation patterns for different operations
  */
 const CACHE_CLEAR_PATTERNS = {
-  PROFILE_UPDATE: (userId) => [
-    CACHE_PATTERNS.PROFILE(userId),
-    CACHE_PATTERNS.SESSIONS(userId)
-  ],
-  FRIEND_UPDATE: (userId, friendId) => [
-    CACHE_PATTERNS.FRIENDS(userId),
-    CACHE_PATTERNS.FRIENDS(friendId)
-  ],
-  BALANCE_UPDATE: (userId) => [
-    CACHE_PATTERNS.BALANCE(userId)
-  ],
-  SHOP_UPDATE: (shopId) => [
-    `shop-${shopId}*`  // Clear all shop-related cache entries
-  ],
-  TEAM_UPDATE: (teamId) => [
-    CACHE_PATTERNS.TEAM(teamId)
-  ],
-  SEASON_UPDATE: (seasonId) => [
-    CACHE_PATTERNS.SEASON(seasonId),
-    `leaderboard-${seasonId}*` // Clear all leaderboard entries for this season
-  ],
-  GAME_UPDATE: (gameId) => [
-    CACHE_PATTERNS.GAME_STATS(gameId, '*'),
-    `game-${gameId}*` // Clear all game-related cache entries
-  ]
+  // User resource cache invalidation patterns
+  USER: {
+    CREATE: () => ['users-*'],
+    UPDATE: (id) => [`user-${id}`, `user-profile-${id}`, `user-settings-${id}`, 'users-*'],
+    DELETE: (id) => [`user-${id}`, `user-profile-${id}`, `user-settings-${id}`, 'users-*']
+  },
+  
+  // Game resource cache invalidation patterns
+  GAME: {
+    CREATE: () => ['games-*'],
+    UPDATE: (id) => [`game-${id}`, 'games-*', 'leaderboard-*'],
+    DELETE: (id) => [`game-${id}`, 'games-*', 'leaderboard-*']
+  },
+  
+  // Season resource cache invalidation patterns
+  SEASON: {
+    CREATE: () => ['seasons-*', 'current-season'],
+    UPDATE: (id) => [`season-${id}`, `season-tiers-${id}`, 'seasons-*', 'current-season'],
+    DELETE: (id) => [`season-${id}`, `season-tiers-${id}`, 'seasons-*']
+  },
+  
+  // Social resource cache invalidation patterns
+  SOCIAL: {
+    FRIEND_REQUEST: (userId, targetId) => [
+      `friends-${userId}`,
+      `friends-${targetId}`,
+      `friend-requests-${userId}`,
+      `friend-requests-${targetId}`
+    ],
+    TEAM_UPDATE: (teamId, memberIds = []) => [
+      `team-${teamId}`,
+      'teams-*',
+      ...memberIds.map(id => `friends-${id}`)
+    ]
+  },
+  
+  // Economy resource cache invalidation patterns
+  ECONOMY: {
+    TRANSACTION: (userId, targetId = null) => [
+      `balance-${userId}`,
+      `transactions-${userId}-*`,
+      ...(targetId ? [`balance-${targetId}`, `transactions-${targetId}-*`] : [])
+    ],
+    SHOP_UPDATE: (shopId) => [`shop-${shopId}`, 'shops']
+  }
+};
+
+/**
+ * @function clearResourceCache
+ * @description Clear cache for a resource based on operation and IDs
+ * @param {Object} cacheManager - Cache manager instance
+ * @param {string} cacheName - Cache name to clear
+ * @param {string} resource - Resource type (USER, GAME, etc.)
+ * @param {string} operation - Operation type (CREATE, UPDATE, etc.)
+ * @param {string|Array} ids - Resource ID(s) affected
+ * @returns {void}
+ */
+const clearResourceCache = (cacheManager, cacheName, resource, operation, ids) => {
+  if (!CACHE_CLEAR_PATTERNS[resource] || !CACHE_CLEAR_PATTERNS[resource][operation]) {
+    logger.warn(`No cache clear pattern found for ${resource}.${operation}`);
+    return;
+  }
+  
+  const patterns = CACHE_CLEAR_PATTERNS[resource][operation](ids);
+  
+  patterns.forEach(pattern => {
+    cacheManager.clear(cacheName, pattern);
+    logger.info(`Cleared cache: ${cacheName} with pattern ${pattern}`);
+  });
+};
+
+/**
+ * @function getCacheKey
+ * @description Get a standardized cache key for a resource
+ * @param {string} resource - Resource type (USER, GAME, etc.)
+ * @param {string} pattern - Pattern type (SINGLE, LIST, etc.)
+ * @param {*} params - Parameters for the pattern
+ * @returns {string} Cache key
+ */
+const getCacheKey = (resource, pattern, params) => {
+  if (!CACHE_PATTERNS[resource] || !CACHE_PATTERNS[resource][pattern]) {
+    logger.warn(`No cache pattern found for ${resource}.${pattern}`);
+    return `${resource.toLowerCase()}-${pattern.toLowerCase()}-${JSON.stringify(params)}`;
+  }
+  
+  return CACHE_PATTERNS[resource][pattern](params);
+};
+
+/**
+ * @function getCacheDuration
+ * @description Get a standardized cache duration for a resource
+ * @param {string} resource - Resource type (USER, GAME, etc.)
+ * @param {string} pattern - Pattern type (SINGLE, LIST, etc.)
+ * @returns {number} Cache duration in milliseconds
+ */
+const getCacheDuration = (resource, pattern) => {
+  // Define resource-specific durations
+  const resourceDurations = {
+    USER: {
+      SINGLE: CACHE_DURATIONS.MEDIUM,
+      LIST: CACHE_DURATIONS.SHORT,
+      PROFILE: CACHE_DURATIONS.MEDIUM,
+      SETTINGS: CACHE_DURATIONS.MEDIUM
+    },
+    GAME: {
+      SINGLE: CACHE_DURATIONS.MEDIUM,
+      LIST: CACHE_DURATIONS.SHORT,
+      LEADERBOARD: CACHE_DURATIONS.SHORT
+    },
+    SEASON: {
+      SINGLE: CACHE_DURATIONS.MEDIUM,
+      LIST: CACHE_DURATIONS.MEDIUM,
+      CURRENT: CACHE_DURATIONS.SHORT,
+      TIERS: CACHE_DURATIONS.MEDIUM
+    },
+    SOCIAL: {
+      FRIENDS: CACHE_DURATIONS.MEDIUM,
+      FRIEND_REQUESTS: CACHE_DURATIONS.SHORT,
+      TEAMS: CACHE_DURATIONS.MEDIUM,
+      TEAM: CACHE_DURATIONS.MEDIUM
+    },
+    ECONOMY: {
+      BALANCE: CACHE_DURATIONS.SHORT,
+      TRANSACTIONS: CACHE_DURATIONS.MEDIUM,
+      SHOP: CACHE_DURATIONS.LONG,
+      SHOPS: CACHE_DURATIONS.LONG
+    }
+  };
+  
+  // Return resource-specific duration if available
+  if (resourceDurations[resource] && resourceDurations[resource][pattern]) {
+    return resourceDurations[resource][pattern];
+  }
+  
+  // Default to medium duration
+  return CACHE_DURATIONS.MEDIUM;
 };
 
 module.exports = {
   CACHE_DURATIONS,
   CACHE_PATTERNS,
   CACHE_CLEAR_PATTERNS,
-  generateCacheKey
+  clearResourceCache,
+  getCacheKey,
+  getCacheDuration
 }; 

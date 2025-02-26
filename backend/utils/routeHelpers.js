@@ -11,7 +11,7 @@
 
 const { pool } = require('../database/connection');
 const AppError = require('./appError');
-const logger = require('./logger');
+const { logger } = require('./logger');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
@@ -63,7 +63,7 @@ async function withTransaction(operation) {
 }
 
 /**
- * @function auditLog
+ * @function createAuditLog
  * @description Logs an audit event to the database
  * @param {Object} client - Database client
  * @param {Object} user - User performing the action
@@ -72,13 +72,13 @@ async function withTransaction(operation) {
  * @param {AuditDetails} details - Additional details about the action
  * @returns {Promise<void>}
  * @example
- * await auditLog(client, user, 'CREATE_USER', {
+ * await createAuditLog(client, user, 'CREATE_USER', {
  *   table: 'users',
  *   id: newUser.id,
  *   new: newUser
  * });
  */
-async function auditLog(client, user, action, details) {
+async function createAuditLog(client, user, action, details) {
   try {
     await client.query(
       `INSERT INTO audit_log 
@@ -175,9 +175,57 @@ async function validatePermissions(client, userId, resourceId, requiredPermissio
   }
 }
 
+/**
+ * @function applyCriticalEndpointProtection
+ * @description Applies standard protection middleware to critical endpoints
+ * @param {Object} router - Express router object
+ * @param {string} method - HTTP method (get, post, put, delete)
+ * @param {string} path - Route path
+ * @param {Function[]} middlewares - Array of middleware functions
+ * @param {Function} handler - Route handler function
+ * @returns {void} - Adds the route with protection to the router
+ * @example
+ * // Instead of:
+ * router.post('/critical-endpoint', handler);
+ * 
+ * // Use:
+ * applyCriticalEndpointProtection(router, 'post', '/critical-endpoint', [], handler);
+ */
+function applyCriticalEndpointProtection(router, method, path, middlewares, handler) {
+  const { rateLimitPresets } = require('./rateLimits');
+  const { verifyToken } = require('../middleware/auth');
+  
+  // Apply standard rate limiting if not already included
+  const hasRateLimiting = middlewares.some(middleware => 
+    middleware.name === 'rateLimit' || 
+    (middleware.toString && middleware.toString().includes('rateLimit'))
+  );
+  
+  const protectedMiddlewares = [...middlewares];
+  
+  // Add rate limiting if not present
+  if (!hasRateLimiting) {
+    protectedMiddlewares.unshift(rateLimitPresets.STANDARD);
+  }
+  
+  // Add authentication if not present
+  const hasAuth = middlewares.some(middleware => 
+    middleware === verifyToken || 
+    (middleware.toString && middleware.toString().includes('verifyToken'))
+  );
+  
+  if (!hasAuth && path !== '/health' && !path.startsWith('/public')) {
+    protectedMiddlewares.unshift(verifyToken);
+  }
+  
+  // Add the route with protection
+  router[method](path, ...protectedMiddlewares, handler);
+}
+
 module.exports = {
   withTransaction,
-  auditLog,
+  createAuditLog,
   handleImageUpload,
-  validatePermissions
+  validatePermissions,
+  applyCriticalEndpointProtection
 }; 

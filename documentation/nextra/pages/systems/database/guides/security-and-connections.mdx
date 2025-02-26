@@ -1,0 +1,227 @@
+# Database Security and Connections
+
+This guide covers the security measures and connection optimizations implemented in our database system.
+
+## SSL/TLS Encryption
+
+All database connections are secured using SSL/TLS encryption to protect data in transit. The configuration includes:
+
+- Certificate validation
+- Proper CA certificate management
+- Configurable SSL options through environment variables
+
+```javascript
+// SSL/TLS configuration example
+const pool = new Pool({
+  // Basic connection parameters
+  host: config.db.host,
+  port: config.db.port,
+  database: config.db.database,
+  user: config.db.user,
+  password: config.db.password,
+  
+  // SSL/TLS configuration
+  ssl: config.db.ssl_enabled ? {
+    rejectUnauthorized: config.db.ssl_reject_unauthorized,
+    ca: config.db.ssl_ca_path ? fs.readFileSync(path.resolve(config.db.ssl_ca_path)).toString() : undefined,
+    key: config.db.ssl_key_path ? fs.readFileSync(path.resolve(config.db.ssl_key_path)).toString() : undefined,
+    cert: config.db.ssl_cert_path ? fs.readFileSync(path.resolve(config.db.ssl_cert_path)).toString() : undefined,
+  } : undefined
+});
+```
+
+## Connection Pooling and Monitoring
+
+Our database connection pooling system includes comprehensive monitoring capabilities:
+
+- Total connections tracking
+- Idle connection monitoring
+- Waiting clients metrics
+- Connection validation before use
+
+```javascript
+// Connection pool metrics example
+function collectPoolMetrics(pool) {
+  const metrics = {
+    total: pool.totalCount,
+    idle: pool.idleCount,
+    waiting: pool.waitingCount
+  };
+  
+  // Report metrics to monitoring system
+  prometheus.gauge('db_connections_total').set(metrics.total);
+  prometheus.gauge('db_connections_idle').set(metrics.idle);
+  prometheus.gauge('db_connections_waiting').set(metrics.waiting);
+  
+  return metrics;
+}
+```
+
+## Transaction Management
+
+All critical database operations are executed within transaction boundaries to ensure data consistency:
+
+- Proper transaction isolation levels
+- Automatic rollback on errors
+- Transaction utility for consistent usage
+
+```javascript
+// Transaction utility example
+async function withTransaction(callback, options = {}) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    if (options.isolationLevel) {
+      await client.query(`SET TRANSACTION ISOLATION LEVEL ${options.isolationLevel}`);
+    }
+    
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+```
+
+## Database Indexing and Optimization
+
+We've implemented comprehensive indexing strategies to optimize query performance:
+
+- Indexes on frequently queried fields
+- Composite indexes for multi-column queries
+- Proper foreign key constraints
+
+```sql
+-- Example of added indexes
+CREATE INDEX IF NOT EXISTS idx_sys_user_email ON sys_user(email);
+CREATE INDEX IF NOT EXISTS idx_game_season_id ON game(season_id);
+CREATE INDEX IF NOT EXISTS idx_virtual_currency_user_id ON virtual_currency(user_id);
+```
+
+## Foreign Key Constraints
+
+Our database schema includes proper foreign key constraints to ensure data integrity:
+
+- Relationships between related tables
+- Appropriate ON DELETE actions (CASCADE, SET NULL, etc.)
+- Consistent naming conventions
+
+```sql
+-- Example of foreign key constraints
+ALTER TABLE sys_user
+ADD CONSTRAINT fk_sys_user_department
+FOREIGN KEY (department_id) REFERENCES department(id)
+ON DELETE SET NULL;
+
+ALTER TABLE game
+ADD CONSTRAINT fk_game_season
+FOREIGN KEY (season_id) REFERENCES season(id)
+ON DELETE CASCADE;
+```
+
+## Backup and Recovery
+
+Our database backup system ensures data safety and disaster recovery capabilities:
+
+- Automated daily backups
+- Point-in-time recovery
+- Backup verification
+- Retention policy management
+
+```javascript
+// Backup utility example
+async function createBackup() {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = path.join(config.backup.directory, `backup-${timestamp}.sql`);
+  
+  // Execute pg_dump to create backup
+  const command = `pg_dump -h ${config.db.host} -p ${config.db.port} -U ${config.db.user} -d ${config.db.database} -F c -f ${backupPath}`;
+  
+  try {
+    await exec(command);
+    logger.info(`Backup created successfully at ${backupPath}`);
+    return backupPath;
+  } catch (error) {
+    logger.error('Backup creation failed:', error);
+    throw error;
+  }
+}
+```
+
+## SQL Injection Prevention
+
+All database queries are protected against SQL injection:
+
+- Parameterized queries
+- Input validation and sanitization
+- Proper escaping of user input
+
+```javascript
+// Example of parameterized query
+async function getUserByEmail(email) {
+  const query = {
+    text: 'SELECT * FROM sys_user WHERE email = $1',
+    values: [email]
+  };
+  
+  const result = await pool.query(query);
+  return result.rows[0];
+}
+```
+
+## Schema Improvements Application
+
+We've created a utility to apply schema improvements (indexes and constraints) in a safe, transactional manner:
+
+```javascript
+async function applySchemaImprovements() {
+  try {
+    logger.info('Starting schema improvements application...');
+    
+    // Read the schema improvements SQL file
+    const schemaImprovementsPath = path.join(__dirname, 'schema-improvements.sql');
+    const schemaImprovementsSQL = fs.readFileSync(schemaImprovementsPath, 'utf8');
+    
+    // Apply the schema improvements within a transaction
+    await withTransaction(async (client) => {
+      logger.info('Applying schema improvements...');
+      await client.query(schemaImprovementsSQL);
+      logger.info('Schema improvements applied successfully');
+    }, { isolationLevel: 'SERIALIZABLE' });
+    
+    logger.info('Schema improvements application completed successfully');
+  } catch (error) {
+    logger.error('Error applying schema improvements:', error);
+    process.exit(1);
+  }
+}
+```
+
+## Best Practices
+
+When working with our database system, follow these best practices:
+
+1. **Always use transactions** for operations that modify data
+2. **Use parameterized queries** to prevent SQL injection
+3. **Monitor connection pool metrics** to detect issues early
+4. **Validate connections** before use
+5. **Use appropriate indexes** for frequently queried fields
+6. **Implement proper error handling** for database operations
+7. **Regularly review and optimize** query performance
+8. **Verify backup integrity** periodically
+
+## Troubleshooting
+
+Common issues and their solutions:
+
+| Issue | Solution |
+|-------|----------|
+| Connection timeout | Check network connectivity, firewall settings, and database server status |
+| SSL/TLS errors | Verify certificate paths and validity, check SSL configuration |
+| Connection pool exhaustion | Review connection usage patterns, increase pool size if necessary |
+| Slow queries | Analyze query execution plan, add appropriate indexes |
+| Transaction deadlocks | Review transaction isolation levels, optimize transaction boundaries | 
