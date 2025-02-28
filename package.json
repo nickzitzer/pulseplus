@@ -2,16 +2,23 @@
   "name": "pulseplus",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start": "npm run sync-env && concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "start:frontend": "cd frontend && npm run dev",
     "start:backend": "cd backend && npm start",
     "install": "concurrently \"cd frontend && npm install\" \"cd backend && npm install\"",
-    "rebuild-db": "docker-compose -f deployment/docker/compose/docker-compose.yml run --rm db-rebuild",
+    "rebuild-db": "npm run sync-docker-env && docker-compose -f deployment/docker/compose/docker-compose.yml run --rm db-rebuild",
     "generate-env": "node scripts/generate-env.js",
-    "deploy": "cd deployment/aws && cdk deploy --app 'npx ts-node --prefer-ts-exts bin/pulseplus.ts'",
-    "push-images": "bash deployment/scripts/push-images.sh",
+    "sync-env": "node scripts/sync-env.js",
+    "sync-docker-env": "node scripts/sync-docker-env.js",
+    "sync-all-env": "npm run sync-env && npm run sync-docker-env",
+    "deploy": "npm run sync-docker-env && cd deployment/aws && cdk deploy --app 'npx ts-node --prefer-ts-exts bin/pulseplus.ts'",
+    "push-images": "npm run sync-docker-env && bash deployment/scripts/push-images.sh",
     "bootstrap": "cd deployment/aws && cdk bootstrap aws://211125677151/us-east-1",
     "deploy:all": "npm run push-images && npm run deploy",
+    "docker:up": "npm run sync-docker-env && docker-compose -f deployment/docker/compose/docker-compose.yml up",
+    "docker:down": "docker-compose -f deployment/docker/compose/docker-compose.yml down",
+    "docker:build": "npm run sync-docker-env && docker-compose -f deployment/docker/compose/docker-compose.yml build",
+    "docker:restart": "npm run docker:down && npm run docker:up",
     "docs:generate": "jsdoc -c documentation/jsdoc/jsdoc.config.json",
     "docs:dev": "npm run docs:generate && next dev",
     "generate-master-key": "node scripts/generate-master-key.js",
@@ -30,18 +37,18 @@
     "better-docs": "^2.7.3",
     "concurrently": "^6.2.0",
     "jsdoc": "^4.0.4",
+    "snyk": "^1.1130.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
-    "snyk": "^1.1130.0"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "aws-cdk": "^2.155.0",
     "aws-cdk-lib": "^2.155.0",
+    "aws-sdk": "^2.1450.0",
     "constructs": "^10.3.0",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.7",
     "ioredis": "^5.5.0",
     "joi": "^17.12.2",
-    "nextra": "^4.2.13",
-    "aws-sdk": "^2.1450.0"
+    "nextra": "^4.2.13"
   }
 }

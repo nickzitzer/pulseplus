@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Load environment variables from .env file
+# Load environment variables from Docker Compose .env file
 set -a
-source .env
+source deployment/docker/compose/.env
 set +a
 
 # ECR repository URL

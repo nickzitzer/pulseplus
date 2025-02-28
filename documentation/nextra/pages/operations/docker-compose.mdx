@@ -1,0 +1,182 @@
+# Docker Compose Setup
+
+## Overview
+
+PulsePlus can be run locally using Docker Compose, which sets up all the necessary services in containers. This guide explains how to use Docker Compose for local development and testing.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Docker and Docker Compose
+- Git (to clone the repository)
+
+## Services Architecture
+
+The Docker Compose setup includes the following services:
+
+1. **nginx**: Web server that routes traffic to the frontend and backend services
+2. **frontend**: Next.js application serving the user interface
+3. **backend**: Node.js API server
+4. **db**: PostgreSQL database
+5. **redis**: Redis for caching and session management
+
+## Configuration
+
+The Docker Compose setup uses environment variables from a `.env` file located at `deployment/docker/config/.env`. This file contains configuration for:
+
+- Port mappings
+- Service URLs
+- Database credentials
+- Redis settings
+- Email configuration
+- JWT secrets
+- And more
+
+### Example .env Configuration
+
+```env
+# PORTS
+FRONTEND_PORT=8080
+BACKEND_PORT=3001
+
+# URLS
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:8080
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8080/api
+
+# Backend variables
+JWT_SECRET=test_jwt_secret_key_for_local_testing
+SESSION_SECRET=test_session_secret_key_for_local_testing
+NODE_ENV=development
+POSTGRES_URL=postgresql://pulseplus-admin:Work4PulsePlus1@db:5432/pulseplus_db
+
+# Docker configuration
+FRONTEND_IMAGE=pulseplus-frontend:latest
+BACKEND_IMAGE=pulseplus-backend:latest
+DB_IMAGE=postgres:13-alpine
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=test_redis_password_for_local_testing
+
+# Email
+SMTP_HOST=localhost
+SMTP_PORT=25
+SMTP_SECURE=false
+SMTP_USER=dummy_user
+SMTP_PASS=dummy_password
+SMTP_FROM=noreply@localhost
+```
+
+## Running Docker Compose
+
+To start all services using Docker Compose:
+
+```bash
+# Navigate to the Docker Compose directory
+cd deployment/docker/compose
+
+# Start all services in detached mode
+docker-compose up -d
+```
+
+This will:
+1. Build or pull all required Docker images
+2. Create a Docker network for service communication
+3. Start all services with the configured environment variables
+4. Set up health checks to ensure services are running properly
+
+## Accessing the Application
+
+Once all services are running, you can access:
+
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:8080/api (through nginx)
+- Direct backend access: http://localhost:3001 (if needed)
+
+## Service Health Checks
+
+The Docker Compose configuration includes health checks for all services:
+
+- **nginx**: Checks if the `/health` endpoint is accessible
+- **frontend**: Basic port check to ensure the service is running
+- **backend**: Checks if port 3001 is accessible
+- **db**: Uses `pg_isready` to verify database availability
+- **redis**: Uses `redis-cli ping` to verify Redis availability
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Email Configuration Errors**
+
+   The backend requires SMTP configuration for email functionality. For local development, dummy values are sufficient:
+
+   ```env
+   SMTP_HOST=localhost
+   SMTP_PORT=25
+   SMTP_SECURE=false
+   SMTP_USER=dummy_user
+   SMTP_PASS=dummy_password
+   SMTP_FROM=noreply@localhost
+   ```
+
+   Note that with this configuration, emails won't actually be sent, but the application will start without validation errors.
+
+2. **Container Health Check Failures**
+
+   If containers are marked as "unhealthy":
+
+   ```bash
+   # Check container logs
+   docker logs compose-backend-1
+   docker logs compose-frontend-1
+
+   # Check container status
+   docker-compose ps
+   ```
+
+3. **Port Conflicts**
+
+   If ports are already in use on your system, modify the port mappings in the `.env` file.
+
+## Stopping Docker Compose
+
+To stop all services:
+
+```bash
+# Stop all services but keep volumes
+docker-compose down
+
+# Stop all services and remove volumes (will delete database data)
+docker-compose down -v
+```
+
+## Development Workflow
+
+For local development with Docker Compose:
+
+1. Make changes to your code
+2. Rebuild the affected service:
+   ```bash
+   docker-compose build frontend  # or backend
+   ```
+3. Restart the service:
+   ```bash
+   docker-compose up -d --no-deps frontend  # or backend
+   ```
+
+This allows you to test changes without restarting the entire stack.
+
+## Resource Limits
+
+The Docker Compose configuration includes resource limits for each service:
+
+- **nginx**: 0.5 CPU, 256MB memory
+- **frontend**: 1 CPU, 1GB memory
+- **backend**: 1 CPU, 1GB memory
+- **db**: 1 CPU, 1GB memory
+- **redis**: 0.5 CPU, 256MB memory
+
+These limits can be adjusted in the `docker-compose.yml` file if needed for your development environment. 

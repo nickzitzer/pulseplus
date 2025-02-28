@@ -68,6 +68,7 @@
     "type": "menu",
     "items": {
       "deployment": "Deployment",
+      "docker-compose": "Docker Compose",
       "monitoring": "Monitoring",
       "maintenance": "Maintenance"
     }

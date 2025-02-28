@@ -45,7 +45,26 @@ Before you begin, ensure you have the following installed:
 
 2. Update the `.env` file with your specific configuration values, including database credentials and API keys.
 
-3. Generate environment-specific files and ECS task definitions:
+3. Synchronize environment variables to frontend, backend, and deployment directories:
+   ```
+   npm run sync-all-env
+   ```
+   
+   This script copies the relevant environment variables from the root `.env` file to:
+   
+   - **Frontend directory**: Variables from SHARED and FRONTEND-SPECIFIC sections
+   - **Backend directory**: Variables from SHARED and BACKEND-SPECIFIC sections
+   - **Docker Compose directory**: All variables for containerized deployment
+   
+   The root `.env` file is organized into three sections:
+   
+   - **SHARED CONFIGURATION**: Variables used by both frontend and backend
+   - **FRONTEND-SPECIFIC CONFIGURATION**: Variables used only by the frontend
+   - **BACKEND-SPECIFIC CONFIGURATION**: Variables used only by the backend
+   
+   Always edit the root `.env` file and then run `npm run sync-all-env` to propagate changes. The generated `.env` files are auto-generated and should not be edited directly.
+
+4. Generate environment-specific files and ECS task definitions:
    ```
    npm run generate-env
    ```
@@ -67,10 +86,19 @@ This script will create the necessary tables and insert initial data.
 
 1. Start the application using Docker Compose:
    ```
-   docker-compose up
+   npm run docker:up
    ```
+   This command automatically synchronizes environment variables before starting the containers.
 
 2. Access the frontend at `http://localhost:3000` and the backend at `http://localhost:3001`.
+
+3. Other Docker Compose commands:
+   ```
+   npm run docker:down     # Stop all containers
+   npm run docker:build    # Rebuild all containers
+   npm run docker:restart  # Restart all containers
+   ```
+   All these commands ensure environment variables are synchronized before execution.
 
 ## Development
 

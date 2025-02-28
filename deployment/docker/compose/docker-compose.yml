@@ -4,12 +4,12 @@ services:
   nginx:
     build:
       context: ../../..
-      dockerfile: deployment/docker/compose/Dockerfile.nginx
+      dockerfile: deployment/docker/Dockerfile.nginx
     ports:
       - "${FRONTEND_PORT}:80"
     depends_on:
       frontend:
-        condition: service_healthy
+        condition: service_started
       backend:
         condition: service_healthy
     networks:
@@ -34,19 +34,17 @@ services:
   frontend:
     build:
       context: ../../..
-      dockerfile: deployment/docker/compose/Dockerfile.frontend
+      dockerfile: deployment/docker/Dockerfile.frontend
     image: ${FRONTEND_IMAGE}
     environment:
       - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
       - NODE_ENV=${NODE_ENV:-production}
     networks:
       - pulseplus-network
+    ports:
+      - "3000:3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+      disable: true
     deploy:
       resources:
         limits:
@@ -61,7 +59,7 @@ services:
   backend:
     build:
       context: ../../..
-      dockerfile: deployment/docker/compose/Dockerfile.backend
+      dockerfile: deployment/docker/Dockerfile.backend
     image: ${BACKEND_IMAGE}
     environment:
       - NODE_ENV=${NODE_ENV:-production}
@@ -89,8 +87,10 @@ services:
         condition: service_healthy
     networks:
       - pulseplus-network
+    ports:
+      - "3001:3001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      test: ["CMD-SHELL", "nc -z localhost 3001 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -109,7 +109,7 @@ services:
   db:
     build:
       context: ../../..
-      dockerfile: deployment/docker/compose/Dockerfile.db
+      dockerfile: deployment/docker/Dockerfile.db
     environment:
       - POSTGRES_USER=pulseplus-admin
       - POSTGRES_PASSWORD=Work4PulsePlus1

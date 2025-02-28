@@ -1015,6 +1015,174 @@ paths:
                     type: string
         '401':
           $ref: '#/components/responses/Unauthorized'
+          
+  /auth/password/reset-request:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Initiates the password reset process by sending a reset link to the user's email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+          
+  /auth/password/reset:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password
+      description: Resets the user's password using a valid reset token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /auth/sso-providers:
+    get:
+      tags:
+        - Authentication
+      summary: Get available SSO providers
+      description: Retrieves a list of available SSO authentication providers
+      responses:
+        '200':
+          description: List of SSO providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sys_id:
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+                    icon:
+                      type: string
+                    enabled:
+                      type: boolean
+                      
+  /auth/sso/{provider}:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate with SSO provider
+      description: Authenticates a user using a third-party SSO provider
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Provider-specific authentication token
+      responses:
+        '200':
+          description: SSO authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /auth/sso/link/{provider}:
+    post:
+      tags:
+        - Authentication
+      summary: Link SSO provider to account
+      description: Links a third-party SSO provider to an existing user account
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Provider-specific authentication token
+      responses:
+        '200':
+          description: SSO provider linked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /users/me:
     get:
@@ -1104,6 +1272,235 @@ paths:
                               format: date-time
         '401':
           $ref: '#/components/responses/Unauthorized'
+          
+  /users/settings:
+    put:
+      tags:
+        - User Management
+      summary: Update user settings
+      description: Update user application settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /users/avatar:
+    put:
+      tags:
+        - User Management
+      summary: Update user avatar
+      description: Upload and update user avatar image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Avatar image file
+      responses:
+        '200':
+          description: Avatar updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avatar_url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /users/preferences:
+    get:
+      tags:
+        - User Management
+      summary: Get user preferences
+      description: Retrieve user preferences including theme, notifications, language, etc.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+    put:
+      tags:
+        - User Management
+      summary: Update user preferences
+      description: Update user preferences
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /users/sessions:
+    get:
+      tags:
+        - User Management
+      summary: Get user sessions
+      description: Retrieve list of user's active sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: User sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+          
+  /users/{userId}/customization:
+    get:
+      tags:
+        - User Management
+      summary: Get user profile customization
+      description: Retrieve user profile customization settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Profile customization retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  theme:
+                    type: string
+                  layout:
+                    type: string
+                  color_scheme:
+                    type: string
+                  widgets:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+          
+    put:
+      tags:
+        - User Management
+      summary: Update user profile customization
+      description: Update user profile customization settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                theme:
+                  type: string
+                layout:
+                  type: string
+                color_scheme:
+                  type: string
+                widgets:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Profile customization updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  theme:
+                    type: string
+                  layout:
+                    type: string
+                  color_scheme:
+                    type: string
+                  widgets:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # Game Management
   /games:
@@ -2778,112 +3175,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-  /users/{userId}/customization:
-    get:
-      tags: [Users]
-      summary: Get profile customization
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Profile customization retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OwnedCustomization'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  # User Management
-  /users/preferences:
-    get:
-      tags:
-        - User Management
-      summary: Get user preferences
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: User preferences retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserPreferences'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    put:
-      tags:
-        - User Management
-      summary: Update user preferences
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserPreferences'
-      responses:
-        '200':
-          description: Preferences updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserPreferences'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /users/sessions:
-    get:
-      tags:
-        - User Management
-      summary: Get user sessions
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 20
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-      responses:
-        '200':
-          description: User sessions retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserSession'
-                  total:
-                    type: integer
-                  offset:
-                    type: integer
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
   # Game Management
   /games/{gameId}/settings:
     get:
