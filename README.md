@@ -13,6 +13,7 @@ PulsePlus is a powerful gamification platform developed by Happy Technologies LL
 6. [Development](#development)
 7. [Deployment](#deployment)
 8. [Support](#support)
+9. [Documentation](#documentation)
 
 ## Prerequisites
 
@@ -542,3 +543,70 @@ Consider these potential improvements:
 3. Enhanced monitoring and alerting
 4. Disaster recovery configuration
 5. Blue/Green deployment setup
+
+## Documentation
+
+PulsePlus comes with comprehensive documentation built using [Nextra](https://nextra.site/), a Next.js-based documentation framework. All documentation has been consolidated into a single Nextra deployment for easier maintenance and access.
+
+### Accessing the Documentation
+
+The documentation is available in multiple ways:
+
+1. **Local Development**:
+   ```bash
+   # Start the documentation development server
+   npm run docs:dev
+   ```
+   This will start a development server at http://localhost:3000.
+
+2. **Production Build**:
+   ```bash
+   # Build and start the documentation
+   npm run docs:build
+   npm run docs:start
+   ```
+   This will build and serve the documentation at http://localhost:3000.
+
+3. **Docker Container**:
+   ```bash
+   # Build and run the documentation in a Docker container
+   npm run docs:docker:build
+   npm run docs:docker:run
+   ```
+   This will build and run the documentation in a Docker container at http://localhost:3000.
+
+4. **Deployed Application**:
+   When deployed with the main application, the documentation is available at the `/docs` path of your application URL:
+   ```
+   https://your-domain.com/docs
+   ```
+
+### Documentation Structure
+
+The documentation is organized into the following sections:
+
+- **Getting Started** - Installation, configuration, and basic setup
+- **Architecture** - System design and architecture overview
+- **Core Systems** - Detailed documentation of each major system component
+- **Development Standards** - Coding standards and best practices
+- **API Reference** - Complete API documentation with Swagger integration
+- **Operations** - Deployment, monitoring, and maintenance guides
+- **Security** - Security policies and procedures
+
+### API Documentation
+
+The API documentation is generated from the OpenAPI/Swagger specification and is available at:
+
+- Local: `http://localhost:3000/api-docs`
+- Production: `https://your-domain.com/api-docs`
+
+### JSDoc Documentation
+
+The JSDoc documentation is generated from code comments and is available at:
+
+- Local: `http://localhost:3000/jsdoc`
+- Production: `https://your-domain.com/docs/jsdoc`
+
+### Contributing to Documentation
+
+See the [Documentation README](./documentation/README.md) for information on how to contribute to the documentation.

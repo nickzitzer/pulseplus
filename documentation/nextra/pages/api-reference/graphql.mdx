@@ -1,0 +1,156 @@
+---
+title: GraphQL API
+description: PulsePlus GraphQL API documentation
+---
+
+import { Callout } from 'nextra/components'
+
+# GraphQL API
+
+PulsePlus provides a GraphQL API for more flexible data querying. This page documents how to use our GraphQL API effectively.
+
+<Callout type="info">
+  Our GraphQL API is available at `https://api.pulseplus.com/graphql`
+</Callout>
+
+## Getting Started with GraphQL
+
+GraphQL is a query language for APIs that gives clients the power to ask for exactly what they need and nothing more. Unlike REST APIs, GraphQL APIs have a single endpoint that accepts queries describing the data you want.
+
+### Basic Query Example
+
+Here's a simple query to get a user's information:
+
+```graphql
+query {
+  user(id: "123") {
+    id
+    name
+    email
+    games {
+      id
+      title
+      score
+    }
+  }
+}
+```
+
+This query will return only the fields specified (id, name, email, and games with their id, title, and score).
+
+## Authentication
+
+To authenticate with the GraphQL API, include an authorization header with your request:
+
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+## GraphQL Playground
+
+We provide a GraphQL Playground for exploring and testing our GraphQL API:
+
+<div className="mt-8 mb-16 flex flex-col items-center">
+  <a 
+    href="https://api.pulseplus.com/graphql" 
+    className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Open GraphQL Playground
+  </a>
+  <p className="text-sm text-gray-500 mt-2">Opens in a new tab</p>
+</div>
+
+## Key Concepts
+
+### Queries
+
+Queries are used to fetch data. They are similar to GET requests in REST.
+
+```graphql
+query {
+  games(limit: 10) {
+    id
+    title
+    description
+  }
+}
+```
+
+### Mutations
+
+Mutations are used to modify data. They are similar to POST, PUT, and DELETE requests in REST.
+
+```graphql
+mutation {
+  createGame(input: {
+    title: "New Game",
+    description: "A fun new game"
+  }) {
+    id
+    title
+    description
+  }
+}
+```
+
+### Subscriptions
+
+Subscriptions allow you to receive real-time updates when data changes.
+
+```graphql
+subscription {
+  gameScoreUpdated(gameId: "123") {
+    gameId
+    userId
+    score
+    timestamp
+  }
+}
+```
+
+## Schema Reference
+
+Our GraphQL schema includes the following main types:
+
+### User
+
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  games: [Game!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+```
+
+### Game
+
+```graphql
+type Game {
+  id: ID!
+  title: String!
+  description: String
+  players: [User!]!
+  scores: [Score!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+```
+
+### Score
+
+```graphql
+type Score {
+  id: ID!
+  user: User!
+  game: Game!
+  value: Int!
+  timestamp: DateTime!
+}
+```
+
+For a complete reference of all available types, queries, mutations, and subscriptions, please use the GraphQL Playground's Documentation Explorer. 

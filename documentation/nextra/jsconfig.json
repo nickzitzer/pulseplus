@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/mdx-components/*": ["./mdx-components/*"],
+      "@/mdx-components": ["./mdx-components"]
+    }
+  }
+} 

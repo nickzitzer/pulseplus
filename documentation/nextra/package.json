@@ -1,0 +1,36 @@
+{
+  "name": "pulseplus-docs",
+  "version": "1.0.0",
+  "description": "PulsePlus Documentation",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "export": "next build",
+    "lint": "next lint",
+    "generate-docs": "node ../../scripts/build-docs.js",
+    "build-all": "npm run generate-docs && npm run build",
+    "serve": "npx serve out -l 3002",
+    "docker:build": "cd ../../ && docker build -f deployment/docker/Dockerfile.docs -t pulseplus-docs:latest .",
+    "docker:run": "docker run -p 3002:3002 pulseplus-docs:latest"
+  },
+  "dependencies": {
+    "next": "^13.4.19",
+    "nextra": "^2.13.2",
+    "nextra-theme-docs": "^2.13.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@tailwindcss/typography": "^0.5.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "autoprefixer": "^10.4.16",
+    "critters": "^0.0.20",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.0.4",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3"
+  }
+} 

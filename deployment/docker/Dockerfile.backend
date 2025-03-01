@@ -26,6 +26,9 @@ WORKDIR /app
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app ./
 
+# Create config-versions directory and set permissions
+RUN mkdir -p ./config-versions && chown -R nodejs:nodejs ./config-versions
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3001

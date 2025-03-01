@@ -1,0 +1,26 @@
+{
+  "index": {
+    "title": "Introduction",
+    "theme": {
+      "layout": "full"
+    }
+  },
+  "getting-started": "Getting Started",
+  "architecture": "Architecture",
+  
+  "systems": {
+    "title": "Core Systems"
+  },
+  "standards": {
+    "title": "Development Standards"
+  },
+  "operations": {
+    "title": "Operations"
+  },
+  "api-reference": {
+    "title": "API Reference"
+  },
+  "resources": {
+    "title": "Resources"
+  }
+} 

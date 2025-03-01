@@ -1,22 +1,43 @@
-# Backend Standards
+import { Callout, Steps, FileTree } from 'nextra/components';
 
-This section contains standards and guidelines for the PulsePlus backend development.
+# Backend Development Standards
 
-## Contents
+<Callout type="warning" emoji="⚠️">
+  These standards are mandatory for all backend development. Exceptions require architectural review approval.
+</Callout>
 
-- [Infrastructure Standards](./infrastructure) - Standards for infrastructure, deployment, and environment setup
-- [Service Patterns](./service-patterns) - Standardized patterns for implementing services in the backend
+## Table of Contents
+1. [Security Standards](/standards/backend-standards/security)
+2. [Middleware Standards](/standards/backend-standards/middleware)
+3. [API Design Standards](/standards/backend-standards/api-design)
+4. [Infrastructure Standards](/standards/backend-standards/infrastructure)
+5. [Observability Standards](/standards/backend-standards/observability)
+6. [Code Quality Standards](/standards/backend-standards/code-quality)
+7. [Configuration Standards](/standards/backend-standards/configuration)
+8. [Compliance Checklist](/standards/backend-standards/compliance)
 
-## Overview
+## Core Principles
 
-The PulsePlus backend follows a set of standardized patterns and practices to ensure consistency, maintainability, and reliability across the codebase. These standards help developers understand the codebase more quickly and make it easier to add new features or fix bugs.
+- **Security First**: Protect user data above all else
+- **Observability**: Everything must be measurable
+- **Consistency**: Uniform patterns across services
+- **Documentation**: Code must match docs
 
-By following these standards, we can:
+## Quick Links
 
-1. Reduce cognitive load when switching between different parts of the codebase
-2. Ensure consistent error handling and logging
-3. Maintain proper transaction support across the application
-4. Implement caching consistently
-5. Make the codebase more maintainable and easier to test
+<FileTree>
+  - [Security Standards](/standards/backend-standards/security)
+  - [Middleware Standards](/standards/backend-standards/middleware)
+  - [API Design Standards](/standards/backend-standards/api-design)
+  - [Infrastructure Standards](/standards/backend-standards/infrastructure)
+  - [Observability Standards](/standards/backend-standards/observability)
+  - [Code Quality Standards](/standards/backend-standards/code-quality)
+  - [Configuration Standards](/standards/backend-standards/configuration)
+  - [Compliance Checklist](/standards/backend-standards/compliance)
+</FileTree>
 
-Please refer to the specific sections for detailed guidelines on each aspect of the backend development. 
+## Version History
+
+| Version | Date       | Author    | Changes            |
+|---------|------------|-----------|--------------------|
+| 1.0     | 2023-07-20 | AI Architect | Initial version    | 

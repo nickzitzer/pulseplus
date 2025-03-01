@@ -1,0 +1,75 @@
+---
+title: API Reference
+description: PulsePlus API documentation and references
+---
+
+# API Reference
+
+PulsePlus provides a comprehensive API for integrating with our platform. This page serves as a central hub for all API-related documentation.
+
+## API Documentation Options
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+  <div className="p-6 border rounded-lg hover:shadow-md transition-shadow">
+    <h3 className="text-xl font-bold mb-2">REST API</h3>
+    <p className="mb-4">Our REST API provides endpoints for all core functionality of the PulsePlus platform.</p>
+    <a href="/docs/api/rest" className="text-blue-600 hover:text-blue-800">View REST API Documentation →</a>
+  </div>
+  
+  <div className="p-6 border rounded-lg hover:shadow-md transition-shadow">
+    <h3 className="text-xl font-bold mb-2">Swagger UI</h3>
+    <p className="mb-4">Interactive API documentation with Swagger UI for testing endpoints directly.</p>
+    <a href="/docs/swagger-ui/index.html" className="text-blue-600 hover:text-blue-800" target="_blank" rel="noopener noreferrer">Open Swagger UI →</a>
+  </div>
+  
+  <div className="p-6 border rounded-lg hover:shadow-md transition-shadow">
+    <h3 className="text-xl font-bold mb-2">JSDoc Reference</h3>
+    <p className="mb-4">Detailed code documentation for frontend and backend developers.</p>
+    <a href="/docs/api/jsdoc" className="text-blue-600 hover:text-blue-800">View JSDoc Documentation →</a>
+  </div>
+  
+  <div className="p-6 border rounded-lg hover:shadow-md transition-shadow">
+    <h3 className="text-xl font-bold mb-2">GraphQL API</h3>
+    <p className="mb-4">Our GraphQL API for more flexible data querying.</p>
+    <a href="/docs/api/graphql" className="text-blue-600 hover:text-blue-800">View GraphQL Documentation →</a>
+  </div>
+</div>
+
+## Authentication
+
+Most API endpoints require authentication. The API supports the following authentication methods:
+
+- **Bearer Token** - For user authentication
+- **API Key** - For service-to-service authentication
+
+Include the authentication token in the `Authorization` header:
+
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+## Rate Limiting
+
+API requests are subject to rate limiting to ensure fair usage and system stability. The current limits are:
+
+- 100 requests per minute for authenticated users
+- 20 requests per minute for unauthenticated requests
+
+When a rate limit is exceeded, the API will return a `429 Too Many Requests` status code.
+
+## Error Handling
+
+The API uses standard HTTP status codes to indicate the success or failure of requests. In addition, error responses include a JSON body with more details:
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": {
+      "resourceId": "123",
+      "resourceType": "user"
+    }
+  }
+}
+``` 

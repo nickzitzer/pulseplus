@@ -1,0 +1,36 @@
+{
+  "source": {
+    "include": ["backend"],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown", "better-docs"],
+  "opts": {
+    "destination": "./documentation/nextra/public/jsdoc-static",
+    "recurse": true,
+    "readme": "./README.md",
+    "template": "node_modules/better-docs"
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": false
+    },
+    "better-docs": {
+      "name": "PulsePlus API Documentation",
+      "title": "PulsePlus JSDoc",
+      "navLinks": [
+        {
+          "label": "Back to Docs",
+          "href": "/"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/yourorg/pulseplus"
+        }
+      ]
+    }
+  }
+} 

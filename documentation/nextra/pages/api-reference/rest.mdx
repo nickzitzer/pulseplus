@@ -1,0 +1,102 @@
+---
+title: REST API
+description: PulsePlus REST API documentation
+---
+
+# REST API Reference
+
+This page provides comprehensive documentation for the PulsePlus REST API.
+
+## API Overview
+
+The PulsePlus API follows RESTful principles and uses standard HTTP methods for operations:
+
+- `GET` - Retrieve resources
+- `POST` - Create resources
+- `PUT` - Update resources
+- `DELETE` - Remove resources
+
+All API endpoints return responses in JSON format and use standard HTTP status codes.
+
+## Authentication
+
+Most API endpoints require authentication. The API supports the following authentication methods:
+
+- **Bearer Token** - For user authentication
+- **API Key** - For service-to-service authentication
+
+Include the authentication token in the `Authorization` header:
+
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+## API Endpoints Overview
+
+Our API is organized around the following main resources:
+
+### Authentication
+
+- `POST /api/auth/login` - Authenticate a user and get a JWT token
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/refresh` - Refresh an expired JWT token
+- `POST /api/auth/logout` - Logout and invalidate the current token
+
+### Users
+
+- `GET /api/users` - List all users (admin only)
+- `GET /api/users/{id}` - Get a specific user
+- `PUT /api/users/{id}` - Update a user
+- `DELETE /api/users/{id}` - Delete a user
+
+### Games
+
+- `GET /api/games` - List all games
+- `POST /api/games` - Create a new game
+- `GET /api/games/{id}` - Get a specific game
+- `PUT /api/games/{id}` - Update a game
+- `DELETE /api/games/{id}` - Delete a game
+
+## Interactive API Documentation
+
+For interactive documentation with the ability to test endpoints, please visit our [Swagger UI](/docs/api/swagger-ui) page.
+
+## Rate Limiting
+
+API requests are subject to rate limiting to ensure fair usage and system stability. The current limits are:
+
+- 100 requests per minute for authenticated users
+- 20 requests per minute for unauthenticated requests
+
+When a rate limit is exceeded, the API will return a `429 Too Many Requests` status code.
+
+## Versioning
+
+The API is versioned to ensure backward compatibility. The current version is `v1`.
+
+Include the version in the URL path:
+
+```
+https://api.pulseplus.com/v1/resources
+```
+
+## Error Handling
+
+The API uses standard HTTP status codes to indicate the success or failure of requests. In addition, error responses include a JSON body with more details:
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": {
+      "resourceId": "123",
+      "resourceType": "user"
+    }
+  }
+}
+```
+
+## API Changelog
+
+For a history of API changes, please refer to the [API Changelog](/docs/resources/changelog) page. 

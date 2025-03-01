@@ -1,50 +1,148 @@
+---
+title: PulsePlus Documentation
+description: Comprehensive documentation for the PulsePlus platform
+---
+
+import { Card, Cards } from 'nextra/components'
+
 # PulsePlus Documentation
 
-Welcome to the PulsePlus documentation. This guide provides comprehensive information about the PulsePlus platform, its architecture, components, and how to use it.
+Welcome to the PulsePlus documentation. This comprehensive guide provides information about the PulsePlus platform, its features, and how to use them effectively.
 
-## What is PulsePlus?
+## Quick Navigation
 
-PulsePlus is a modern, scalable application platform designed for building interactive web applications. It provides a robust foundation for developing feature-rich applications with a focus on performance, security, and developer experience.
+<Cards>
+  <Card
+    title="Getting Started"
+    href="/getting-started"
+    arrow
+    children="Learn how to set up and start using PulsePlus"
+  />
+  <Card
+    title="API Reference"
+    href="/api"
+    arrow
+    children="Explore our REST API, GraphQL, and WebSockets"
+  />
+  <Card
+    title="Swagger UI"
+    href="/api/swagger-ui"
+    arrow
+    children="Interactive API documentation"
+  />
+  <Card
+    title="JSDoc Reference"
+    href="/api/jsdoc"
+    arrow
+    children="Code documentation for developers"
+  />
+</Cards>
 
-## Key Features
+## Core Systems
 
-- **Microservices Architecture**: Built with a modular approach for scalability and maintainability
-- **Real-time Capabilities**: WebSocket support for live updates and notifications
-- **Comprehensive API**: RESTful and GraphQL APIs for flexible integration
-- **Secure by Design**: Built-in security features and best practices
-- **Developer-friendly**: Extensive documentation and tooling for a smooth development experience
+PulsePlus is built on several core systems that work together to provide a seamless experience:
 
-## Getting Started
+<Cards>
+  <Card
+    title="Frontend System"
+    href="/systems/frontend"
+    arrow
+    children="User interface and client-side functionality"
+  />
+  <Card
+    title="Backend System"
+    href="/systems/backend"
+    arrow
+    children="Server-side logic and API endpoints"
+  />
+  <Card
+    title="Database System"
+    href="/systems/database"
+    arrow
+    children="Data storage and management"
+  />
+</Cards>
 
-The quickest way to get started with PulsePlus is using our Docker Compose setup:
+## Development Standards
 
-```bash
-# Clone the repository
-git clone https://github.com/your-repo/pulseplus.git
+We maintain high standards for development to ensure code quality and consistency:
 
-# Navigate to the Docker Compose directory
-cd pulseplus/deployment/docker/compose
+<Cards>
+  <Card
+    title="Backend Standards"
+    href="/standards/backend-standards"
+    arrow
+    children="Guidelines for backend development"
+  />
+  <Card
+    title="Frontend Standards"
+    href="/standards/frontend-standards"
+    arrow
+    children="Guidelines for frontend development"
+  />
+  <Card
+    title="Security"
+    href="/security"
+    arrow
+    children="Security best practices and guidelines"
+  />
+</Cards>
 
-# Start all services
-docker-compose up -d
-```
+## Operations
 
-For more detailed instructions, check out our [Getting Started Guide](/getting-started) or the [Docker Compose Setup Guide](/operations/docker-compose).
+Learn how to deploy, monitor, and maintain PulsePlus:
 
-## Documentation Structure
+<Cards>
+  <Card
+    title="Deployment"
+    href="/operations/deployment"
+    arrow
+    children="Deployment guides and procedures"
+  />
+  <Card
+    title="Docker Compose"
+    href="/operations/docker-compose"
+    arrow
+    children="Container orchestration with Docker Compose"
+  />
+  <Card
+    title="Monitoring"
+    href="/operations/monitoring"
+    arrow
+    children="Monitoring and observability"
+  />
+</Cards>
 
-- [Getting Started](/getting-started): Quick setup guide for new users
-- [Architecture](/architecture): System design and component overview
-- [Core Systems](/systems): Detailed information about each system
-- [Development Standards](/standards): Coding guidelines and best practices
-- [Operations](/operations): Deployment, monitoring, and maintenance
-- [API Reference](/api): Comprehensive API documentation
-- [Contributing](/contributing): How to contribute to PulsePlus
+## Contributing
 
-## Support
+We welcome contributions to PulsePlus! Learn how to contribute:
 
-If you need help or have questions, please:
+<Cards>
+  <Card
+    title="Contributing Guide"
+    href="/contributing"
+    arrow
+    children="How to contribute to PulsePlus"
+  />
+  <Card
+    title="Code of Conduct"
+    href="/contributing/code-of-conduct"
+    arrow
+    children="Our community guidelines"
+  />
+</Cards>
 
-1. Check the [Troubleshooting](/resources/troubleshooting) guide
-2. Review the [FAQ](/resources/faq)
-3. Contact our support team at support@pulseplus.example.com 
+## About PulsePlus
+
+PulsePlus is a comprehensive gamification platform that helps organizations engage users through game mechanics and reward systems. The platform includes:
+
+- User management and authentication
+- Virtual economy and reward systems
+- Game mechanics and progression systems
+- Analytics and reporting
+- Administrative tools
+
+<div className="mt-12 text-center">
+  <img src="https://lirp.cdn-website.com/961896a7/dms3rep/multi/opt/Happy-Technologies2_1-2eb04a18-7c7b56d3-600w.png" alt="Happy Technologies LLC" style={{width: "200px", margin: "0 auto"}} />
+  <p className="text-sm text-gray-500 mt-2">© {new Date().getFullYear()} Happy Technologies LLC. All rights reserved.</p>
+</div> 

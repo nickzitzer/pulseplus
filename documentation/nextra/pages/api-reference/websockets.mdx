@@ -1,0 +1,234 @@
+---
+title: WebSockets API
+description: PulsePlus WebSockets API documentation
+---
+
+import { Callout } from 'nextra/components'
+
+# WebSockets API
+
+PulsePlus provides a WebSockets API for real-time communication. This page documents how to use our WebSockets API effectively.
+
+<Callout type="info">
+  Our WebSockets API is available at `wss://api.pulseplus.com/ws`
+</Callout>
+
+## Getting Started with WebSockets
+
+WebSockets provide a persistent connection between a client and server, allowing for real-time data transfer in both directions. This is particularly useful for features like:
+
+- Live game updates
+- Chat functionality
+- Real-time notifications
+- Collaborative features
+
+## Connecting to the WebSocket
+
+To connect to our WebSocket API:
+
+```javascript
+const socket = new WebSocket('wss://api.pulseplus.com/ws');
+
+socket.onopen = () => {
+  console.log('Connected to PulsePlus WebSocket');
+};
+
+socket.onclose = () => {
+  console.log('Disconnected from PulsePlus WebSocket');
+};
+
+socket.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received message:', data);
+};
+```
+
+## Authentication
+
+To authenticate with the WebSocket API, include an authentication token in the connection URL:
+
+```javascript
+const token = 'YOUR_AUTH_TOKEN';
+const socket = new WebSocket(`wss://api.pulseplus.com/ws?token=${token}`);
+```
+
+## Message Format
+
+All messages sent and received through the WebSocket are JSON objects with the following structure:
+
+```json
+{
+  "type": "message_type",
+  "payload": {
+    // Message-specific data
+  }
+}
+```
+
+## Available Channels
+
+### Game Updates Channel
+
+Subscribe to real-time updates for a specific game:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'subscribe',
+  channel: 'game-updates',
+  gameId: '123'
+}));
+```
+
+Example message received:
+
+```json
+{
+  "type": "game-update",
+  "payload": {
+    "gameId": "123",
+    "event": "score-change",
+    "userId": "456",
+    "newScore": 1500,
+    "timestamp": "2023-06-15T14:30:45Z"
+  }
+}
+```
+
+### User Notifications Channel
+
+Subscribe to notifications for a specific user:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'subscribe',
+  channel: 'user-notifications',
+  userId: '456'
+}));
+```
+
+Example message received:
+
+```json
+{
+  "type": "notification",
+  "payload": {
+    "id": "789",
+    "userId": "456",
+    "message": "You've earned a new badge!",
+    "category": "achievement",
+    "timestamp": "2023-06-15T14:35:12Z"
+  }
+}
+```
+
+### Chat Channel
+
+Join a chat room:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'join-room',
+  roomId: 'game-123-chat'
+}));
+```
+
+Send a message to the chat room:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'chat-message',
+  roomId: 'game-123-chat',
+  message: 'Hello everyone!'
+}));
+```
+
+Example message received:
+
+```json
+{
+  "type": "chat-message",
+  "payload": {
+    "roomId": "game-123-chat",
+    "userId": "456",
+    "username": "Player1",
+    "message": "Hello everyone!",
+    "timestamp": "2023-06-15T14:40:22Z"
+  }
+}
+```
+
+## Error Handling
+
+If an error occurs, you'll receive an error message:
+
+```json
+{
+  "type": "error",
+  "payload": {
+    "code": "INVALID_SUBSCRIPTION",
+    "message": "Invalid subscription parameters"
+  }
+}
+```
+
+## Connection Management
+
+### Heartbeats
+
+To keep the connection alive, the server sends heartbeat messages every 30 seconds:
+
+```json
+{
+  "type": "heartbeat",
+  "payload": {
+    "timestamp": "2023-06-15T14:45:00Z"
+  }
+}
+```
+
+You should respond with a heartbeat acknowledgment:
+
+```javascript
+socket.send(JSON.stringify({
+  type: 'heartbeat-ack',
+  timestamp: new Date().toISOString()
+}));
+```
+
+### Reconnection
+
+If the connection is lost, implement a reconnection strategy with exponential backoff:
+
+```javascript
+let reconnectAttempts = 0;
+const maxReconnectAttempts = 5;
+const baseReconnectDelay = 1000; // 1 second
+
+function connect() {
+  const socket = new WebSocket('wss://api.pulseplus.com/ws');
+  
+  socket.onclose = () => {
+    if (reconnectAttempts < maxReconnectAttempts) {
+      reconnectAttempts++;
+      const delay = baseReconnectDelay * Math.pow(2, reconnectAttempts - 1);
+      console.log(`Reconnecting in ${delay}ms...`);
+      setTimeout(connect, delay);
+    } else {
+      console.log('Max reconnect attempts reached');
+    }
+  };
+  
+  socket.onopen = () => {
+    reconnectAttempts = 0;
+    console.log('Connected to PulsePlus WebSocket');
+  };
+  
+  // Other event handlers...
+}
+
+connect();
+``` 

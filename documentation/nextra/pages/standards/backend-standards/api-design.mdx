@@ -1,0 +1,84 @@
+import { Cards, Card, Callout, Tabs, Tab } from 'nextra/components';
+
+# API Design Standards
+
+## Route Architecture
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+    <ul>
+      <li>Use CRUD factory pattern for consistency</li>
+      <li>Group related routes in dedicated files</li>
+      <li>Version all API endpoints</li>
+    </ul>
+  </Tab>
+  <Tab>
+```javascript
+// routes/v1/user-routes.js
+module.exports = crudFactory({
+  resourceName: 'users',
+  schema: userSchema,
+  middleware: [verifyToken],
+  validations: {
+    create: {
+      body: userCreateSchema,
+      permissions: [PERMISSIONS.USER_MGMT]
+    }
+  }
+});
+```
+  </Tab>
+</Tabs>
+
+## Response Format
+
+<Tabs items={['Standard Response', 'Error Response']}>
+  <Tab>
+```json
+{
+  "success": true,
+  "data": {},
+  "meta": {
+    "timestamp": 1620000000,
+    "traceId": "abc123"
+  }
+}
+```
+  </Tab>
+  <Tab>
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid email format",
+    "details": [
+      {
+        "field": "email",
+        "message": "Must be a valid email address"
+      }
+    ]
+  }
+}
+```
+  </Tab>
+</Tabs>
+
+<Callout type="warning" emoji="⚠️">
+  All API responses must follow these exact formats. Deviations require architectural approval.
+</Callout>
+
+## Versioning Strategy
+
+<Cards>
+  <Card title="URL Versioning" href="#">
+    ```text
+    /api/v1/users
+    /api/v2/users
+    ```
+  </Card>
+  <Card title="Header Versioning" href="#">
+    ```http
+    Accept: application/vnd.myapi.v1+json
+    ```
+  </Card>
+</Cards>

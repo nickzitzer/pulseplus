@@ -5,6 +5,7 @@ services:
     build:
       context: ../../..
       dockerfile: deployment/docker/Dockerfile.nginx
+    image: ${NGINX_IMAGE:-pulseplus-nginx:latest}
     ports:
       - "${FRONTEND_PORT}:80"
     depends_on:
@@ -12,6 +13,8 @@ services:
         condition: service_started
       backend:
         condition: service_healthy
+      docs:
+        condition: service_started
     networks:
       - pulseplus-network
     healthcheck:
@@ -158,6 +161,40 @@ services:
       options:
         max-size: "20m"
         max-file: "5"
+
+  # Documentation service with improved configuration
+  docs:
+    build:
+      context: ../../..
+      dockerfile: deployment/docker/Dockerfile.docs
+    image: ${DOCS_IMAGE:-pulseplus-docs:latest}
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_BASE_PATH=/docs
+    networks:
+      - pulseplus-network
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+    volumes:
+      # Mount API documentation for live updates
+      - ../../documentation/nextra/public/swagger.yaml:/usr/share/nginx/html/api/swagger.yaml:ro
+      # Mount JSDoc documentation for live updates
+      - ../../documentation/nextra/public/jsdoc-static:/usr/share/nginx/html/jsdoc-static:ro
 
 volumes:
   postgres_data:

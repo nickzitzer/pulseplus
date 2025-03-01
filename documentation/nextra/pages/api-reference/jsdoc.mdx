@@ -1,0 +1,102 @@
+---
+title: JSDoc Documentation
+description: Code documentation for PulsePlus developers
+---
+
+import { Callout } from 'nextra/components'
+
+# JSDoc Documentation
+
+This page provides access to our JSDoc-generated code documentation. JSDoc is a documentation generator for JavaScript that generates detailed API documentation from code comments.
+
+<Callout type="info">
+  The JSDoc documentation will open in a new tab. It provides a comprehensive view of our codebase's functions, classes, and modules.
+</Callout>
+
+## Features of JSDoc Documentation
+
+- **Comprehensive API Reference**: Detailed documentation of all public APIs
+- **Type Information**: Parameter and return type information
+- **Code Examples**: Usage examples for complex functions
+- **Class Hierarchies**: Visual representation of class inheritance
+- **Module Organization**: Organized view of code modules and namespaces
+
+## Access the JSDoc Documentation
+
+<div className="mt-8 mb-16 flex flex-col items-center">
+  <a 
+    href="/docs/jsdoc-output/index.html" 
+    className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Open JSDoc Documentation
+  </a>
+  <p className="text-sm text-gray-500 mt-2">Opens in a new tab</p>
+</div>
+
+## Key Components Documented
+
+Our JSDoc documentation covers the following key areas of the codebase:
+
+### Frontend Components
+
+- **UI Components**: React components for the user interface
+- **State Management**: Redux stores, actions, and reducers
+- **Utilities**: Helper functions and utilities
+- **Hooks**: Custom React hooks
+
+### Backend Services
+
+- **API Controllers**: REST API endpoint handlers
+- **Services**: Business logic services
+- **Models**: Data models and schemas
+- **Middleware**: Express middleware functions
+
+### Shared Libraries
+
+- **Authentication**: Authentication and authorization utilities
+- **Validation**: Input validation functions
+- **Formatting**: Data formatting utilities
+- **Constants**: Shared constants and enumerations
+
+## Using JSDoc in Development
+
+If you're contributing to PulsePlus, we encourage you to document your code using JSDoc comments. Here's an example of a well-documented function:
+
+```javascript
+/**
+ * Calculates the total score for a user based on their game history
+ * 
+ * @param {string} userId - The ID of the user
+ * @param {Object} options - Calculation options
+ * @param {boolean} [options.includeInactive=false] - Whether to include inactive games
+ * @param {number} [options.multiplier=1] - Score multiplier
+ * @returns {Promise<number>} The calculated total score
+ * 
+ * @example
+ * // Get score with default options
+ * const score = await calculateUserScore('user123');
+ * 
+ * // Get score with custom options
+ * const score = await calculateUserScore('user123', { 
+ *   includeInactive: true,
+ *   multiplier: 1.5
+ * });
+ * 
+ * @throws {Error} If the user ID is invalid or the user doesn't exist
+ */
+async function calculateUserScore(userId, options = {}) {
+  // Implementation...
+}
+```
+
+## Generating JSDoc Documentation
+
+To generate the JSDoc documentation, run the following command:
+
+```bash
+npm run docs:jsdoc
+```
+
+This will create the JSDoc documentation in the `documentation/nextra/public/jsdoc-static` directory. 

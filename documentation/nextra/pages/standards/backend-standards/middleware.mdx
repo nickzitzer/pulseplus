@@ -1,0 +1,94 @@
+import { Callout, Tabs, Tab } from 'nextra/components';
+
+# Middleware Standards
+
+## Performance Monitoring
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+    <ul>
+      <li>All middleware must be wrapped with performance metrics</li>
+      <li>Slow middleware execution (>100ms) must be logged</li>
+      <li>Middleware execution counts and durations must be tracked</li>
+    </ul>
+  </Tab>
+  <Tab>
+```javascript
+// Wrap middleware with performance metrics
+app.use(measureMiddleware(middleware, 'middlewareName'));
+
+// For multiple middleware
+const securedRoute = wrapAllMiddleware([
+  authMiddleware,
+  validateRequest,
+  checkPermissions
+], 'securedRoute');
+```
+  </Tab>
+</Tabs>
+
+## Version Tracking
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+    <ul>
+      <li>All middleware must be registered with version tracking</li>
+      <li>Version history must be maintained</li>
+      <li>Middleware changes must be auditable</li>
+    </ul>
+  </Tab>
+  <Tab>
+```javascript
+// Register middleware with version tracking
+const authMiddleware = registerMiddleware(
+  verifyToken,
+  'authentication',
+  { description: 'JWT authentication middleware' }
+);
+```
+  </Tab>
+</Tabs>
+
+## Error Boundaries
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+    <ul>
+      <li>All middleware must be wrapped with error boundaries</li>
+      <li>Middleware errors must be properly logged</li>
+      <li>Error recovery mechanisms must be implemented</li>
+    </ul>
+  </Tab>
+  <Tab>
+```javascript
+// Wrap middleware with error boundary
+app.use(createErrorBoundary(middleware, { 
+  name: 'middlewareName',
+  continueOnError: false
+}));
+```
+  </Tab>
+</Tabs>
+
+## Health Checks
+
+<Tabs items={['Requirements', 'Example']}>
+  <Tab>
+    <ul>
+      <li>System health check endpoint must be implemented</li>
+      <li>Middleware-specific health check endpoint must be implemented</li>
+      <li>Health checks must include component status</li>
+    </ul>
+  </Tab>
+  <Tab>
+```javascript
+// Add health check endpoints
+app.get('/health', healthCheckMiddleware);
+app.get('/health/middleware', middlewareHealthCheck);
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info" emoji="ℹ️">
+  Health checks are critical for automated monitoring and deployment systems. Ensure they accurately reflect the true state of your service.
+</Callout>

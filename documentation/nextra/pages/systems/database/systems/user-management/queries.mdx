@@ -1,6 +1,15 @@
-import { CodeBlock } from 'nextra/components';
-
 # Common User Queries
+
+export const CodeBlock = ({ children, language, title }) => (
+  <div className="code-block">
+    {title && <div className="code-block-title">{title}</div>}
+    <pre className={`language-${language || 'text'}`}>
+      <code className={`language-${language || 'text'}`}>
+        {children}
+      </code>
+    </pre>
+  </div>
+);
 
 <CodeBlock language="sql" title="Active Users by Department">
   SELECT d.name, COUNT(u.sys_id) 

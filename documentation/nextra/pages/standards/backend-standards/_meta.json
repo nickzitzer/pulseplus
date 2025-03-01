@@ -1,0 +1,12 @@
+{
+  "index": "Overview",
+  "security": "Security",
+  "middleware": "Middleware",
+  "api-design": "API Design",
+  "infrastructure": "Infrastructure",
+  "observability": "Observability",
+  "code-quality": "Code Quality",
+  "configuration": "Configuration Standards",
+  "compliance": "Compliance",
+  "service-patterns": "Service Patterns"
+} 

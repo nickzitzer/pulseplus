@@ -51,24 +51,24 @@ export class PulsePlusStack extends cdk.Stack {
       containerInsights: true,
     });
 
-    // Create ECR Repositories with lifecycle rules
+    // Create ECR repositories for the images
     const frontendRepo = new ecr.Repository(this, 'FrontendRepo', {
-      lifecycleRules: [
-        {
-          maxImageCount: 5,
-          tagStatus: ecr.TagStatus.UNTAGGED,
-        },
-      ],
+      repositoryName: `${props.environment}-pulseplus-frontend`,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
     const backendRepo = new ecr.Repository(this, 'BackendRepo', {
-      lifecycleRules: [
-        {
-          maxImageCount: 5,
-          tagStatus: ecr.TagStatus.UNTAGGED,
-        },
-      ],
+      repositoryName: `${props.environment}-pulseplus-backend`,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    const docsRepo = new ecr.Repository(this, 'DocsRepo', {
+      repositoryName: `${props.environment}-pulseplus-docs`,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    const nginxRepo = new ecr.Repository(this, 'NginxRepo', {
+      repositoryName: `${props.environment}-pulseplus-nginx`,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
@@ -166,63 +166,73 @@ export class PulsePlusStack extends cdk.Stack {
       ],
     });
 
-    // Create Frontend Service with auto-scaling
+    // Create task definitions for the services
     const frontendTaskDef = new ecs.FargateTaskDefinition(this, 'FrontendTaskDef', {
       memoryLimitMiB: 1024,
       cpu: 512,
     });
 
-    frontendTaskDef.addContainer('FrontendContainer', {
-      image: ecs.ContainerImage.fromEcrRepository(frontendRepo),
-      portMappings: [{ containerPort: 3000 }],
-      environment: {
-        FRONTEND_PORT: '3000',
-        NEXT_PUBLIC_FRONTEND_URL: `https://${props.domainName}`,
-        NEXT_PUBLIC_BACKEND_URL: `https://${props.domainName}/api`,
-        NODE_ENV: props.environment,
-      },
-      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'frontend' }),
-    });
-
-    const frontendService = new ecs.FargateService(this, 'FrontendService', {
-      cluster,
-      taskDefinition: frontendTaskDef,
-      desiredCount: 2,
-      securityGroups: [backendSg],
-      assignPublicIp: false,
-    });
-
-    const frontendScaling = frontendService.autoScaleTaskCount({
-      minCapacity: 2,
-      maxCapacity: 10,
-    });
-
-    frontendScaling.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 70,
-    });
-
-    // Create Backend Service with auto-scaling
     const backendTaskDef = new ecs.FargateTaskDefinition(this, 'BackendTaskDef', {
       memoryLimitMiB: 1024,
       cpu: 512,
     });
 
-    backendTaskDef.addContainer('BackendContainer', {
-      image: ecs.ContainerImage.fromEcrRepository(backendRepo),
-      portMappings: [{ containerPort: 3001 }],
+    const docsTaskDef = new ecs.FargateTaskDefinition(this, 'DocsTaskDef', {
+      memoryLimitMiB: 512,
+      cpu: 256,
+    });
+
+    // Add container to the task definition
+    const frontendContainer = frontendTaskDef.addContainer('FrontendContainer', {
+      image: ecs.ContainerImage.fromEcrRepository(frontendRepo),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'frontend' }),
       environment: {
-        BACKEND_PORT: '3001',
-        NODE_ENV: props.environment,
-        POSTGRES_HOST: database.dbInstanceEndpointAddress,
-        POSTGRES_PORT: database.dbInstanceEndpointPort,
-        POSTGRES_DB: 'pulseplus_db',
+        NODE_ENV: 'production',
+        NEXT_PUBLIC_BACKEND_URL: `https://${props.domainName}/api`,
       },
-      secrets: {
-        JWT_SECRET: ecs.Secret.fromSecretsManager(dbSecret, 'jwt_secret'),
-        SESSION_SECRET: ecs.Secret.fromSecretsManager(dbSecret, 'session_secret'),
-        DB_PASSWORD: ecs.Secret.fromSecretsManager(dbSecret, 'password'),
-      },
+    });
+
+    const backendContainer = backendTaskDef.addContainer('BackendContainer', {
+      image: ecs.ContainerImage.fromEcrRepository(backendRepo),
       logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'backend' }),
+      environment: {
+        NODE_ENV: 'production',
+        DB_HOST: database.dbInstanceEndpointAddress,
+        DB_PORT: database.dbInstanceEndpointPort,
+        DB_NAME: 'pulseplus',
+        DB_SECRET_ID: dbSecret.secretArn,
+      },
+    });
+
+    const docsContainer = docsTaskDef.addContainer('DocsContainer', {
+      image: ecs.ContainerImage.fromEcrRepository(docsRepo),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'docs' }),
+      environment: {
+        NODE_ENV: 'production',
+      },
+    });
+
+    // Add port mappings
+    frontendContainer.addPortMappings({
+      containerPort: 3000,
+    });
+
+    backendContainer.addPortMappings({
+      containerPort: 3001,
+    });
+
+    docsContainer.addPortMappings({
+      containerPort: 3000,
+    });
+
+    // Create Fargate services
+    const frontendService = new ecs.FargateService(this, 'FrontendService', {
+      cluster,
+      taskDefinition: frontendTaskDef,
+      desiredCount: 2,
+      securityGroups: [backendSg],
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      assignPublicIp: false,
     });
 
     const backendService = new ecs.FargateService(this, 'BackendService', {
@@ -230,23 +240,140 @@ export class PulsePlusStack extends cdk.Stack {
       taskDefinition: backendTaskDef,
       desiredCount: 2,
       securityGroups: [backendSg],
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       assignPublicIp: false,
     });
 
-    const backendScaling = backendService.autoScaleTaskCount({
-      minCapacity: 2,
-      maxCapacity: 10,
+    const docsService = new ecs.FargateService(this, 'DocsService', {
+      cluster,
+      taskDefinition: docsTaskDef,
+      desiredCount: 1,
+      securityGroups: [backendSg], // Using the same security group as backend
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      assignPublicIp: false,
     });
 
-    backendScaling.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: 70,
+    // Create Nginx task definition and service
+    const nginxTaskDef = new ecs.FargateTaskDefinition(this, 'NginxTaskDef', {
+      memoryLimitMiB: 512,
+      cpu: 256,
     });
 
-    // Add ALB Listeners with HTTPS
+    const nginxContainer = nginxTaskDef.addContainer('NginxContainer', {
+      image: ecs.ContainerImage.fromEcrRepository(nginxRepo),
+      logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'nginx' }),
+      environment: {
+        NODE_ENV: 'production',
+      },
+      healthCheck: {
+        command: ['CMD-SHELL', 'curl -f http://localhost:80/health || exit 1'],
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        retries: 3,
+        startPeriod: cdk.Duration.seconds(10),
+      },
+    });
+
+    nginxContainer.addPortMappings({
+      containerPort: 80,
+      hostPort: 80,
+      protocol: ecs.Protocol.TCP,
+    });
+
+    const nginxService = new ecs.FargateService(this, 'NginxService', {
+      cluster,
+      taskDefinition: nginxTaskDef,
+      desiredCount: 2,
+      securityGroups: [backendSg], // Using the same security group as backend
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      assignPublicIp: false,
+    });
+
+    // Add target groups for the services
+    const frontendTG = new elbv2.ApplicationTargetGroup(this, 'FrontendTG', {
+      vpc,
+      port: 3000,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/',
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      },
+    });
+
+    const backendTG = new elbv2.ApplicationTargetGroup(this, 'BackendTG', {
+      vpc,
+      port: 3001,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/api/health',
+        interval: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      },
+    });
+
+    const docsTG = new elbv2.ApplicationTargetGroup(this, 'DocsTG', {
+      vpc,
+      port: 3000,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/health',
+        interval: cdk.Duration.seconds(60),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      },
+    });
+
+    const nginxTG = new elbv2.ApplicationTargetGroup(this, 'NginxTG', {
+      vpc,
+      port: 80,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targetType: elbv2.TargetType.IP,
+      healthCheck: {
+        path: '/health',
+        interval: cdk.Duration.seconds(60),
+        timeout: cdk.Duration.seconds(5),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      },
+    });
+
+    // Add targets to target groups
+    frontendTG.addTarget(frontendService);
+    backendTG.addTarget(backendService);
+    docsTG.addTarget(docsService);
+    nginxTG.addTarget(nginxService);
+
+    // Add listeners to the load balancer
     const httpsListener = alb.addListener('HttpsListener', {
       port: 443,
       certificates: [certificate],
-      protocol: elbv2.ApplicationProtocol.HTTPS,
+      defaultAction: elbv2.ListenerAction.forward([nginxTG]), // Use nginx as the default target
+    });
+
+    // Add rules to the HTTPS listener
+    httpsListener.addAction('ApiAction', {
+      priority: 10,
+      conditions: [
+        elbv2.ListenerCondition.pathPatterns(['/api/*']),
+      ],
+      action: elbv2.ListenerAction.forward([backendTG]),
+    });
+
+    httpsListener.addAction('DocsAction', {
+      priority: 20,
+      conditions: [
+        elbv2.ListenerCondition.pathPatterns(['/docs/*']),
+      ],
+      action: elbv2.ListenerAction.forward([docsTG]),
     });
 
     // Redirect HTTP to HTTPS
@@ -257,34 +384,6 @@ export class PulsePlusStack extends cdk.Stack {
         port: '443',
         permanent: true,
       }),
-    });
-
-    // Frontend target group
-    httpsListener.addTargets('FrontendTarget', {
-      port: 3000,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [frontendService],
-      healthCheck: {
-        path: '/',
-        healthyHttpCodes: '200,304',
-        interval: cdk.Duration.seconds(30),
-      },
-      deregistrationDelay: cdk.Duration.seconds(30),
-    });
-
-    // Backend target group with path-based routing
-    httpsListener.addTargets('BackendTarget', {
-      port: 3001,
-      protocol: elbv2.ApplicationProtocol.HTTP,
-      targets: [backendService],
-      conditions: [elbv2.ListenerCondition.pathPatterns(['/api/*'])],
-      priority: 10,
-      healthCheck: {
-        path: '/api/health',
-        healthyHttpCodes: '200',
-        interval: cdk.Duration.seconds(30),
-      },
-      deregistrationDelay: cdk.Duration.seconds(30),
     });
 
     // Create Route53 alias record

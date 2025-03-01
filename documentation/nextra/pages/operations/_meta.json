@@ -1,0 +1,5 @@
+{
+  "deployment": "Deployment",
+  "docker-compose": "Docker Compose",
+  "monitoring": "Monitoring"
+} 
