@@ -63,7 +63,7 @@ const ConditionField: React.FC<ConditionFieldProps> = ({ name, label, tableName,
               }}
               controlElements={{
                 fieldSelector: (props) => (
-                  <select {...props} className="p-2 bg-white border border-gray-300 rounded">
+                  <select aria-label="Items per page" {...props} className="p-2 bg-white border border-gray-300 rounded">
                     {props.options.map(option => (
                       <option key={('name' in option) ? option.name : option.label} value={('name' in option) ? option.name : option.label}>
                         {option.label}
@@ -72,7 +72,7 @@ const ConditionField: React.FC<ConditionFieldProps> = ({ name, label, tableName,
                   </select>
                 ),
                 operatorSelector: (props) => (
-                  <select {...props} className="ml-2 p-2 bg-white border border-gray-300 rounded">
+                  <select aria-label="Items per page" {...props} className="ml-2 p-2 bg-white border border-gray-300 rounded">
                     {props.options.map(option => (
                       <option key={'name' in option ? option.name : option.label} value={'name' in option ? option.name : option.label}>
                         {option.label}

@@ -6,6 +6,9 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
 
+# Install testing libraries needed for the build
+RUN npm install --save-dev @testing-library/react @testing-library/user-event
+
 # Copy application code
 COPY frontend/ .
 

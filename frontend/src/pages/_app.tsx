@@ -1,7 +1,8 @@
 import type { AppProps } from 'next/app';
 import { AuthProvider, useAuth } from '../context/auth';
-import Layout from '@/components/Layout';
+import { Layout } from '@/components/core';
 import '@/styles/globals.css';
+import '@/styles/markdown-editor.css';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 

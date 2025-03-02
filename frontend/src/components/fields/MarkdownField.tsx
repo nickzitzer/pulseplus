@@ -1,49 +1,53 @@
-import React from "react";
-import { Field } from "formik";
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
-import dynamic from "next/dynamic";
+import React, { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the markdown editor to avoid CSS import issues
+const MDEditor = dynamic(
+  () => import('@uiw/react-md-editor').then((mod) => mod.default),
+  { ssr: false }
+);
 
 interface MarkdownFieldProps {
-  name: string;
-  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  height?: number;
+  preview?: 'live' | 'edit' | 'preview';
   className?: string;
 }
 
-const MDEditor = dynamic(
-  () => import("@uiw/react-md-editor").then((mod) => mod.default),
-  { ssr: false }
-);
-
-const EditerMarkdown = dynamic(
-  () =>
-    import("@uiw/react-md-editor").then((mod) => {
-      return mod.default.Markdown;
-    }),
-  { ssr: false }
-);
-
 const MarkdownField: React.FC<MarkdownFieldProps> = ({
-  name,
-  label,
-  className,
+  value,
+  onChange,
+  placeholder = 'Write markdown content here...',
+  height = 300,
+  preview = 'live',
+  className = '',
 }) => {
+  const [content, setContent] = useState(value);
+
+  const handleChange = useCallback(
+    (val?: string) => {
+      const newValue = val || '';
+      setContent(newValue);
+      onChange(newValue);
+    },
+    [onChange]
+  );
+
   return (
-    <Field name={name}>
-      {({ field, form }: any) => (
-        <div className={`${className}`}>
-          <label>{label}</label>
-          <MDEditor
-            value={field.value}
-            onChange={(value) => form.setFieldValue(name, value)}
-            preview="edit"
-          />
-          <div style={{ paddingTop: 50 }}>
-            <EditerMarkdown source={field.value} />
-          </div>
-        </div>
-      )}
-    </Field>
+    <div className={`markdown-editor-wrapper ${className}`} data-color-mode="light">
+      {/* @ts-ignore - The type definitions for MDEditor are not perfect */}
+      <MDEditor
+        value={content}
+        onChange={handleChange}
+        height={height}
+        preview={preview}
+        textareaProps={{
+          placeholder,
+        }}
+      />
+    </div>
   );
 };
 

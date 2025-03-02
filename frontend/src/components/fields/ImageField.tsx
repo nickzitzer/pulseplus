@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field } from 'formik';
-import Image from '@/components/PulsePlusImage';
-import imageLoader from '@/utils/imageLoader';
+import Image from '@/components/ui/PulsePlusImage';
+import imageLoader, { ImageLoaderOptions } from '@/utils/imageLoaderUtil';
 
 interface ImageFieldProps {
   name: string;
@@ -32,7 +32,7 @@ const ImageField: React.FC<ImageFieldProps> = ({ name, label, className }) => {
               alt="Preview"
               width={128}
               height={128}
-              loader={({ src, width, quality }) => imageLoader({ src, width, quality })}
+              loader={({ src, width, quality }) => imageLoader({ src, width, quality, type: 'image' })}
               className="mt-2 object-cover rounded"
             />
           )}
